@@ -1,0 +1,17 @@
+📘 Visual Studio Code에서 리액트 + Node.js 사용법
+터미널 실행 : ctrl + `
+
+<터미널 두개 사용>
+React 서버 구동 : npm run dev
+Node.js 서버 구동 : (server 이동) node index.js
+
+<필수 라이브러리 설치>
+*node.js 서버용
+npm init -y 
+
+*react 클라이언트용
+npm install google-spreadsheet@3.3.0 express cors dotenv
+npm install react-router-dom
+
+*인증키 파일 server에 넣기
+
