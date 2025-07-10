@@ -15,5 +15,6 @@ npm install react-router-dom
 
 *인증키 파일 server에 넣기
 
-*git 테스트*
+<git hub 의도적 커밋 메세지 넣기 - 병합 시>
+git merge --no-ff feature/브랜치 명
 
