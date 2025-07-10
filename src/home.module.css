@@ -1,0 +1,11 @@
+/* 요소가 적을 때 footer 하단 고정 위함 필요 시 수정/삭제 가능 */
+.container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.container_wrap {
+    padding: 2rem;
+    flex: 1;
+}
