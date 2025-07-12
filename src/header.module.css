@@ -11,6 +11,7 @@
     justify-content: space-between;
     padding: 10px 90px;
     min-width: 1000px;
+    z-index: 10;
 }
 
 .symbol {

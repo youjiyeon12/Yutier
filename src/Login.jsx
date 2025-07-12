@@ -25,7 +25,7 @@ function Login({ onLogin }) {
       const data = await res.json();
 
       if (data.success) {
-        onLogin({ id });
+        onLogin(data.user);
         navigate('/'); // 로그인 성공 후 홈으로 이동
       } else {
         alert('아이디 또는 비밀번호가 틀렸습니다.');
@@ -67,8 +67,8 @@ function Login({ onLogin }) {
           <ul>
             <li>YUHAN TRUST 제도에 대해 알고 싶은 학생</li>
             <li>TRUST 티어를 확인하고 싶은 학생</li>
-            <li>TRUST 역량 점수 관리와 향상에 대한 가이드가 필요한 학생</li>
-            <li>어쩌구저쩌구(?)</li>
+            <li>어떤 비교과 프로그램을 들을지 고민 중인 학생</li>
+            <li>TRUST 역량 점수 관리에 대한 가이드가 필요한 학생</li>
           </ul>
           <button className={styles.infoButton} onClick={() => navigate('/detail')}>TRUST 인증제도란?</button>
         </div>

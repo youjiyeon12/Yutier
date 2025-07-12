@@ -49,8 +49,17 @@ app.post('/login', async (req, res) => {
   const { id, password } = req.body;
   const rows = await sheet.getRows();
   const user = rows.find(row => row.아이디 === id && row.비밀번호 === password);
+  // 회원 상세 정보 반환 
   if (user) {
-    res.json({ success: true, name: user.이름 });
+    res.json({
+      success: true,
+      user: {
+        id: user.아이디,
+        name: user.이름,
+        studentId: user.학번,
+        department: `${user.학부} ${user.전공}`
+      }
+    });
   } else {
     res.json({ success: false });
   }
