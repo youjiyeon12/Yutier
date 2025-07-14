@@ -9,7 +9,7 @@ function Detail({ user, onLogout }) {
     <div>
       <Header user={user} onLogout={onLogout} />
       <div>
-        <h2>TRUST 설명 페이지</h2>
+        <h2>TRUST 설명 페이지 git test</h2>
       </div>
       <Footer />
     </div>
