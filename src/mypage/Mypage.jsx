@@ -25,7 +25,7 @@ function Mypage({ user, setUser, onLogout}) {
   const memberDetails = [
     { label: "이름", value: user?.name || "유티어" },
     { label: "아이디", value: user?.id || "yutierid" },
-    { label: "학부/전공", value: `${user?.department || "유한학부"} ${user?.major || "유한전공"}` },
+    { label: "학부/전공",  value: user?.department && user?.major ? `${user.department} ${user.major}` : (user?.department || "유한전공") },
     { label: "학번", value: user?.studentId || "123456789" },
   ];
 
