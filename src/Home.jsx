@@ -13,7 +13,7 @@ function Home({ user, onLogout }) {
       <div className={styles.container_wrap}>
         <h2>환영합니다, {user.id}님!</h2>
       </div>
-      <Footer />
+      <Footer/>
     </div>
   );
 };

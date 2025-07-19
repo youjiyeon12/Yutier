@@ -1,6 +1,6 @@
 @font-face {
     font-family: 'Pretendard-Regular';
-    font-weight: 400;
+    
     font-style: normal;
     font-display: swap;
     src: url('https://cdn.jsdelivr.net/gh/fonts-archive/Pretendard/Pretendard-Regular.woff2') format('woff2');
@@ -8,7 +8,7 @@
 
 @font-face {
     font-family: 'Pretendard-SemiBold';
-    font-weight: 600;
+    
     font-style: normal;
     font-display: swap;
     src: url('https://cdn.jsdelivr.net/gh/fonts-archive/Pretendard/Pretendard-SemiBold.woff2') format('woff2');
