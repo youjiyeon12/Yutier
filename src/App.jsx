@@ -66,7 +66,7 @@ function App() {
         <Route
           path="/mypage"
           element={
-            user ? <Mypage user={user} onLogout={() => setUser(null)} />
+            user ? <Mypage user={user} setUser={setUser} onLogout={() => setUser(null)} />
               : <Navigate to="/login" />
           }
         />

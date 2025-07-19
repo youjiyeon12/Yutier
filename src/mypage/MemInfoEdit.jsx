@@ -2,7 +2,7 @@
 import styles from "./mypage.module.css";
 import { useState, useEffect } from "react";
 
-function MemInfoEdit({ user }) {
+function MemInfoEdit({ user, setUser }) {
   // 현재 선택된 학부
   const [selectedDept, setSelectedDept] = useState(user?.department || "");
   // 현재 선택된 전공 
@@ -18,56 +18,74 @@ function MemInfoEdit({ user }) {
   const [newPassword, setNewPassword] = useState("");
   // 새 비밀번호 확인
   const [confirmPassword, setConfirmPassword] = useState("");
+  // 비밀번호 유효성 
+  const pwRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!?/@#$%^])[a-zA-Z\d!?/@#$%^]{8,20}$/;
+
 
   // 확인 버튼 클릭 시
   const handleSave = async () => {
+    // 아무것도 변경되지 않았을 경우
+    if (
+      selectedDept.trim() === (user?.department || "").trim() &&
+      selectedMajor.trim() === (user?.major || "").trim() &&
+      !newPassword
+    ) {
+      alert("변경된 내용이 없습니다.");
+      return;
+    }
+
+    // 비밀번호 유효성 검사
+    if (newPassword && !pwRegex.test(newPassword)) {
+      alert("비밀번호는 8~20자이며, 영문+숫자+특수문자(!,?,/,@,#,$,%,^)를 포함해야 합니다.");
+      return;
+    }
     // 새 비밀번호와 확인 비밀번호가 일치하는지 검사
     if (newPassword && newPassword !== confirmPassword) {
     alert("새 비밀번호가 일치하지 않습니다.");
+
     return;
-  }
-
-  // 아무것도 변경되지 않았을 경우
-  if (
-    selectedDept === user.department &&
-    selectedMajor === user.major &&
-    !newPassword
-  ) {
-    alert("변경된 내용이 없습니다.");
-    return;
-  }
-
-  // 사용자 정보 업데이트 요청
-  try {
-    const res = await fetch("http://localhost:3001/api/update-user", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: user.id,              // ID
-        department: selectedDept, // 선택한 학부
-        major: selectedMajor,     // 선택한 전공
-        currentPassword,          // 현재 비번
-        newPassword,              // 새 비번
-        }),
-    });
-
-    if (!res.ok) {
-      throw new Error(`서버 오류: ${res.status}`);
     }
 
-    // 서버로부터 응답 받아 파싱
-    const data = await res.json();
+    // 사용자 정보 업데이트 요청
+    try {
+      const res = await fetch("http://localhost:3001/api/update-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: user.id,              // ID
+          department: selectedDept, // 선택한 학부
+          major: selectedMajor,     // 선택한 전공
+          currentPassword,          // 현재 비번
+          newPassword,              // 새 비번
+          }),
+      });
 
-    // 응답 결과에 따라 알림
-    if (data.success) {
-      alert("정보가 성공적으로 수정되었습니다!");
-    } else {
-      alert(data.message || "수정에 실패했습니다.");
-    }
-    } catch (err) {
-      console.error("저장 실패:", err);
-      alert("서버 오류가 발생했습니다.");
-    }
+      if (!res.ok) {
+        throw new Error(`서버 오류: ${res.status}`);
+      }
+
+      // 서버로부터 응답 받아 파싱
+      const data = await res.json();
+
+      // 응답 결과에 따라 알림
+      if (data.success) {
+        alert("정보가 성공적으로 수정되었습니다!");
+
+        // 변경된  정보로 업데이트
+        const updatedUser = {
+          ...user,
+          department: selectedDept,
+          major: selectedMajor,
+        };
+        setUser(updatedUser); // 상태 업데이트
+        localStorage.setItem("user", JSON.stringify(updatedUser)); // 로컬스토리지도 동기화
+      } else {
+        alert(data.message || "수정에 실패했습니다.");
+      }
+      } catch (err) {
+        console.error("저장 실패:", err);
+        alert("서버 오류가 발생했습니다.");
+      }
   }
   
   useEffect(() => {
