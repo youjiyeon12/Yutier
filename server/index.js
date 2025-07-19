@@ -98,3 +98,35 @@ app.get('/api/major-list', async (req, res) => {
     res.status(500).json({ error: '서버 오류' });
   }
 });
+
+// 회원정보 수정 API
+app.post('/api/update-user', async (req, res) => {
+  const { id, department, major, currentPassword, newPassword } = req.body;
+
+  try {
+    const rows = await sheet.getRows();
+    const userRow = rows.find(row => row.아이디 === id);
+
+    if (!userRow) {
+      return res.json({ success: false, message: '사용자를 찾을 수 없습니다.' });
+    }
+
+    // 비밀번호 검증
+    if (newPassword && userRow.비밀번호 !== currentPassword) {
+      return res.json({ success: false, message: '현재 비밀번호가 일치하지 않습니다.' });
+    }
+
+    // 학부/전공 수정
+    if (department) userRow.학부 = department;
+    if (major) userRow.전공 = major;
+
+    // 비밀번호 수정
+    if (newPassword) userRow.비밀번호 = newPassword;
+
+    await userRow.save();
+    res.json({ success: true });
+  } catch (err) {
+    console.error('회원정보 수정 오류:', err);
+    res.status(500).json({ success: false, message: '서버 오류' });
+  }
+});

@@ -10,7 +10,7 @@ import Detail from './Detail';
 import Footer from './Footer';
 import Guide from './Guide';
 import Header from './Header';
-import Mypage from './Mypage';
+import Mypage from './mypage/Mypage';
 //** route는 Home.jsx
 
 function App() {
