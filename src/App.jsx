@@ -10,6 +10,7 @@ import Detail from './Detail';
 import Footer from './Footer';
 import Guide from './Guide';
 import Header from './Header';
+import Detail2 from './Detail2';
 import Mypage from './mypage/Mypage';
 //** route는 Home.jsx
 
@@ -57,6 +58,14 @@ function App() {
           path="/detail"
           element={<Detail user={user} onLogout={() => setUser(null)} />}
         />
+
+        <Route
+          path="/detail2"
+          element={<Detail2 user={user} onLogout={() => setUser(null)} />}
+        />
+        
+
+
         {/* 이용가이드 페이지 */}
         <Route
           path="/guide"
