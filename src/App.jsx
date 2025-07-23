@@ -54,15 +54,7 @@ function App() {
           }
         />
         {/* trust 설명 페이지 */}
-        <Route
-          path="/detail"
-          element={<Detail user={user} onLogout={() => setUser(null)} />}
-        />
-
-        <Route
-          path="/detail2"
-          element={<Detail2 user={user} onLogout={() => setUser(null)} />}
-        />
+        <Route path="/detail" element={<Detail user={user} onLogout={() => setUser(null)} />} />
         
 
 
