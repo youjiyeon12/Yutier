@@ -1,6 +1,6 @@
 // trust 설명 페이지
-import { useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+//import { useSearchParams } from 'react-router-dom';
 
 import Header from './Header';
 import Footer from './Footer';
@@ -8,33 +8,37 @@ import dmc from './detail.module.css';
 import Detail2 from './Detail2';
 
 function Detail({ user, onLogout }) {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const activeMenu = searchParams.get('menu') || 'detail';
+  // URL에 파라미터 없이 상태 유지
+  const [activeMenuKey, setActiveMenuKey] = useState("info");
 
+  // 메뉴 클릭 시 localStorage에 저장
+  const handleMenuClick = (menuKey) => {
+    setActiveMenuKey(menuKey)
+
+    // 쿼리 파라미터 제거
+    window.history.replaceState({}, "", "/detail")
+  }
+
+  // URL 정리
   useEffect(() => {
-    if (!activeMenu) {
-      setSearchParams({ menu: 'detail' });
-    }
-  }, [activeMenu, setSearchParams]);
-
-  const handleMenuClick = (menu) => {
-    setSearchParams({ menu });
-  };
+    // 쿼리 파라미터 제거
+    window.history.replaceState({}, "", "/detail")
+  }, [])
 
   return (
     <div className={dmc.container}>
       <Header user={user} onLogout={onLogout} />
-      <div className={activeMenu === 'detail' ? dmc.content : dmc.content2}>
+      <div className={activeMenuKey === "info" ? dmc.content : dmc.content2}>
         <div className={dmc.menuContent}>
           <p className={dmc.menuTitle}>YUHAN TRUST</p>
           <div className={dmc.menuBar}>
-            <p><span onClick={() => handleMenuClick('detail')}
-              className={activeMenu === 'detail' ? dmc.menuClickBtn : dmc.menuNoBtn}>교육 인증 제도 안내</span></p>
-            <p><span onClick={() => handleMenuClick('detail2')}
-              className={activeMenu === 'detail2' ? dmc.menuClickBtn : dmc.menuNoBtn}>TRUST 역량 안내</span></p>
+            <p><span onClick={() => handleMenuClick("info")}
+              className={activeMenuKey === "info" ? dmc.menuClickBtn : dmc.menuNoBtn}>교육 인증 제도 안내</span></p>
+            <p><span onClick={() => handleMenuClick("trust")}
+              className={activeMenuKey === "trust" ? dmc.menuClickBtn : dmc.menuNoBtn}>TRUST 역량 안내</span></p>
           </div>
         </div>
-        {activeMenu === 'detail' && (
+        {activeMenuKey === "info" && (
           <div className={dmc.body}>
             <div className={dmc.textArea}>
               <p className={dmc.titleText}>YUHAN TRUST 교육 인증 제도</p>
@@ -86,7 +90,7 @@ function Detail({ user, onLogout }) {
             </div>
           </div>
         )}
-        {activeMenu === 'detail2' && (
+        {activeMenuKey === "trust" && (
           <Detail2 />
         )}
       </div>

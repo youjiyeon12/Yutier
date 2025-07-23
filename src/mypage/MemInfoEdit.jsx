@@ -41,9 +41,9 @@ function MemInfoEdit({ user, setUser }) {
     }
     // 새 비밀번호와 확인 비밀번호가 일치하는지 검사
     if (newPassword && newPassword !== confirmPassword) {
-    alert("새 비밀번호가 일치하지 않습니다.");
+      alert("새 비밀번호가 일치하지 않습니다.");
 
-    return;
+      return;
     }
 
     // 사용자 정보 업데이트 요청
@@ -57,7 +57,7 @@ function MemInfoEdit({ user, setUser }) {
           major: selectedMajor,     // 선택한 전공
           currentPassword,          // 현재 비번
           newPassword,              // 새 비번
-          }),
+        }),
       });
 
       if (!res.ok) {
@@ -82,12 +82,12 @@ function MemInfoEdit({ user, setUser }) {
       } else {
         alert(data.message || "수정에 실패했습니다.");
       }
-      } catch (err) {
-        console.error("저장 실패:", err);
-        alert("서버 오류가 발생했습니다.");
-      }
+    } catch (err) {
+      console.error("저장 실패:", err);
+      alert("서버 오류가 발생했습니다.");
+    }
   }
-  
+
   useEffect(() => {
     // 학부/전공 목록 불러오기
     fetch("http://localhost:3001/api/major-list")
@@ -115,101 +115,98 @@ function MemInfoEdit({ user, setUser }) {
         setMajors(data[selectedDept] || []); // 전공 목록 세팅
       });
   }, [selectedDept]); // 학부 바뀔 때마다 실행
-  
+
   return (
     <div className={styles.detailCard}>
-      <div className={styles.detailContent}>
-        <h3 className={styles.sectionTitle}>회원 정보 수정</h3>
-        <div className={styles.detailList}>
-          {/* 이름 */}
-          <div className={styles.detailItem}>
-            <span className={styles.detailLabel}>이름</span>
-            <span className={styles.detailValue}>{user?.name || "유티어"}</span>
-          </div>
+      <p className={styles.sectionTitle}>회원 정보 수정</p>
+      <div className={styles.detailList}>
+        {/* 이름 */}
+        <div className={styles.detailItem}>
+          <span className={styles.detailLabel}>이름</span>
+          <span className={styles.detailValue}>{user?.name || "유티어"}</span>
+        </div>
 
-          {/* 아이디 */}
-          <div className={styles.detailItem}>
-            <span className={styles.detailLabel}>아이디</span>
-            <span className={styles.detailValue}>{user?.id || "yutierid"}</span>
-          </div>
+        {/* 아이디 */}
+        <div className={styles.detailItem}>
+          <span className={styles.detailLabel}>아이디</span>
+          <span className={styles.detailValue}>{user?.id || "yutierid"}</span>
+        </div>
 
-          {/* 학부/전공 */}
-          <div className={styles.detailItem}>
-             <label className={styles.detailLabel}>학부/전공</label>
-             <div className={styles.selectRow}>
-               <select
-                 className={styles.select}
-                  value={selectedDept}
-                  onChange={(e) => {
-                    setSelectedDept(e.target.value);
-                    setSelectedMajor("");
-                  }}
-                >
-                  <option value="">학부</option>
-                  {departments.map((dept) => (<option key={dept} value={dept}>{dept}</option>
-                  ))}
-              </select>
-              <select
-                className={styles.select}
-                value={selectedMajor}
-                onChange={(e) => setSelectedMajor(e.target.value)}
-                disabled={!selectedDept}
-              >
-                <option value="">전공</option>
-                {majors.map((major) => (
-                  <option key={major} value={major}>{major}</option>
-                ))}
-              </select>
-              </div>
-            </div>
-
-          {/* 학번 */}
-          <div className={styles.detailItem}>
-            <span className={styles.detailLabel}>학번</span>
-            <span className={styles.detailValue}>{user?.studentId || "123456789"}</span>
-          </div>
-
-          {/* 현재 비밀번호 */}
-          <div className={styles.detailItem}>
-            <span className={styles.detailLabel}>현재 비밀번호</span>
-            <input
-              className={styles.inputField}
-              type="password"
-              placeholder="현재 비밀번호 입력"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-            />
-          </div>
-
-          {/* 새 비밀번호 */}
-          <div className={styles.detailItem}>
-            <span className={styles.detailLabel}>새 비밀번호</span>
-            <input
-              className={styles.inputField}
-              type="password"
-              placeholder="새 비밀번호 입력"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
-          </div>
-
-          {/* 새 비밀번호 확인 */}
-          <div className={styles.detailItem}>
-            <span className={styles.detailLabel}>새 비밀번호 확인</span>
-            <input
-              className={styles.inputField}
-              type="password"
-              placeholder="새 비밀번호 다시 입력"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-          </div>
-
-          {/* 확인 버튼 */}
-          <div className={styles.buttonWrapper}>
-            <button className={styles.confirmButton} onClick={handleSave}>확인</button>
+        {/* 학부/전공 */}
+        <div className={styles.detailItem}>
+          <label className={styles.detailLabel}>학부/전공</label>
+          <div className={styles.selectRow}>
+            <select
+              className={styles.select}
+              value={selectedDept}
+              onChange={(e) => {
+                setSelectedDept(e.target.value);
+                setSelectedMajor("");
+              }}
+            >
+              <option value="">학부</option>
+              {departments.map((dept) => (<option key={dept} value={dept}>{dept}</option>
+              ))}
+            </select>
+            <select
+              className={styles.select}
+              value={selectedMajor}
+              onChange={(e) => setSelectedMajor(e.target.value)}
+              disabled={!selectedDept}
+            >
+              <option value="">전공</option>
+              {majors.map((major) => (
+                <option key={major} value={major}>{major}</option>
+              ))}
+            </select>
           </div>
         </div>
+
+        {/* 학번 */}
+        <div className={styles.detailItem}>
+          <span className={styles.detailLabel}>학번</span>
+          <span className={styles.detailValue}>{user?.studentId || "123456789"}</span>
+        </div>
+
+        {/* 현재 비밀번호 */}
+        <div className={styles.detailItem}>
+          <span className={styles.detailLabel}>현재 비밀번호</span>
+          <input
+            className={styles.inputField}
+            type="password"
+            placeholder="현재 비밀번호 입력"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+          />
+        </div>
+
+        {/* 새 비밀번호 */}
+        <div className={styles.detailItem}>
+          <span className={styles.detailLabel}>새 비밀번호</span>
+          <input
+            className={styles.inputField}
+            type="password"
+            placeholder="새 비밀번호 입력"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+        </div>
+
+        {/* 새 비밀번호 확인 */}
+        <div className={styles.detailItem}>
+          <span className={styles.detailLabel}>새 비밀번호 확인</span>
+          <input
+            className={styles.inputField}
+            type="password"
+            placeholder="새 비밀번호 다시 입력"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+        </div>
+      </div>
+      {/* 확인 버튼 */}
+      <div className={styles.buttonWrapper}>
+        <button className={styles.confirmButton} onClick={handleSave}>확인</button>
       </div>
     </div>
   );
