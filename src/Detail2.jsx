@@ -4,6 +4,9 @@
 
 import dmc from './detail.module.css';
 
+
+
+
 function Detail2() {
 
   return (
