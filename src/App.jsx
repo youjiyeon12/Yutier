@@ -12,6 +12,8 @@ import Guide from './Guide';
 import Header from './Header';
 import Detail2 from './Detail2';
 import Mypage from './mypage/Mypage';
+import Matrix from './Matrix';
+import MatrixURLSubmit from './MatrixURLSubmit';
 //** route는 Home.jsx
 
 function App() {
@@ -56,8 +58,6 @@ function App() {
         {/* trust 설명 페이지 */}
         <Route path="/detail" element={<Detail user={user} onLogout={() => setUser(null)} />} />
         
-
-
         {/* 이용가이드 페이지 */}
         <Route
           path="/guide"
@@ -70,6 +70,23 @@ function App() {
             user ? <Mypage user={user} setUser={setUser} onLogout={() => setUser(null)} />
               : <Navigate to="/login" />
           }
+        />
+
+        {/* 매트릭스 페이지 */}
+        <Route
+        path="/matrix"
+        element={
+          user ? <Matrix user={user} onLogout={() => setUser(null)} />
+              : <Navigate to="/login" />
+          }
+        />
+
+        <Route
+        path="/matrix-url"
+        element={
+        user ? <MatrixURLSubmit user={user} onLogout={() => setUser(null)} />
+            : <Navigate to="/login" />
+        }
         />
       </Routes>
     </Router>

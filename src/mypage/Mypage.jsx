@@ -5,10 +5,13 @@ import Header from "../Header";
 import Footer from "../Footer";
 import styles from "./mypage.module.css";
 import MemInfoEdit from './MemInfoEdit'; // 회원 정보 수정 컴포넌트
+import { useNavigate } from 'react-router-dom';
 
 // props로 로그인한 사용자 정보 user를 받아서 화면에 표시
 function Mypage({ user, setUser, onLogout }) {
   // console.log("Mypage에서 받은 user 정보:", user);
+
+  const navigate = useNavigate();
 
   // URL에 파라미터 없이 상태 유지
   const [selectedMenuKey, setSelectedMenuKey] = useState("회원 정보");
@@ -19,6 +22,15 @@ function Mypage({ user, setUser, onLogout }) {
 
     // 쿼리 파라미터 제거
     window.history.replaceState({}, "", "/mypage")
+
+    // 매트릭스 페이지로 이동
+    if (menuKey === "매트릭스 관리") {
+      if (user.matrixUrl) {
+        navigate('/matrix');  // URL이 등록되어 있으면 바로 매트릭스로 이동
+      } else {
+        navigate('/matrix-url'); // URL이 없으면 등록 화면으로 이동
+      }
+    }
   }
 
   // URL 정리

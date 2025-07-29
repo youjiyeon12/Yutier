@@ -3,6 +3,7 @@ import { GoogleSpreadsheet } from 'google-spreadsheet';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import cors from 'cors'; // React 개발 서버에서 Node.js 서버 요청 보낼 때 필요.
+import { cwd } from 'process';
 
 
 dotenv.config(); // .env에서 환경변수 읽음
@@ -130,3 +131,80 @@ app.post('/api/update-user', async (req, res) => {
     res.status(500).json({ success: false, message: '서버 오류' });
   }
 });
+
+// 매트릭스 시트 URL 저장 API
+app.post('/api/save-matrix-url', async (req, res) => {
+  const{id, url} = req.body;
+
+  try{
+    const rows = await sheet.getRows(); // users 시트
+    const userRow = rows.find(row => row.아이디 === id);
+
+    if (!userRow){
+      return res.status(404).json({ success: false, message: '사용자 없음' });
+    }
+
+    userRow.url = url;
+    await userRow.save();
+
+    res.json({ success: true });
+  }
+
+  catch (error){
+    console.error('URL 저장 오류:', error);
+    res.status(500).json({ success: false, message: '서버 오류 '});
+  }
+});
+
+// 로그인 검증 API 수정
+app.post('/login', async (req, res) => {
+  const { id, password } = req.body;
+  const rows = await sheet.getRows();
+  const user = rows.find(row => row.아이디 === id && row.비밀번호 === password );
+  
+  if (user) {
+    res.json({
+      sucess: true,
+      user: {
+        id: user.아이디,
+        name: user.이름,
+        studentId: user.학번,
+        department: `${user.학부} ${user.전공}`,
+        matrixUrl: user.url || null 
+      }
+    });
+  }
+
+  else {
+    res.json({ success: false });
+  }
+});
+
+// URL 저장 및 조회
+app.post('/api/verify-matrix-url', async (req, res) => {
+  const { id, url } = req.body;
+  try {
+    const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    if (!match) return res.status(400).json({ success: false, message: '잘못된 URL 형식입니다.' });
+
+    const sheetId = match[1];
+    const userDoc = new GoogleSpreadsheet(sheetId);
+    await userDoc.useServiceAccountAuth(credentials);
+    await userDoc.loadInfo();
+
+    const rows = await sheet.getRows(); // users 시트
+    const userRow = rows.find(row => row.아이디 === id);
+    if (!userRow) return res.status(404).json({ success: false, message: '사용자 없음' });
+
+    userRow.url = url;
+    await userRow.save();
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('매트릭스 시트 접근 실패:', err.message);
+    res.status(500).json({ success: false, message: '시트 접근 실패 (공유 안됐거나 잘못된 URL)' });
+  }
+});
+
+
+
