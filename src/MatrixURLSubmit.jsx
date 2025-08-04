@@ -1,12 +1,16 @@
+// URL 제출 화면
 import { useState } from 'react';
 import Header from './Header';
 import Footer from './Footer';
 import style from './matrixURLSubmit.module.css';
+import { useNavigate } from 'react-router-dom'
 
+// 조회 버튼 클릭 시 실행
 function MatrixURLSubmit({ user, onLogout }) {
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async () => {
     if (!url.trim()) {
@@ -15,8 +19,9 @@ function MatrixURLSubmit({ user, onLogout }) {
       return;
     }
 
+    // 서버 응답
     try {
-      const response = await fetch('http://localhost:3001/api/save-matrix-url', {
+      const response = await fetch('http://localhost:3001/api/verify-matrix-url', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -29,6 +34,7 @@ function MatrixURLSubmit({ user, onLogout }) {
       if (result.success) {
         setError('');
         setSuccess(true);
+        navigate('/matrix');
       } else {
         setError(result.message || '서버 오류');
         setSuccess(false);

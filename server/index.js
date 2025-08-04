@@ -4,7 +4,15 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import cors from 'cors'; // React 개발 서버에서 Node.js 서버 요청 보낼 때 필요.
 import { cwd } from 'process';
+import { google } from 'googleapis';
 
+// 구글드라이브 API 사용
+const authDrive = new google.auth.GoogleAuth({
+  keyFile: './credentials.json',
+  scopes: ['https://www.googleapis.com/auth/drive.readonly'],
+});
+
+const drive = google.drive({ version: 'v3', auth: await authDrive.getClient() });
 
 dotenv.config(); // .env에서 환경변수 읽음
 const app = express(); // Express 앱 생성
@@ -14,6 +22,7 @@ app.use(express.json()); // JSON 파싱 미들웨어
 // credentials.json 직접 읽기
 const credentials = JSON.parse(fs.readFileSync('./credentials.json', 'utf-8'));
 
+// Administator 시트 URL
 const doc = new GoogleSpreadsheet('13QT8_OnNJ0FZaPkpx0_yMHz-v8ERg14lf9CXB_7bFzA'); // 구글 시트 ID
 await doc.useServiceAccountAuth(credentials); // 서비스 계정으로 인증
 await doc.loadInfo(); // 시트 정보 로딩
@@ -58,7 +67,8 @@ app.post('/login', async (req, res) => {
         id: user.아이디,
         name: user.이름,
         studentId: user.학번,
-        department: `${user.학부} ${user.전공}`
+        department: `${user.학부} ${user.전공}`,
+        matrixUrl: user.url || null // 매트릭스 URL 여부
       }
     });
   } else {
@@ -132,54 +142,6 @@ app.post('/api/update-user', async (req, res) => {
   }
 });
 
-// 매트릭스 시트 URL 저장 API
-app.post('/api/save-matrix-url', async (req, res) => {
-  const{id, url} = req.body;
-
-  try{
-    const rows = await sheet.getRows(); // users 시트
-    const userRow = rows.find(row => row.아이디 === id);
-
-    if (!userRow){
-      return res.status(404).json({ success: false, message: '사용자 없음' });
-    }
-
-    userRow.url = url;
-    await userRow.save();
-
-    res.json({ success: true });
-  }
-
-  catch (error){
-    console.error('URL 저장 오류:', error);
-    res.status(500).json({ success: false, message: '서버 오류 '});
-  }
-});
-
-// 로그인 검증 API 수정
-app.post('/login', async (req, res) => {
-  const { id, password } = req.body;
-  const rows = await sheet.getRows();
-  const user = rows.find(row => row.아이디 === id && row.비밀번호 === password );
-  
-  if (user) {
-    res.json({
-      sucess: true,
-      user: {
-        id: user.아이디,
-        name: user.이름,
-        studentId: user.학번,
-        department: `${user.학부} ${user.전공}`,
-        matrixUrl: user.url || null 
-      }
-    });
-  }
-
-  else {
-    res.json({ success: false });
-  }
-});
-
 // URL 저장 및 조회
 app.post('/api/verify-matrix-url', async (req, res) => {
   const { id, url } = req.body;
@@ -205,6 +167,145 @@ app.post('/api/verify-matrix-url', async (req, res) => {
     res.status(500).json({ success: false, message: '시트 접근 실패 (공유 안됐거나 잘못된 URL)' });
   }
 });
+
+// 저장된 URL이 타당한지 확인
+app.get('/api/validate-matrix-url', async (req, res) => {
+  const { id } = req.query;
+
+  try {
+    const rows = await sheet.getRows();
+    const userRow = rows.find(row => row.아이디 === id);
+
+    if (!userRow || !userRow.url) {
+      return res.status(404).json({ valid: false, message: '매트릭스 URL이 등록되어 있지 않습니다.' });
+    }
+
+    const match = userRow.url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    if (!match) {
+      return res.status(400).json({ valid: false, message: 'URL 형식이 잘못되었습니다.' });
+    }
+
+    const sheetId = match[1];
+
+    // Drive API로 휴지통 여부 확인
+    const file = await drive.files.get({
+      fileId: sheetId,
+      fields: 'trashed',
+    });
+
+    if (file.data.trashed) {
+      return res.status(400).json({ valid: false, message: '시트가 휴지통에 있습니다.' });
+    }
+
+    const userDoc = new GoogleSpreadsheet(sheetId);
+    await userDoc.useServiceAccountAuth(credentials);
+    await userDoc.loadInfo(); // 실제 접근 가능한 시트인지 확인
+
+    res.json({ valid: true });
+  } catch (err) {
+    console.error("시트 검증 실패:", err.message);
+    res.status(500).json({
+      valid: false,
+      message: '시트에 접근할 수 없습니다. 삭제되었거나 공유되지 않았을 수 있습니다.'
+    });
+  }
+});
+
+// 매트릭스에 필요한 URL 가져오기
+app.get('/api/user-url', async (req, res) => {
+  const userId = req.query.userId; // 쿼리에서 userId 가져옴
+  if (!userId) return res.status(400).json({ error: 'userId is required' });
+
+  try {
+    await doc.loadInfo(); // 관리자 Google Sheet 문서 로딩
+    const sheet = doc.sheetsByTitle['users']; // 'users' 시트 가져오기
+    const rows = await sheet.getRows(); // 모든 행 가져오기
+
+    const userRow = rows.find(row => row.아이디 === userId); // 해당 userId 찾기
+
+    if (!userRow || !userRow.url) {
+      return res.status(404).json({ error: 'Matrix URL not found' });
+    }
+
+    res.json({ url: userRow.url }); // 해당 사용자의 매트릭스 시트 URL 반환
+  } catch (err) {
+    console.error('Error fetching matrix URL:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// 매트릭스 시트에서 특정 학기 데이터 불러오기
+app.get('/api/load-matrix', async (req, res) => {
+  const { url, semester } = req.query;
+
+  if (!url || !semester) {
+    return res.status(400).json({ error: 'url과 semester는 필수입니다.' });
+  }
+
+  try {
+    // 1. 시트 ID 추출
+    const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    if (!match) return res.status(400).json({ error: '시트 ID 추출 실패' });
+    const sheetId = match[1];
+
+    // 2. Google 시트 문서 접근
+    const userDoc = new GoogleSpreadsheet(sheetId);
+    await userDoc.useServiceAccountAuth(credentials);
+    await userDoc.loadInfo();
+
+    // 3. 요청된 학기 탭 로드
+    const sheet = userDoc.sheetsByTitle[semester];
+    if (!sheet) return res.status(404).json({ error: `${semester} 시트 탭이 존재하지 않음` });
+
+    const rows = await sheet.getRows();
+
+    // 프로그램별로 병합된 구조로 파싱
+    const result = [];
+    const programMap = {};
+
+    for (let row of rows) {
+      const core = row['핵심역량']?.trim();
+      const type = row['구분']?.trim();
+      const program = row['프로그램명']?.trim();
+      const detail = row['상세항목']?.trim();
+
+      const key = `${core}||${type}||${program}`;
+
+      if (program) {
+        // 프로그램 새로 시작
+        if (!programMap[key]) {
+          programMap[key] = {
+            핵심역량: core || '',
+            구분: type || '',
+            프로그램명: program,
+            일회점수: row['1회 점수'] || '',
+            최대점수: row['최대 취득 점수'] || '',
+            내점수: row['내 점수'] || '',
+            상세항목: detail ? [detail] : [],
+          };
+          result.push(programMap[key]);
+        } else if (detail) {
+          // 이미 존재하면 상세항목만 추가
+          if (!programMap[key].상세항목.includes(detail)) {
+            programMap[key].상세항목.push(detail);
+          }
+        }
+      } else if (detail) {
+        // 프로그램명이 없는 행의 상세항목은 이전 프로그램에 추가
+        const lastKey = Object.keys(programMap).at(-1);
+        if (lastKey) {
+          programMap[lastKey].상세항목.push(detail);
+        }
+      }
+    }
+
+  res.json({ data: result });
+  } catch (err) {
+    console.error('매트릭스 로딩 실패:', err.message);
+    res.status(500).json({ error: '매트릭스 로딩 중 오류 발생' });
+  }
+});
+
 
 
 

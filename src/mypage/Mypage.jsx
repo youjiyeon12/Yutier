@@ -17,7 +17,7 @@ function Mypage({ user, setUser, onLogout }) {
   const [selectedMenuKey, setSelectedMenuKey] = useState("회원 정보");
 
   // 메뉴 클릭 시 localStorage에 저장
-  const handleMenuClick = (menuKey) => {
+  const handleMenuClick = async (menuKey) => {
     setSelectedMenuKey(menuKey)
 
     // 쿼리 파라미터 제거
@@ -25,11 +25,21 @@ function Mypage({ user, setUser, onLogout }) {
 
     // 매트릭스 페이지로 이동
     if (menuKey === "매트릭스 관리") {
-      if (user.matrixUrl) {
-        navigate('/matrix');  // URL이 등록되어 있으면 바로 매트릭스로 이동
-      } else {
-        navigate('/matrix-url'); // URL이 없으면 등록 화면으로 이동
+      try {
+        const res = await fetch(`http://localhost:3001/api/validate-matrix-url?id=${user.id}`);
+        const data = await res.json();
+
+        if(data.valid){
+          navigate('/matrix'); // URL이 있으면 matrix로
+        } 
+        else{
+          navigate('/matrix-url'); // 없으면 등록 페이지로
+        }       
       }
+      catch(err){
+            console.error("URL확인 실패:", err);
+            navigate('/matrix-url'); // 에러 시 기본값으로 이동
+        }
     }
   }
 

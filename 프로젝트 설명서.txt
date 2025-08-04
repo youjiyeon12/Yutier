@@ -13,6 +13,9 @@ npm init -y
 npm install google-spreadsheet@3.3.0 express cors dotenv
 npm install react-router-dom
 
+*구글 드라이브 API 이용
+npm install googleapis
+
 *인증키 파일 server에 넣기
 
 <git hub 의도적 커밋 메세지 넣기 - 병합 시>
