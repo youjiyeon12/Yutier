@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Header from './Header';
 import Footer from './Footer';
 import style from './matrix.module.css';
+import React from 'react';
 
 function Matrix({ user, onLogout }) {
   // 초기 상태 설정
@@ -11,6 +12,7 @@ function Matrix({ user, onLogout }) {
   const [matrixUrl, setMatrixUrl] = useState(''); // 상세항목 보기 상태(아코디언)
   const [openIndexes, setOpenIndexes] = useState({}); // 아코디언 열림 상태
   const [checkedDetails, setCheckedDetails] = useState({}); // 체크된 상세항목 상태
+  const [userScores, setUserScores] = useState({}); // 내 점수 입력값
 
   useEffect(() => {
     // 로그인한 사용자 ID 기준으로 시트 URL 불러오기
@@ -75,6 +77,33 @@ function Matrix({ user, onLogout }) {
     });
   };
 
+  // 저장 함수
+  const handleSaveMatrix = () => {
+    const semesterKey = `${year}-${semester}`;
+    const payload = {
+      userId: user.id,
+      url: matrixUrl,
+      semester: semesterKey,
+      scores: userScores,
+      details: checkedDetails,
+    };
+
+
+    fetch('http://localhost:3001/api/save-matrix', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        alert(data.message || '저장 완료!');
+      })
+      .catch((err) => {
+        console.error('저장 실패:', err);
+        alert('저장 실패');
+      });
+  };
+
   return (
     <div className={style.container}>
       <Header user={user} onLogout={onLogout} />
@@ -112,6 +141,12 @@ function Matrix({ user, onLogout }) {
           </label>
 
           <button onClick={handleLoadMatrix}>조회</button>
+
+          <div className={style.saveButtonBox}>
+            <button className={style.saveButton} onClick={handleSaveMatrix}>
+              저장
+            </button>
+          </div>
         </div>
 
         {/* 매트릭스 URL 확인용 */}
@@ -125,6 +160,7 @@ function Matrix({ user, onLogout }) {
         </div>
 
         {matrixData.length > 0 && (
+          // 메인 행
           <table className={style.matrixTable}>
             <thead>
               <tr>
@@ -135,37 +171,41 @@ function Matrix({ user, onLogout }) {
                 <th>최대 취득 점수</th>
                 <th>상세항목</th>
                 <th>내 점수</th>
-                <th>총점</th> 
+                <th>총점</th>
               </tr>
             </thead>
             <tbody>
               {groupByCoreCompetency(matrixData).map((group, groupIdx) => {
+                // 총점 계산
                 let totalScore = 0;
+                group.forEach((row, rowIdx) => {
+                  const globalIndex = `${groupIdx}-${rowIdx}`;
+                  const score = Number(userScores[globalIndex] ?? row.내점수) || 0;
+                  totalScore += score;
+                });
+
                 return (
-                  <>
+                  <React.Fragment key={`group-${groupIdx}`}>
                     {group.map((row, rowIdx) => {
                       const globalIndex = `${groupIdx}-${rowIdx}`;
                       const hasDetail = Array.isArray(row.상세항목) && row.상세항목.length > 0;
                       const detailItems = hasDetail ? row.상세항목 : [];
-                      const userScore = Number(row.내점수) || 0;
-                      totalScore += userScore;
 
                       return (
-                        <>
+                        <React.Fragment key={`row-${globalIndex}`}>
                           <tr
-                            key={globalIndex}
                             className={hasDetail ? style.accordionRow : ''}
                           >
                             {rowIdx === 0 && (
-                            <td
-                              rowSpan={
-                                group.length +
-                                group.filter((_, i) => openIndexes[`${groupIdx}-${i}`]).length
-                              }
-                            >
-                              {row.핵심역량}
-                            </td>
-                          )}
+                              <td
+                                rowSpan={
+                                  group.length +
+                                  group.filter((_, i) => openIndexes[`${groupIdx}-${i}`]).length
+                                }
+                              >
+                                {row.핵심역량}
+                              </td>
+                            )}
 
                             <td>{row.구분}</td>
                             <td>{row.프로그램명}</td>
@@ -184,48 +224,68 @@ function Matrix({ user, onLogout }) {
                                 </button>
                               )}
                             </td>
-                            <td>{row.내점수}</td>
-                            {rowIdx === 0 && (
-                            <td
-                              rowSpan={
-                                group.length +
-                                group.filter((_, i) => openIndexes[`${groupIdx}-${i}`]).length
-                              }
-                              className={style.totalScoreCell}
-                            >
-                              <strong>{totalScore}</strong>
-                            </td>
-                          )}
 
+                            <td>
+                              {/* 내 점수 입력 */}
+                              <input
+                                type="number"
+                                min="0"
+                                max="200"
+                                className={style.scoreInput}
+                                value={userScores[globalIndex] ?? row.내점수 ?? ''}
+                                onChange={(e) => {
+                                  let newScore = Number(e.target.value);
+                                  if (newScore > 200) newScore = 200;
+                                  if (newScore < 0) newScore = 0;
+
+                                  setUserScores(prev => ({
+                                    ...prev,
+                                    [globalIndex]: newScore
+                                  }));
+                                }}
+                              />
+                            </td>
+
+                            {/* 총점 계산 */}
+                            {rowIdx === 0 && (
+                              <td
+                                rowSpan={
+                                  group.length + group.filter((_, i) => openIndexes[`${groupIdx}-${i}`]).length
+                                }
+                                className={style.totalScoreCell}
+                              >
+                                <strong>{totalScore}</strong>
+                              </td>
+                            )}
                           </tr>
 
-                            {hasDetail && openIndexes[globalIndex] && (
-                              <tr className={style.detailRow}>
-                                <td colSpan={6}>
-                                  <div className={style.detailBox}>
-                                    <strong>📌 상세내용 체크:</strong>
-                                    <ul className={style.detailList}>
-                                      {detailItems.map((item, i) => (
-                                        <li key={`${globalIndex}-${i}`}>
-                                          <label>
-                                            <input
-                                              type="checkbox"
-                                              checked={checkedDetails[globalIndex]?.includes(item) || false}
-                                              onChange={() => handleDetailCheck(globalIndex, item)}
-                                            />{' '}
-                                            {item}
-                                          </label>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  </div>
-                                </td>
-                              </tr>
-                            )}
-                        </>
+                          {hasDetail && openIndexes[globalIndex] && (
+                            <tr className={style.detailRow}>
+                              <td colSpan={6}>
+                                <div className={style.detailBox}>
+                                  <strong>📌 상세내용 체크:</strong>
+                                  <ul className={style.detailList}>
+                                    {detailItems.map((item, i) => (
+                                      <li key={`detail-${globalIndex}-${i}`}>
+                                        <label>
+                                          <input
+                                            type="checkbox"
+                                            checked={checkedDetails[globalIndex]?.includes(item) || false}
+                                            onChange={() => handleDetailCheck(globalIndex, item)}
+                                          />{' '}
+                                          {item}
+                                        </label>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
                       );
                     })}
-                  </>
+                  </React.Fragment>
                 );
               })}
             </tbody>

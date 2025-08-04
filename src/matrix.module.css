@@ -77,3 +77,32 @@
   padding-left: 0;
   margin: 0;
 }
+
+.scoreInput {
+  width: 60px;
+  padding: 6px;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.saveButtonBox {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -40px;
+  margin-bottom: 20px;
+}
+
+.saveButton {
+  background-color: #3366ff;
+  color: white;
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.saveButton:hover {
+  background-color: #264fcc;
+}
