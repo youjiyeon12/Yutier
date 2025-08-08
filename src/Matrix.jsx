@@ -1,297 +1,235 @@
-import { useEffect, useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import styles from './matrix.module.css';
 import Header from './Header';
 import Footer from './Footer';
-import style from './matrix.module.css';
-import React from 'react';
+
+/**
+ * 데이터를 UI 렌더링에 적합한 계층적 구조로 재가공하는 최종 함수.
+ * 1. 핵심역량 > 구분 > 프로그램 계층으로 그룹핑.
+ * 2. 아코디언 상태를 기반으로 각 그룹이 차지할 행의 수(rowSpan)를 미리 정확하게 계산.
+ * 3. 렌더링에 필요한 모든 정보를 객체에 담아 배열로 반환.
+ */
+function processDataForRender(data, openStates) {
+  if (!data || data.length === 0) return [];
+
+  const finalRenderList = [];
+  const competencyGroups = new Map();
+
+  // 1. 데이터를 핵심역량 기준으로 그룹핑
+  data.forEach(row => {
+    const competencyName = row['핵심역량'];
+    if (!competencyName) return;
+    if (!competencyGroups.has(competencyName)) {
+      competencyGroups.set(competencyName, { summaryRow: null, dataRows: [] });
+    }
+    const group = competencyGroups.get(competencyName);
+    if (!row['구분'] && !row['프로그램명']) {
+      group.summaryRow = row;
+    } else {
+      group.dataRows.push(row);
+    }
+  });
+
+  // 2. 각 핵심역량 그룹을 순회하며 구조화
+  for (const [competencyName, groupData] of competencyGroups.entries()) {
+    const { summaryRow, dataRows } = groupData;
+    const totalScore = summaryRow ? summaryRow['총점'] : '';
+
+    const programGroups = new Map();
+    dataRows.forEach(row => {
+      const programKey = `${row['구분']}::${row['프로그램명']}`;
+      if (!programGroups.has(programKey)) {
+        programGroups.set(programKey, { mainRow: null, detailRows: [] });
+      }
+      const group = programGroups.get(programKey);
+      if (row['상세항목']) {
+        group.detailRows.push(row);
+      } else {
+        group.mainRow = row;
+      }
+    });
+
+    // 아코디언 상태에 따라 동적으로 rowSpan 다시 계산
+    let competencyTotalRowSpan = 0;
+    const divisionRowSpanMap = new Map();
+    const programList = Array.from(programGroups.values());
+
+    programList.forEach((prog, i) => {
+      const accordionKey = prog.mainRow ? `${prog.mainRow['프로그램명']}-${i}` : null;
+      const isAccordionOpen = !!openStates[accordionKey];
+      const rowCount = 1 + (isAccordionOpen ? prog.detailRows.length : 0);
+      
+      competencyTotalRowSpan += rowCount;
+      
+      const divisionName = prog.mainRow['구분'];
+      if (!divisionRowSpanMap.has(divisionName)) {
+        divisionRowSpanMap.set(divisionName, 0);
+      }
+      divisionRowSpanMap.set(divisionName, divisionRowSpanMap.get(divisionName) + rowCount);
+    });
+
+    let isFirstInCompetency = true;
+    let currentDivision = null;
+
+    programList.forEach((programData, programIndex) => {
+      if (programData.mainRow) {
+        const isFirstInDivision = programData.mainRow['구분'] !== currentDivision;
+        if (isFirstInDivision) {
+          currentDivision = programData.mainRow['구분'];
+        }
+
+        finalRenderList.push({
+          data: programData.mainRow,
+          detailRows: programData.detailRows,
+          renderFlags: { isFirstInCompetency, isFirstInDivision },
+          rowSpans: {
+            competency: competencyTotalRowSpan,
+            division: divisionRowSpanMap.get(currentDivision),
+          },
+          totalScore: totalScore,
+          accordionKey: `${programData.mainRow['프로그램명']}-${programIndex}`
+        });
+        isFirstInCompetency = false;
+      }
+    });
+  }
+  return finalRenderList;
+}
 
 function Matrix({ user, onLogout }) {
-  // 초기 상태 설정
-  const [matrixData, setMatrixData] = useState([]); // 조회된 매트릭스 데이터(시트에서 불러온 행 정보 배열)
-  const [year, setYear] = useState('2025'); // 조회할 년도 필터
-  const [semester, setSemester] = useState('1'); // 조회할 학기 필터
-  const [matrixUrl, setMatrixUrl] = useState(''); // 상세항목 보기 상태(아코디언)
-  const [openIndexes, setOpenIndexes] = useState({}); // 아코디언 열림 상태
-  const [checkedDetails, setCheckedDetails] = useState({}); // 체크된 상세항목 상태
-  const [userScores, setUserScores] = useState({}); // 내 점수 입력값
+  const [year, setYear] = useState('2025');
+  const [semester, setSemester] = useState('1');
+  const [matrixData, setMatrixData] = useState([]);
+  const [openAcc, setOpenAcc] = useState({});
+  const department = user?.department || "학과명";
+  const name = user?.name || "이름";
+  const userId = user?.id;
 
-  useEffect(() => {
-    // 로그인한 사용자 ID 기준으로 시트 URL 불러오기
-    fetch(`http://localhost:3001/api/user-url?userId=${user.id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setMatrixUrl(data.url);
-      })
-      .catch((err) => {
-        console.error('시트 URL 가져오기 실패:', err);
-      });
-  }, [user.id]);
-
-  // 조회 버튼 -> 매트릭스 호출
-  const handleLoadMatrix = () => {
-    if (!matrixUrl) return;
-
-    const encodedUrl = encodeURIComponent(matrixUrl);
-    const semesterKey = `${year}-${semester}`;
-
-    fetch(`http://localhost:3001/api/load-matrix?url=${encodedUrl}&semester=${semesterKey}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setMatrixData(data.data); // 시트에서 파싱된 행들
-      })
-      .catch((err) => {
-        console.error('매트릭스 불러오기 실패:', err);
-      });
+  const handleSearch = async () => {
+    try {
+      const res = await fetch(
+        `http://localhost:3001/api/load-matrix?id=${userId}&year=${year}&semester=${semester}`
+      );
+      const json = await res.json();
+      if (json.success) {
+        setMatrixData(json.data);
+        setOpenAcc({});
+      } else {
+        alert(json.message);
+        setMatrixData([]);
+      }
+    } catch (error) {
+      console.error("데이터 조회 실패:", error);
+      alert("서버와 통신 중 오류가 발생했습니다.");
+    }
   };
 
-  // 핵심역량이 연속된 그룹별로 나누는 함수
-  function groupByCoreCompetency(data) {
-    const grouped = {};
-    let currentKey = '';
+  const toggleAccordion = (groupKey) => {
+    setOpenAcc(prev => ({ ...prev, [groupKey]: !prev[groupKey] }));
+  };
+  
+  // 렌더링 시점에 아코디언 상태를 전달하여 rowSpan을 다시 계산
+  const processedData = processDataForRender(matrixData, openAcc);
 
-    data.forEach((row) => {
-      const key = row.핵심역량?.trim() || currentKey;
-      currentKey = key;
+  function renderTable() {
+    return (
+      <table className={styles.matrixTable}>
+        <thead>
+          <tr>
+            <th>핵심역량</th>
+            <th>구분</th>
+            <th>프로그램명</th>
+            <th>상세항목</th>
+            <th>1회 점수</th>
+            <th>최대 점수</th>
+            <th>내 점수</th>
+            <th>총점</th>
+          </tr>
+        </thead>
+        <tbody>
+          {processedData.map((item, index) => {
+            const { data, detailRows, renderFlags, rowSpans, totalScore, accordionKey } = item;
+            const hasDetail = detailRows.length > 0;
+            const isAccordionOpen = !!openAcc[accordionKey];
+            
+            const programRowSpan = hasDetail && isAccordionOpen ? detailRows.length + 1 : 1;
+            
+            return (
+              <React.Fragment key={index}>
+                {/* 대표 행 */}
+                <tr>
+                  {renderFlags.isFirstInCompetency && <td rowSpan={rowSpans.competency}>{data['핵심역량']}</td>}
+                  {renderFlags.isFirstInDivision && <td rowSpan={rowSpans.division}>{data['구분']}</td>}
+                  <td rowSpan={programRowSpan}>{data['프로그램명']}</td>
+                  <td>
+                    {hasDetail ? (
+                      <button type="button" className={styles.accordionBtn} onClick={() => toggleAccordion(accordionKey)}>
+                        {isAccordionOpen ? '▲' : '▼'}
+                      </button>
+                    ) : (
+                      data['상세항목']
+                    )}
+                  </td>
+                  <td>{data['1회 점수']}</td>
+                  <td>{data['최대 점수']}</td>
+                  <td>
+                    <input className={styles.scoreInput} defaultValue={data['내 점수'] || ''} />
+                  </td>
+                  {renderFlags.isFirstInCompetency && <td rowSpan={rowSpans.competency}>{totalScore}</td>}
+                </tr>
 
-      if (!grouped[key]) grouped[key] = [];
-      grouped[key].push(row);
-    });
-
-    return Object.values(grouped);
+                {/* 상세 항목 행 (아코디언 열렸을 때) */}
+                {hasDetail && isAccordionOpen &&
+                  detailRows.map((detail, dIdx) => (
+                    <tr key={`detail-${index}-${dIdx}`} className={styles.detailRow}>
+                      {/* 병합된 셀들은 렌더링하지 않음 */}
+                      <td>{detail['상세항목']}</td>
+                      <td>{detail['1회 점수']}</td>
+                      <td>{detail['최대 점수']}</td>
+                      <td>
+                        <input type="checkbox" defaultChecked={!!detail['이수/미이수']} />
+                      </td>
+                    </tr>
+                  ))}
+              </React.Fragment>
+            );
+          })}
+        </tbody>
+      </table>
+    );
   }
 
-  const toggleAccordion = (idx) => {
-    setOpenIndexes(prev => ({
-      ...prev,
-      [idx]: !prev[idx]
-    }));
-  };
-
-  const handleDetailCheck = (index, item) => {
-    setCheckedDetails(prev => {
-      const prevSet = prev[index] || [];
-      const exists = prevSet.includes(item);
-      return {
-        ...prev,
-        [index]: exists ? prevSet.filter(i => i !== item) : [...prevSet, item]
-      };
-    });
-  };
-
-  // 저장 함수
-  const handleSaveMatrix = () => {
-    const semesterKey = `${year}-${semester}`;
-    const payload = {
-      userId: user.id,
-      url: matrixUrl,
-      semester: semesterKey,
-      scores: userScores,
-      details: checkedDetails,
-    };
-
-
-    fetch('http://localhost:3001/api/save-matrix', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        alert(data.message || '저장 완료!');
-      })
-      .catch((err) => {
-        console.error('저장 실패:', err);
-        alert('저장 실패');
-      });
-  };
-
   return (
-    <div className={style.container}>
+    <div className={styles.pageWrap}>
       <Header user={user} onLogout={onLogout} />
-
-      <main className={style.mainContent}>
-        <h2>📊 유한 TRUST 매트릭스</h2>
-
-        {/* 상단 필터 바 */}
-        <div className={style.filterBar}>
-          <label>
-            년도:
-            <select value={year} onChange={(e) => setYear(e.target.value)}>
-              <option value="2023">2023</option>
-              <option value="2024">2024</option>
-              <option value="2025">2025</option>
-            </select>
-          </label>
-
-          <label>
-            학기:
-            <select value={semester} onChange={(e) => setSemester(e.target.value)}>
-              <option value="1">1학기</option>
-              <option value="2">2학기</option>
-            </select>
-          </label>
-
-          <label>
-            학과:
-            <input type="text" value={user.department} readOnly />
-          </label>
-
-          <label>
-            이름:
-            <input type="text" value={user.name} readOnly />
-          </label>
-
-          <button onClick={handleLoadMatrix}>조회</button>
-
-          <div className={style.saveButtonBox}>
-            <button className={style.saveButton} onClick={handleSaveMatrix}>
-              저장
-            </button>
+      <div className={styles.filterBar}>
+        <div className={styles.filterLeft}>
+          <div className={styles.filterGroup}>
+            <label>
+              년도
+              <select value={year} onChange={e => setYear(e.target.value)} className={styles.styledSelect}>
+                <option value="2023">2023</option>
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+              </select>
+            </label>
+            <label>
+              학기
+              <select value={semester} onChange={e => setSemester(e.target.value)} className={styles.styledSelect}>
+                <option value="1">1학기</option>
+                <option value="2">2학기</option>
+              </select>
+            </label>
+          </div>
+          <div className={styles.fixedGroup}>
+            학과: <b>{department}</b> &nbsp;|&nbsp; 이름: <b>{name}</b>
           </div>
         </div>
-
-        {/* 매트릭스 URL 확인용 */}
-        <div className={style.debugBox}>
-          <strong>시트 URL:</strong>{' '}
-          {matrixUrl ? (
-            <a href={matrixUrl} target="_blank" rel="noopener noreferrer">🔗 시트 열기</a>
-          ) : (
-            <span>불러오는 중...</span>
-          )}
-        </div>
-
-        {matrixData.length > 0 && (
-          // 메인 행
-          <table className={style.matrixTable}>
-            <thead>
-              <tr>
-                <th>핵심역량</th>
-                <th>구분</th>
-                <th>프로그램명</th>
-                <th>1회 점수</th>
-                <th>최대 취득 점수</th>
-                <th>상세항목</th>
-                <th>내 점수</th>
-                <th>총점</th>
-              </tr>
-            </thead>
-            <tbody>
-              {groupByCoreCompetency(matrixData).map((group, groupIdx) => {
-                // 총점 계산
-                let totalScore = 0;
-                group.forEach((row, rowIdx) => {
-                  const globalIndex = `${groupIdx}-${rowIdx}`;
-                  const score = Number(userScores[globalIndex] ?? row.내점수) || 0;
-                  totalScore += score;
-                });
-
-                return (
-                  <React.Fragment key={`group-${groupIdx}`}>
-                    {group.map((row, rowIdx) => {
-                      const globalIndex = `${groupIdx}-${rowIdx}`;
-                      const hasDetail = Array.isArray(row.상세항목) && row.상세항목.length > 0;
-                      const detailItems = hasDetail ? row.상세항목 : [];
-
-                      return (
-                        <React.Fragment key={`row-${globalIndex}`}>
-                          <tr
-                            className={hasDetail ? style.accordionRow : ''}
-                          >
-                            {rowIdx === 0 && (
-                              <td
-                                rowSpan={
-                                  group.length +
-                                  group.filter((_, i) => openIndexes[`${groupIdx}-${i}`]).length
-                                }
-                              >
-                                {row.핵심역량}
-                              </td>
-                            )}
-
-                            <td>{row.구분}</td>
-                            <td>{row.프로그램명}</td>
-                            <td>{row.일회점수}</td>
-                            <td>{row.최대점수}</td>
-                            <td>
-                              {hasDetail && (
-                                <button
-                                  className={style.accordionToggle}
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    toggleAccordion(globalIndex);
-                                  }}
-                                >
-                                  {openIndexes[globalIndex] ? '접기' : '보기'}
-                                </button>
-                              )}
-                            </td>
-
-                            <td>
-                              {/* 내 점수 입력 */}
-                              <input
-                                type="number"
-                                min="0"
-                                max="200"
-                                className={style.scoreInput}
-                                value={userScores[globalIndex] ?? row.내점수 ?? ''}
-                                onChange={(e) => {
-                                  let newScore = Number(e.target.value);
-                                  if (newScore > 200) newScore = 200;
-                                  if (newScore < 0) newScore = 0;
-
-                                  setUserScores(prev => ({
-                                    ...prev,
-                                    [globalIndex]: newScore
-                                  }));
-                                }}
-                              />
-                            </td>
-
-                            {/* 총점 계산 */}
-                            {rowIdx === 0 && (
-                              <td
-                                rowSpan={
-                                  group.length + group.filter((_, i) => openIndexes[`${groupIdx}-${i}`]).length
-                                }
-                                className={style.totalScoreCell}
-                              >
-                                <strong>{totalScore}</strong>
-                              </td>
-                            )}
-                          </tr>
-
-                          {hasDetail && openIndexes[globalIndex] && (
-                            <tr className={style.detailRow}>
-                              <td colSpan={6}>
-                                <div className={style.detailBox}>
-                                  <strong>📌 상세내용 체크:</strong>
-                                  <ul className={style.detailList}>
-                                    {detailItems.map((item, i) => (
-                                      <li key={`detail-${globalIndex}-${i}`}>
-                                        <label>
-                                          <input
-                                            type="checkbox"
-                                            checked={checkedDetails[globalIndex]?.includes(item) || false}
-                                            onChange={() => handleDetailCheck(globalIndex, item)}
-                                          />{' '}
-                                          {item}
-                                        </label>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              </td>
-                            </tr>
-                          )}
-                        </React.Fragment>
-                      );
-                    })}
-                  </React.Fragment>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
-      </main>
+        <button className={styles.searchBtn} onClick={handleSearch}>조회</button>
+      </div>
+      <div className={styles.container_wrap}>
+        {matrixData.length > 0 ? renderTable() : <h2>조회 버튼을 눌러 매트릭스를 불러오세요.</h2>}
+      </div>
       <Footer />
     </div>
   );

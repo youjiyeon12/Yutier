@@ -211,106 +211,78 @@ app.get('/api/validate-matrix-url', async (req, res) => {
   }
 });
 
-// 매트릭스에 필요한 URL 가져오기
-app.get('/api/user-url', async (req, res) => {
-  const userId = req.query.userId; // 쿼리에서 userId 가져옴
-  if (!userId) return res.status(400).json({ error: 'userId is required' });
+// 매트릭스 데이터 불러오기 API
+app.get('/api/load-matrix', async (req, res) => {
+  const { id, year, semester } = req.query;
 
   try {
-    await doc.loadInfo(); // 관리자 Google Sheet 문서 로딩
-    const sheet = doc.sheetsByTitle['users']; // 'users' 시트 가져오기
-    const rows = await sheet.getRows(); // 모든 행 가져오기
-
-    const userRow = rows.find(row => row.아이디 === userId); // 해당 userId 찾기
+    // 1. users 시트에서 내 row 찾기
+    const rows = await sheet.getRows();
+    const userRow = rows.find(row => row.아이디 === id);
 
     if (!userRow || !userRow.url) {
-      return res.status(404).json({ error: 'Matrix URL not found' });
+      return res.status(404).json({ success: false, message: '시트 URL 미등록' });
     }
 
-    res.json({ url: userRow.url }); // 해당 사용자의 매트릭스 시트 URL 반환
-  } catch (err) {
-    console.error('Error fetching matrix URL:', err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// 매트릭스 시트에서 특정 학기 데이터 불러오기
-app.get('/api/load-matrix', async (req, res) => {
-  const { url, semester } = req.query;
-
-  if (!url || !semester) {
-    return res.status(400).json({ error: 'url과 semester는 필수입니다.' });
-  }
-
-  try {
-    // 1. 시트 ID 추출
-    const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
-    if (!match) return res.status(400).json({ error: '시트 ID 추출 실패' });
+    // 2. 시트 ID 추출
+    const match = userRow.url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    if (!match) {
+      return res.status(400).json({ success: false, message: '잘못된 URL' });
+    }
     const sheetId = match[1];
 
-    // 2. Google 시트 문서 접근
+    // 3. 사용자 구글 시트 연결
     const userDoc = new GoogleSpreadsheet(sheetId);
     await userDoc.useServiceAccountAuth(credentials);
     await userDoc.loadInfo();
 
-    // 3. 요청된 학기 탭 로드
-    const sheet = userDoc.sheetsByTitle[semester];
-    if (!sheet) return res.status(404).json({ error: `${semester} 시트 탭이 존재하지 않음` });
+    // 4. 학기별 시트명
+    const semesterTitle = `${year}-${semester}`;
+    const matrixSheet = userDoc.sheetsByTitle[semesterTitle];
 
-    const rows = await sheet.getRows();
-
-    // 프로그램별로 병합된 구조로 파싱
-    const result = [];
-    const programMap = {};
-
-    for (let row of rows) {
-      const core = row['핵심역량']?.trim();
-      const type = row['구분']?.trim();
-      const program = row['프로그램명']?.trim();
-      const detail = row['상세항목']?.trim();
-
-      const key = `${core}||${type}||${program}`;
-
-      if (program) {
-        // 프로그램 새로 시작
-        if (!programMap[key]) {
-          programMap[key] = {
-            핵심역량: core || '',
-            구분: type || '',
-            프로그램명: program,
-            일회점수: row['1회 점수'] || '',
-            최대점수: row['최대 취득 점수'] || '',
-            내점수: row['내 점수'] || '',
-            상세항목: detail ? [detail] : [],
-          };
-          result.push(programMap[key]);
-        } else if (detail) {
-          // 이미 존재하면 상세항목만 추가
-          if (!programMap[key].상세항목.includes(detail)) {
-            programMap[key].상세항목.push(detail);
-          }
-        }
-      } else if (detail) {
-        // 프로그램명이 없는 행의 상세항목은 이전 프로그램에 추가
-        const lastKey = Object.keys(programMap).at(-1);
-        if (lastKey) {
-          programMap[lastKey].상세항목.push(detail);
-        }
-      }
+    if (!matrixSheet) {
+      return res.status(404).json({ success: false, message: `${semesterTitle} 시트를 찾을 수 없습니다.` });
     }
 
-  res.json({ data: result });
+    // 5. 시트 데이터 읽기 (헤더 포함)
+    await matrixSheet.loadHeaderRow();
+    const matrixRows = await matrixSheet.getRows();
+
+    // 6. 필요한 컬럼명 (헤더) 가져오기
+    const header = matrixSheet.headerValues;
+
+    // 7. 데이터 가공 
+    // (각 row를 객체로 변환)
+    const data = matrixRows.map(row => {
+      const obj = {};
+      header.forEach(col => {
+        obj[col] = row[col] || "";
+      });
+      return obj;
+    });
+
+    // 8. 응답 반환
+    res.json({
+      success: true,
+      header,
+      data
+    });
+
   } catch (err) {
-    console.error('매트릭스 로딩 실패:', err.message);
-    res.status(500).json({ error: '매트릭스 로딩 중 오류 발생' });
+    console.error('load-matrix error:', err.message);
+    res.status(500).json({ success: false, message: '시트 데이터 읽기 실패' });
   }
 });
 
-app.post('/api/save-matrix', async (req, res) => {
 
 
 
-});
+
+
+
+
+
+
 
 
 
