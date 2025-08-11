@@ -101,6 +101,19 @@
     const name = user?.name || "이름";
     const userId = user?.id;
 
+    // 체크박스 상태 변경 핸들러
+    const handleCheckboxChange = (programName, detailName, isChecked) => {
+      const updatedData = matrixData.map(row => {
+        // 해당 프로그램의 상세항목을 찾아서 '이수/미이수' 값을 변경
+        if (row['프로그램명'] === programName && row['상세항목'] === detailName) {
+          return { ...row, '이수/미이수': isChecked ? '이수' : '' };
+        }
+        return row;
+      });
+      setMatrixData(updatedData);
+    };
+
+
     // 조회
     const handleSearch = async () => {
       try {
@@ -123,26 +136,33 @@
 
     // 저장
     const handlesave = async () => {
-      // 테이블에 있는 모든 점수 입력 칸 찾기
-      const scoreInputs = document.querySelectorAll(`.${styles.scoreInput}`);
-      
-      //  업데이트할 데이터만 담을 배열을 준비
-      const updates = [];
-      scoreInputs.forEach(input => {
-        const programName = input.dataset.programName; // 프로그램명 속성 값 가져오기
-        const myScore = input.value;
+      // state에서 직접 변경된 데이터를 수집
+      const updates = matrixData.reduce((acc, row) => {
 
-        if (programName) {
-          updates.push({ programName, myScore });
+        if (!row['상세항목'] && row['프로그램명']) {
+          const input = document.querySelector(`input[data-program-name="${row['프로그램명']}"]`);
+          const myScore = input ? input.value : row['내 점수'];
+
+          acc.push({
+            programName: row['프로그램명'],
+            myScore: myScore || '',
+          });
         }
-      });
+        else if (row['상세항목']) {
+          acc.push({
+            programName: row['프로그램명'],
+            detailName: row['상세항목'],
+            isCompleted: row['이수/미이수'] === '이수', 
+          });
+        }
+        return acc;
+      }, []);
 
       if (updates.length === 0) {
         alert('저장할 데이터가 없습니다.');
         return;
       }
 
-      // 저장 시작 시 상태 변경
       setIsSaving(true);
 
       try {
@@ -155,7 +175,7 @@
             id: userId,
             year,
             semester,
-            data: updates // 업데이트할 데이터 배열
+            data: updates,
           }),
         });
 
@@ -172,7 +192,7 @@
       } finally {
         setIsSaving(false);
       }
-    }
+    };
 
     const toggleAccordion = (groupKey) => {
       setOpenAcc(prev => ({ ...prev, [groupKey]: !prev[groupKey] }));
@@ -236,8 +256,12 @@
                         <td>{detail['1회 점수']}</td>
                         <td>{detail['최대 점수']}</td>
                         <td>
-                          <input type="checkbox" defaultChecked={!!detail['이수/미이수']} />
-                        </td>
+                        <input
+                          type="checkbox"
+                          checked={detail['이수/미이수'] === '이수'} // state 기반으로 checked 상태 결정
+                          onChange={(e) => handleCheckboxChange(data['프로그램명'], detail['상세항목'], e.target.checked)}
+                        />
+                      </td>
                       </tr>
                     ))}
                 </React.Fragment>

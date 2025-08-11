@@ -276,7 +276,6 @@ app.get('/api/load-matrix', async (req, res) => {
 
 // 매트릭스 저장
 app.post('/api/save-matrix', async (req, res) => {
-// 클라이언트에 보낸 데이터 받기
   const { id, year, semester, data: updates } = req.body;
 
   if (!id || !year || !semester || !updates) {
@@ -284,7 +283,6 @@ app.post('/api/save-matrix', async (req, res) => {
   }
 
   try {
-    // 사용자의 시트를 찾아 연결
     const rows = await sheet.getRows();
     const userRow = rows.find(row => row.아이디 === id);
     if (!userRow || !userRow.url) {
@@ -308,30 +306,42 @@ app.post('/api/save-matrix', async (req, res) => {
     }
 
     await matrixSheet.loadHeaderRow();
-    await matrixSheet.loadCells(); 
+    const sheetRows = await matrixSheet.getRows();
+    await matrixSheet.loadCells(); // 셀 직접 조작을 위해 로드
     
     const scoreColumnIndex = matrixSheet.headerValues.indexOf('내 점수');
+    const completionColumnName = '이수/미이수'; 
+    const completionColumnIndex = matrixSheet.headerValues.indexOf(completionColumnName);
+
+
     if (scoreColumnIndex === -1) {
       return res.status(500).json({ success: false, message: "'내 점수' 열을 시트에서 찾을 수 없습니다." });
     }
-    
-    const sheetRows = await matrixSheet.getRows();
+     if (completionColumnIndex === -1) {
+      console.warn(`'${completionColumnName}' 열을 찾을 수 없어 '내 점수' 열에 저장합니다.`);
+    }
 
+    // 업데이트 로직 수정
     for (const item of updates) {
-      const rowToUpdate = sheetRows.find(r => 
-        r['프로그램명'] === item.programName && !r['상세항목']
-      );
-
-      if (rowToUpdate) {
-        const cell = matrixSheet.getCell(rowToUpdate.rowIndex - 1, scoreColumnIndex);
-        cell.value = item.myScore ? parseFloat(item.myScore) : null; 
+      if (item.myScore !== undefined) {
+        const rowToUpdate = sheetRows.find(r => r['프로그램명'] === item.programName && !r['상세항목']);
+        if (rowToUpdate) {
+          const cell = matrixSheet.getCell(rowToUpdate.rowIndex - 1, scoreColumnIndex);
+          cell.value = item.myScore ? parseFloat(item.myScore) : null;
+        }
+      }
+      else if (item.detailName !== undefined) {
+        const rowToUpdate = sheetRows.find(r => r['프로그램명'] === item.programName && r['상세항목'] === item.detailName);
+        if (rowToUpdate) {
+          const targetColIndex = completionColumnIndex !== -1 ? completionColumnIndex : scoreColumnIndex;
+          const cell = matrixSheet.getCell(rowToUpdate.rowIndex - 1, targetColIndex);
+          cell.value = item.isCompleted ? '이수' : ''; 
+        }
       }
     }
 
     await matrixSheet.saveUpdatedCells();
 
-
-    // 저장 완료
     res.json({ success: true, message: '저장이 완료되었습니다.' });
 
   } catch (err) {
