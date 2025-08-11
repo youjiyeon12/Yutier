@@ -211,12 +211,12 @@ app.get('/api/validate-matrix-url', async (req, res) => {
   }
 });
 
-// 매트릭스 데이터 불러오기 API
+// 매트릭스 조회
 app.get('/api/load-matrix', async (req, res) => {
   const { id, year, semester } = req.query;
 
   try {
-    // 1. users 시트에서 내 row 찾기
+    // users 시트에서 내 row 찾기
     const rows = await sheet.getRows();
     const userRow = rows.find(row => row.아이디 === id);
 
@@ -224,19 +224,19 @@ app.get('/api/load-matrix', async (req, res) => {
       return res.status(404).json({ success: false, message: '시트 URL 미등록' });
     }
 
-    // 2. 시트 ID 추출
+    // 시트 ID 추출
     const match = userRow.url.match(/\/d\/([a-zA-Z0-9-_]+)/);
     if (!match) {
       return res.status(400).json({ success: false, message: '잘못된 URL' });
     }
     const sheetId = match[1];
 
-    // 3. 사용자 구글 시트 연결
+    // 사용자 구글 시트 연결
     const userDoc = new GoogleSpreadsheet(sheetId);
     await userDoc.useServiceAccountAuth(credentials);
     await userDoc.loadInfo();
 
-    // 4. 학기별 시트명
+    // 학기별 시트명
     const semesterTitle = `${year}-${semester}`;
     const matrixSheet = userDoc.sheetsByTitle[semesterTitle];
 
@@ -244,14 +244,14 @@ app.get('/api/load-matrix', async (req, res) => {
       return res.status(404).json({ success: false, message: `${semesterTitle} 시트를 찾을 수 없습니다.` });
     }
 
-    // 5. 시트 데이터 읽기 (헤더 포함)
+    // 시트 데이터 읽기 (헤더 포함)
     await matrixSheet.loadHeaderRow();
     const matrixRows = await matrixSheet.getRows();
 
-    // 6. 필요한 컬럼명 (헤더) 가져오기
+    // 필요한 컬럼명 (헤더) 가져오기
     const header = matrixSheet.headerValues;
 
-    // 7. 데이터 가공 
+    // 데이터 가공 
     // (각 row를 객체로 변환)
     const data = matrixRows.map(row => {
       const obj = {};
@@ -261,7 +261,7 @@ app.get('/api/load-matrix', async (req, res) => {
       return obj;
     });
 
-    // 8. 응답 반환
+    // 응답 반환
     res.json({
       success: true,
       header,
@@ -271,6 +271,72 @@ app.get('/api/load-matrix', async (req, res) => {
   } catch (err) {
     console.error('load-matrix error:', err.message);
     res.status(500).json({ success: false, message: '시트 데이터 읽기 실패' });
+  }
+});
+
+// 매트릭스 저장
+app.post('/api/save-matrix', async (req, res) => {
+// 클라이언트에 보낸 데이터 받기
+  const { id, year, semester, data: updates } = req.body;
+
+  if (!id || !year || !semester || !updates) {
+    return res.status(400).json({ success: false, message: '필수 정보가 누락되었습니다.' });
+  }
+
+  try {
+    // 사용자의 시트를 찾아 연결
+    const rows = await sheet.getRows();
+    const userRow = rows.find(row => row.아이디 === id);
+    if (!userRow || !userRow.url) {
+      return res.status(404).json({ success: false, message: '시트 URL이 등록되지 않았습니다.' });
+    }
+
+    const match = userRow.url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    if (!match) {
+      return res.status(400).json({ success: false, message: '잘못된 URL 형식입니다.' });
+    }
+    const sheetId = match[1];
+
+    const userDoc = new GoogleSpreadsheet(sheetId);
+    await userDoc.useServiceAccountAuth(credentials);
+    await userDoc.loadInfo();
+
+    const semesterTitle = `${year}-${semester}`;
+    const matrixSheet = userDoc.sheetsByTitle[semesterTitle];
+    if (!matrixSheet) {
+      return res.status(404).json({ success: false, message: `${semesterTitle} 시트를 찾을 수 없습니다.` });
+    }
+
+    await matrixSheet.loadHeaderRow();
+    await matrixSheet.loadCells(); 
+    
+    const scoreColumnIndex = matrixSheet.headerValues.indexOf('내 점수');
+    if (scoreColumnIndex === -1) {
+      return res.status(500).json({ success: false, message: "'내 점수' 열을 시트에서 찾을 수 없습니다." });
+    }
+    
+    const sheetRows = await matrixSheet.getRows();
+
+    for (const item of updates) {
+      const rowToUpdate = sheetRows.find(r => 
+        r['프로그램명'] === item.programName && !r['상세항목']
+      );
+
+      if (rowToUpdate) {
+        const cell = matrixSheet.getCell(rowToUpdate.rowIndex - 1, scoreColumnIndex);
+        cell.value = item.myScore ? parseFloat(item.myScore) : null; 
+      }
+    }
+
+    await matrixSheet.saveUpdatedCells();
+
+
+    // 저장 완료
+    res.json({ success: true, message: '저장이 완료되었습니다.' });
+
+  } catch (err) {
+    console.error('save-matrix error:', err.message);
+    res.status(500).json({ success: false, message: '데이터 저장 중 서버 오류가 발생했습니다.' });
   }
 });
 

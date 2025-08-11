@@ -24,7 +24,6 @@
   gap: 36px;
 }
 
-/* 년도/학기 셀렉트 */
 .filterGroup {
   display: flex;
   align-items: center;
@@ -65,9 +64,8 @@
 }
 
 .searchBtn {
-  margin-left: 20px;
   padding: 7px 24px;
-  background: #3866e9;
+  background: #223a7d;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -77,13 +75,23 @@
   box-shadow: 0 1px 4px #e3e6ed;
   transition: background 0.12s;
 }
+
 .searchBtn:hover {
-  background: #2541b2;
+  background: #14225a;
 }
 
 .container_wrap {
   flex: 1 0 auto;
   margin-bottom: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.placeholderText {
+  color: #868e96; 
+  font-weight: 500;
+  font-size: 1.2rem; 
 }
 
 footer {
@@ -97,6 +105,7 @@ footer {
   font-size: 15px;
   margin: 0 auto;
 }
+
 .matrixTable th, .matrixTable td {
   border: 1.5px solid #d1dbe7;
   padding: 7px 8px;
@@ -126,3 +135,27 @@ footer {
   font-size: 15px;
   text-align: right;
 }
+
+.saveBtn {
+  padding: 7px 24px;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 1px 4px #e3e6ed;
+  transition: background 0.12s;
+
+  background: #6c757d;
+}
+
+.saveBtn:hover {
+  background: #5a6268;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 12px; 
+}
+
