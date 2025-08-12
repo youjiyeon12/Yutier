@@ -244,6 +244,8 @@ app.get('/api/load-matrix', async (req, res) => {
       return res.status(404).json({ success: false, message: `${semesterTitle} 시트를 찾을 수 없습니다.` });
     }
 
+    await matrixSheet.loadCells('A1:Z200');
+
     // 시트 데이터 읽기 (헤더 포함)
     await matrixSheet.loadHeaderRow();
     const matrixRows = await matrixSheet.getRows();

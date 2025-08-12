@@ -112,6 +112,16 @@
       });
       setMatrixData(updatedData);
     };
+    // 내 점수 상태 변경 핸들러
+    const handleScoreChange = (programName, newScore) => {
+      const updatedData = matrixData.map(row => {
+        if (row['프로그램명'] === programName && !row['상세항목']) {
+          return { ...row, '내 점수': newScore };
+        }
+        return row;
+      });
+      setMatrixData(updatedData);
+    };
 
 
     // 조회
@@ -140,12 +150,9 @@
       const updates = matrixData.reduce((acc, row) => {
 
         if (!row['상세항목'] && row['프로그램명']) {
-          const input = document.querySelector(`input[data-program-name="${row['프로그램명']}"]`);
-          const myScore = input ? input.value : row['내 점수'];
-
           acc.push({
             programName: row['프로그램명'],
-            myScore: myScore || '',
+            myScore: row['내 점수'] || '', 
           });
         }
         else if (row['상세항목']) {
@@ -242,7 +249,12 @@
                     <td>{data['1회 점수']}</td>
                     <td>{data['최대 점수']}</td>
                     <td>
-                      <input className={styles.scoreInput} defaultValue={data['내 점수'] || ''} data-program-name={data['프로그램명']}/>
+                      <input
+                        className={styles.scoreInput}
+                        value={data['내 점수'] || ''} 
+                        onChange={(e) => handleScoreChange(data['프로그램명'], e.target.value)} 
+                        data-program-name={data['프로그램명']}
+                      />
                     </td>
                     {renderFlags.isFirstInCompetency && <td rowSpan={rowSpans.competency}>{totalScore}</td>}
                   </tr>
