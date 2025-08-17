@@ -159,3 +159,129 @@ footer {
   gap: 12px; 
 }
 
+/* 핵심역량 색깔 */
+.c0 {
+  background-color: #eff6ff; 
+}
+.c1 {
+  background-color: #f0fdf4; 
+}
+.c2 {
+  background-color: #fefce8; 
+}
+.c3 {
+  background-color: #fef2f2; 
+}
+.c4 {
+  background-color: #fdf2f8; 
+}
+
+.topContentContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  margin: 24px 0;
+}
+
+.mainTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a202c;
+  background: #fdfdff;
+  border: 1.5px solid #d1dbe7;
+  border-radius: 12px;
+  padding: 12px 40px; 
+}
+
+/* 매트릭스 점수 입력란 */
+.matrixContent {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-radius: 5px;
+}
+
+.scoreInputContainer {
+  width: 90%;
+  max-width: 1300px;
+  border: 1.5px solid #d1dbe7;
+  border-radius: 16px;
+  padding: 24px;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px; 
+  background: #fdfdff;
+}
+
+.scoreTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 8px;
+}
+
+.scoreInputs {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.scoreItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+}
+
+.scoreItem span {
+  font-weight: 500;
+  color: #555;
+  white-space: nowrap; 
+}
+
+.scoreItem input {
+  width: 80px;
+  padding: 6px;
+  border: 1.5px solid #ccc;
+  border-radius: 5px;
+  text-align: right;
+  font-size: 16px;
+}
+
+.registerBtn {
+  padding: 8px 32px;
+  background: #223a7d;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.registerBtn:hover {
+  background: #14225a;
+}
+
+.scoreTitle {
+  font-size: 19px;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.totalScore {
+  font-size: 20px;
+  color: #223a7d;
+}
+
