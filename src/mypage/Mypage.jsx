@@ -15,6 +15,9 @@ function Mypage({ user, setUser, onLogout }) {
 
   // URL에 파라미터 없이 상태 유지
   const [selectedMenuKey, setSelectedMenuKey] = useState("회원 정보");
+  
+  // 티어 정보 상태
+  const [tierInfo, setTierInfo] = useState(null);
 
   // 메뉴 클릭 시 localStorage에 저장
   const handleMenuClick = async (menuKey) => {
@@ -43,11 +46,37 @@ function Mypage({ user, setUser, onLogout }) {
     }
   }
 
-  // URL 정리
+  // URL 정리 useEffect
   useEffect(() => {
     // 쿼리 파라미터 제거
     window.history.replaceState({}, "", "/mypage")
   }, [])
+
+  // 서버에서 티어 정보를 가져오는 useEffect
+  useEffect(() => {
+    // 로그인한 사용자 정보(user.id)가 있을 때만 API를 호출
+    if (user && user.id) {
+      const fetchTierInfo = async () => {
+        try {
+          // 서버에 티어 정보를 요청합
+          const res = await fetch(`http://localhost:3001/api/tier-info?id=${user.id}`);
+          const data = await res.json();
+          setTierInfo(data); // 받아온 데이터를 tierInfo state에 저장
+        } catch (err) {
+          console.error("티어 정보 로딩 실패:", err);
+          // 기본값
+          setTierInfo({
+            currentTier: 'Unranked',
+            currentScore: 0,
+            nextTier: 'Bronze',
+            scoreForNextTier: 70
+          });
+        }
+      };
+
+      fetchTierInfo();
+    }
+  }, [user]);
 
   // 왼쪽 사이드바에 표시될 목록
   const navigationItems = [
@@ -64,6 +93,15 @@ function Mypage({ user, setUser, onLogout }) {
     { label: "학부/전공", value: user?.department && user?.major ? `${user.department} ${user.major}` : (user?.department || "유한전공") },
     { label: "학번", value: user?.studentId || "123456789" },
   ];
+
+  const tierImageMap = {
+    Bronze: '/tier1.svg',
+    Silver: '/tier2.svg',
+    Gold: '/tier3.svg',
+    Diamond: '/tier4.svg',
+    // 기본값
+    Unranked: '/tier1.svg' 
+  };
 
   return (
     <div className={styles.container}>
@@ -94,28 +132,83 @@ function Mypage({ user, setUser, onLogout }) {
             <>
               {/* 유저 등급, 회원 상세 정보 */}
               <div className={styles.gradedetailCard}>
-                {/* 유저 티어 정보 */}
-                <div className={styles.gradeInfoBox}>
-                  <div className={styles.showTierGroup}>
-                    <div className={styles.showTierImage}>
-                      <img src="/tierImg/extier.png" alt="티어 이미지" />
+                {/* 로딩 중일 때 */}
+                {!tierInfo ? (
+                  <div className={styles.gradeInfoBox}>
+                    <div>티어 정보를 불러오는 중입니다...</div>
+                  </div>
+                ) : 
+                
+                // 점수가 없을 때 (API 응답에서 success가 false일 때)
+                !tierInfo.success ? (
+                  <div className={styles.gradeInfoBox}>
+                    <div className={styles.noScoreBox}>
+                      <h3>아직 등록된 점수가 없습니다.</h3>
+                      <p>매트릭스 관리 페이지에서 점수를 입력하고 나의 등급을 확인해보세요!</p>
+                      <button 
+                        className={styles.goToMatrixButton} 
+                        onClick={() => handleMenuClick("매트릭스 관리")}
+                      >
+                        점수 입력하러 가기
+                      </button>
                     </div>
-                    <div className={styles.showTierText}>
-                      <div className={styles.userName}>{user?.name || "유티어"} 님</div>
-                      <div className={styles.userGrade}>
-                        <span className={styles.gradeLabel}>SILVER</span> 등급입니다
+                  </div>
+                ) : (
+
+                  // 점수가 있을 때
+                  <div className={styles.gradeInfoBox}>
+                    <div className={styles.showTierGroup}>
+                      <div className={styles.showTierImage}>
+                        <img 
+                          src={tierImageMap[tierInfo.currentTier] || tierImageMap['Unranked']} 
+                          alt={`${tierInfo.currentTier} 티어 이미지`} 
+                        />
+                      </div>
+                      <div className={styles.showTierText}>
+                        <div className={styles.userName}>{user?.name || "유티어"} 님</div>
+                        <div className={styles.userGrade}>
+                          <span className={styles.gradeLabel}>{tierInfo.currentTier}</span> 등급입니다
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className={styles.nextGradeBox}>
-                    <div className={styles.nextGradeText}>
-                      다음 <span className={styles.gradeLabel}>GOLD</span> 등급까지
+                    <div className={styles.nextGradeBox}>
+                      {/* 1위이면 축하 메시지 표시 */}
+                      {tierInfo.isRankOne ? (
+                        <div className={styles.rankOneMessage}>
+                          🥳 전체 1위입니다! 🥳<br/>🎉 축하합니다! 🎉
+                        </div>
+                      // 언랭크일 경우
+                      ) : tierInfo.currentTier === 'Unranked' ? (
+                        <div className={styles.unrankedGoal}>
+                          <div className={styles.nextGradeText}>
+                            다음 등급인 <span className={styles.gradeLabel}>Bronze</span>까지
+                          </div>
+                          <div className={styles.score}>
+                            모든 역량 70점 이상 필요
+                          </div>
+                        </div>
+                      ) : (
+                        // 1등이 아닐 경우, 다음 목표(등급 또는 1등)와 필요 점수 표시
+                        (() => {
+                          const scoreNeeded = Math.max(0, tierInfo.scoreForNextTier - tierInfo.currentScore);
+                          const displayScore = scoreNeeded % 1 === 0 ? scoreNeeded : scoreNeeded.toFixed(1);
+                          return (
+                            <>
+                              <div className={styles.nextGradeText}>
+                                {tierInfo.nextTier === '1위' ? '전체 ' : '다음 등급인 '}
+                                <span className={styles.gradeLabel}>{tierInfo.nextTier}</span>까지
+                              </div>
+                              <div className={styles.score}>
+                                {displayScore}점 필요
+                              </div>
+                            </>
+                          );
+                        })()
+                      )}
                     </div>
-                    <div className={styles.score}>??점</div>
                   </div>
-                </div>
-
-                {/* 회원 상세 정보 */}
+                )}
+                {/* 회원 상세 정보*/}
                 <div className={styles.detailContent}>
                   <p className={styles.sectionTitle}>회원 상세 정보</p>
                   <div className={styles.detailList}>
@@ -128,11 +221,11 @@ function Mypage({ user, setUser, onLogout }) {
                   </div>
                 </div>
               </div>
-
-              {/* 프로그램 이수 현황 */}
+              
+              {/* 프로그램 이수 현황*/}
               <div className={styles.programCard}>
                 <div className={styles.programContent}>
-                  <h3 className={styles.sectionTitle}>프로그램 이수 현황</h3>
+                  <h3 className={styles.sectionTitle}>추천 프로그램</h3>
                   <div className={styles.programList}>
                     {/* 프로그램 이수 목록 추가 예정 */}
                     <div className={styles.programBox} />

@@ -12,7 +12,7 @@ function Footer() {
         <div className={styles.top_container}>
           <div className={styles.yutier_sentence}>
             <span className={styles.sentence_text}>
-              함께 성장하는 대학 생활의 시작. 대학 생활의 모든 순간을 더 의미 있게.
+              함께 성장하는 대학 생활의 시작. 모든 순간을 더 의미 있게.
             </span>
             <span className={styles.sentence_text}>
               당신의 도전을 YUTIER가 응원합니다.

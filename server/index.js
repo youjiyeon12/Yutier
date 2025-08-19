@@ -5,6 +5,7 @@ import fs from 'fs';
 import cors from 'cors'; // React 개발 서버에서 Node.js 서버 요청 보낼 때 필요.
 import { cwd } from 'process';
 import { google } from 'googleapis';
+import cron from 'node-cron'; // 스케줄러 라이브러리
 
 // 구글드라이브 API 사용
 const authDrive = new google.auth.GoogleAuth({
@@ -352,7 +353,7 @@ app.post('/api/save-matrix', async (req, res) => {
   }
 });
 
-// 매트릭스 핵심역량별 점수 저장
+// 핵심역량별 점수 저장
 app.post('/api/save-tier-scores', async (req, res) => {
   const { id, scores } = req.body;
 
@@ -398,7 +399,7 @@ app.post('/api/save-tier-scores', async (req, res) => {
   }
 });
 
-// 매트릭스 핵심역량별 점수 조회
+// 핵심역량별 점수 조회
 app.get('/api/get-tier-scores/:id', async (req, res) => {
   const { id } = req.params;
   if (!id) {
@@ -434,13 +435,186 @@ app.get('/api/get-tier-scores/:id', async (req, res) => {
   }
 });
 
+// 티어 계산 로직 함수
+async function calculateAndAssignTiers() {
+  // console.log('티어 계산을 시작합니다.');
+  try {
+    const tierSheet = doc.sheetsByTitle['tier'];
+    if (!tierSheet) {
+      console.error("'tier' 시트를 찾을 수 없습니다. 티어 계산을 중단합니다.");
+      return;
+    }
 
+    const rows = await tierSheet.getRows();
+    if (rows.length === 0) {
+        console.log('티어 시트에 데이터가 없어 계산을 건너뜁니다.');
+        return;
+    }
+    
+    // 개별 역량 점수가 모두 70점 이상인지 확인하는 함수
+    const meetsAllMinimums = (row) => {
+      const competencies = [
+        '유한인성역량', '기초학습역량', '직업기초역량', 
+        '직무수행역량', '취창업기초역량'
+      ];
+      for (const competency of competencies) {
+        if ((parseFloat(row[competency]) || 0) < 70) {
+          return false; // 하나라도 70점 미만이면 false
+        }
+      }
+      return true; // 모든 역량이 70점 이상이면 true
+    };
+    
+    // 모든 역량이 70점 이상인 사용자만 필터링
+    const eligibleUsers = rows.filter(row => meetsAllMinimums(row));
 
+    // 합산 점수 기준으로 내림차순 정렬
+    eligibleUsers.sort((a, b) => parseFloat(b['합산 점수']) - parseFloat(a['합산 점수']));
 
+    const totalEligible = eligibleUsers.length;
 
+    // 커트라인 순위 계산
+    const diamondCutoffRank = Math.ceil(totalEligible * 0.05);
+    const goldCutoffRank = Math.ceil(totalEligible * 0.10);
+    const silverCutoffRank = Math.ceil(totalEligible * 0.30);
+    
+    // 커트라인 점수 확인
+    const diamondCutoffScore = eligibleUsers[diamondCutoffRank - 1] ? parseFloat(eligibleUsers[diamondCutoffRank - 1]['합산 점수']) : -1;
+    const goldCutoffScore = eligibleUsers[goldCutoffRank - 1] ? parseFloat(eligibleUsers[goldCutoffRank - 1]['합산 점수']) : -1;
+    const silverCutoffScore = eligibleUsers[silverCutoffRank - 1] ? parseFloat(eligibleUsers[silverCutoffRank - 1]['합산 점수']) : -1;
 
+    // 모든 사용자의 티어 결정
+    for (const row of rows) {
+      if (!meetsAllMinimums(row)) {
+        row.티어 = 'Unranked';
+        continue;
+      }
 
+      const score = parseFloat(row['합산 점수']);
 
+      if (score >= diamondCutoffScore) row.티어 = 'Diamond';
+      else if (score >= goldCutoffScore) row.티어 = 'Gold';
+      else if (score >= silverCutoffScore) row.티어 = 'Silver';
+      else row.티어 = 'Bronze';
+    }
 
+    // 변경된 티어 정보를 각 행을 돌며 저장
+    for (const row of rows) {
+      await row.save();
+    }
+    // console.log('티어 계산 및 업데이트가 완료되었습니다.');
 
+  } catch (err) {
+    console.error('티어 계산 중 오류가 발생했습니다:', err);
+  }
+}
 
+// 매일 자정에 티어 계산 스케줄러 실행
+// cron.schedule('0 0 * * *', calculateAndAssignTiers);
+// 테스트용. 1분마다 실행되도록 설정.
+cron.schedule('*/1 * * * *', calculateAndAssignTiers);
+
+// 프론트엔드에 티어 정보를 보내주는 API
+app.get('/api/tier-info', async (req, res) => {
+  const { id } = req.query;
+  if (!id) {
+    return res.status(400).json({ success: false, message: 'ID가 없습니다.' });
+  }
+  try {
+    const tierSheet = doc.sheetsByTitle['tier'];
+    const usersSheet = doc.sheetsByTitle['users'];
+
+    const tierRows = await tierSheet.getRows();
+    const userTierRow = tierRows.find(row => row.아이디 === id);
+    
+    const userRows = await usersSheet.getRows();
+    const userInfoRow = userRows.find(row => row.아이디 === id);
+
+    // users 시트에 정보가 없으면 에러
+    if (!userInfoRow) {
+      return res.status(404).json({ success: false, message: '사용자 정보를 찾을 수 없습니다.' });
+    }
+    
+    // tier 시트에만 정보가 없는 경우 (점수 미입력 상태)
+    if (!userTierRow) {
+      return res.json({ 
+        success: false, // 점수가 없다는 것을 false로 알려줌
+        message: '아직 등록된 점수가 없습니다.' 
+      });
+    }
+    
+    // 다음 등급 및 필요 점수 계산 로직
+    // 개별 역량 점수가 모두 70점 이상인지 확인하는 함수
+    const meetsAllMinimums = (row) => {
+      const competencies = ['유한인성역량', '기초학습역량', '직업기초역량', '직무수행역량', '취창업기초역량'];
+      for (const competency of competencies) {
+        if ((parseFloat(row[competency]) || 0) < 70) return false;
+      }
+      return true;
+    };
+
+    // 모든 개별 역량이 70점 이상인 사용자만 필터링
+    const eligibleUsers = tierRows
+      .filter(row => meetsAllMinimums(row))
+      .map(row => ({
+        id: row.아이디,
+        score: parseFloat(row['합산 점수']) || 0
+      }))
+      .sort((a, b) => b.score - a.score);
+
+    const currentScore = parseFloat(userTierRow['합산 점수']) || 0;
+    const rankOneScore = eligibleUsers.length > 0 ? eligibleUsers[0].score : 0;
+
+    // 1위
+    const isRankOne = currentScore === rankOneScore;
+
+    const totalEligible = eligibleUsers.length;
+    const currentTier = userTierRow.티어 || 'Unranked';
+    
+    let nextTier = '';
+    let scoreForNextTier = 0;
+
+    const diamondCutoffRank = Math.ceil(totalEligible * 0.05);
+    const goldCutoffRank = Math.ceil(totalEligible * 0.10);
+    const silverCutoffRank = Math.ceil(totalEligible * 0.30);
+
+    const diamondCutoffScore = eligibleUsers[diamondCutoffRank - 1] ? eligibleUsers[diamondCutoffRank - 1].score : -1;
+    const goldCutoffScore = eligibleUsers[goldCutoffRank - 1] ? eligibleUsers[goldCutoffRank - 1].score : -1;
+    const silverCutoffScore = eligibleUsers[silverCutoffRank - 1] ? eligibleUsers[silverCutoffRank - 1].score : -1;
+
+    // 다음 등급 안내 로직
+    if (isRankOne) {
+      nextTier = '최고 랭킹';
+      scoreForNextTier = currentScore;
+    } else if (currentTier === 'Diamond') {
+      nextTier = '1위'; 
+      scoreForNextTier = rankOneScore + 1;
+    } else if (currentTier === 'Unranked') {
+      nextTier = 'Bronze';
+      scoreForNextTier = 70;
+    } else if (currentTier === 'Bronze') {
+      nextTier = 'Silver';
+      scoreForNextTier = silverCutoffScore + 1;
+    } else if (currentTier === 'Silver') {
+      nextTier = 'Gold';
+      scoreForNextTier = goldCutoffScore + 1;
+    } else if (currentTier === 'Gold') {
+      nextTier = 'Diamond';
+      scoreForNextTier = diamondCutoffScore + 1;
+    }
+
+    res.json({
+      success: true, // 점수가 있을 때만 true
+      userName: userInfoRow.이름,
+      currentTier: currentTier,
+      currentScore: currentScore,
+      nextTier: nextTier,
+      scoreForNextTier: scoreForNextTier,
+      isRankOne: isRankOne
+    });
+
+  } catch (err) {
+    console.error('티어 정보 조회 오류:', err);
+    res.status(500).json({ success: false, message: '서버 오류' });
+  }
+});
