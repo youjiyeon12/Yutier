@@ -1,7 +1,9 @@
-  import React, { useState, useMemo } from 'react';
+  import React, { useState, useEffect } from 'react';
   import styles from './matrix.module.css';
   import Header from './Header';
   import Footer from './Footer';
+
+  const colorSet = [styles.c0, styles.c1, styles.c2, styles.c3, styles.c4];
 
   function processDataForRender(data, openStates) {
     if (!data || data.length === 0) return [];
@@ -25,9 +27,11 @@
     });
 
     // 각 핵심역량 그룹을 순회하며 구조화
-    for (const [competencyName, groupData] of competencyGroups.entries()) {
+    Array.from(competencyGroups.entries()).forEach(([competencyName, groupData], competencyIndex) => {
       const { summaryRow, dataRows } = groupData;
       const totalScore = summaryRow ? summaryRow['총점'] : '';
+
+      const colorClass = colorSet[competencyIndex % colorSet.length];
 
       const programGroups = new Map();
       dataRows.forEach(row => {
@@ -81,12 +85,13 @@
               division: divisionRowSpanMap.get(currentDivision),
             },
             totalScore: totalScore,
-            accordionKey: `${programData.mainRow['프로그램명']}-${programIndex}`
+            accordionKey: `${programData.mainRow['프로그램명']}-${programIndex}`,
+            colorClass: colorClass,
           });
           isFirstInCompetency = false;
         }
       });
-    }
+    });
     return finalRenderList;
   }
 
@@ -97,9 +102,42 @@
     const [matrixData, setMatrixData] = useState([]);
     const [openAcc, setOpenAcc] = useState({});
     const [isSaving, setIsSaving] = useState(false);
+    const [tierScores, setTierScores] = useState({
+      유한인성역량: '',
+      기초학습역량: '',
+      직업기초역량: '',
+      직무수행역량: '',
+      취창업기초역량: '',
+    });
+    const [totalTierScore, setTotalTierScore] = useState(0);
     const department = user?.department || "학과명";
     const name = user?.name || "이름";
     const userId = user?.id;
+
+    // 페이지 진입 시 저장된 점수를 자동으로 불러옴
+    useEffect(() => {
+      const fetchTierScores = async () => {
+        if (!userId) return;
+        try {
+          const res = await fetch(`http://localhost:3001/api/get-tier-scores/${userId}`);
+          const data = await res.json();
+          if (data.success && data.scores) {
+            setTierScores(data.scores);
+          }
+        } catch (error) {
+          console.error("페이지 로드 시 점수 조회 오류:", error);
+        }
+      };
+      fetchTierScores();
+    }, [userId]);
+
+    // 점수 입력 시, 실시간으로 합산 점수 계산
+    useEffect(() => {
+      const total = Object.values(tierScores).reduce((sum, score) => {
+        return sum + (Number(score) || 0);
+      }, 0);
+      setTotalTierScore(total);
+    }, [tierScores]);
 
     // 체크박스 상태 변경 핸들러
     const handleCheckboxChange = (programName, detailName, isChecked) => {
@@ -141,6 +179,21 @@
       } catch (error) {
         console.error("데이터 조회 실패:", error);
         alert("서버와 통신 중 오류가 발생했습니다.");
+      }
+      try {
+        const res = await fetch(`http://localhost:3001/api/get-tier-scores/${userId}`);
+        const data = await res.json();
+        const emptyScores = { 유한인성역량: '', 기초학습역량: '', 직업기초역량: '', 직무수행역량: '', 취창업기초역량: '' };
+
+        if (data.success) {
+          setTierScores(data.scores || emptyScores);
+          setTotalTierScore(data.totalScore || 0);
+        } else {
+          setTierScores(emptyScores);
+          setTotalTierScore(0);
+        }
+      } catch (error) {
+        console.error("Tier 점수 조회 중 오류:", error);
       }
     };
 
@@ -207,6 +260,81 @@
     
     // 렌더링 시점에 아코디언 상태를 전달하여 rowSpan을 다시 계산
     const processedData = processDataForRender(matrixData, openAcc);  
+
+    // 매트릭스 핵심역량 점수 입력
+    function renderScoreInput() {
+      // 입력값이 바뀔 때마다 tierScores 상태를 업데이트하는 함수
+      const handleScoreChange = (e) => {
+        const { name, value } = e.target;
+        setTierScores(prev => ({ ...prev, [name]: value }));
+      };
+
+      // '등록' 버튼을 눌렀을 때 실행될 함수 
+      const handleRegisterScores = async () => {
+          // 빈 값이 있는지 확인
+          const hasEmptyValue = Object.values(tierScores).some(score => score === '');
+          if (hasEmptyValue) {
+            alert('모든 역량 점수를 입력해주세요.');
+            return;
+          }
+
+          try {
+            const res = await fetch('http://localhost:3001/api/save-tier-scores', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                id: userId,
+                scores: tierScores,
+              }),
+            });
+
+            const json = await res.json();
+            if (json.success) {
+              alert(json.message);
+            } else {
+              alert('점수 등록 실패: ' + json.message);
+            }
+          } catch (error) {
+            console.error("점수 등록 실패:", error);
+            alert("서버와 통신 중 오류가 발생했습니다.");
+          }
+        };
+
+      return (
+        <div className={styles.scoreInputContainer}>
+          <div className={styles.scoreTitle}>
+            TRUST 인증 점수 총점
+            <span className={styles.totalScore}>{totalTierScore}</span>
+          </div>
+          <div className={styles.scoreInputs}>
+            <div className={styles.scoreItem}>
+              <span>T1. 유한인성역량</span>
+              <input type="number" name="유한인성역량" value={tierScores.유한인성역량} onChange={handleScoreChange} /> 점
+            </div>
+            <div className={styles.scoreItem}>
+              <span>R. 기초학습역량</span>
+              <input type="number" name="기초학습역량" value={tierScores.기초학습역량} onChange={handleScoreChange} /> 점
+            </div>
+            <div className={styles.scoreItem}>
+              <span>U. 직업기초역량</span>
+              <input type="number" name="직업기초역량" value={tierScores.직업기초역량} onChange={handleScoreChange} /> 점
+            </div>
+            <div className={styles.scoreItem}>
+              <span>S. 직무수행역량</span>
+              <input type="number" name="직무수행역량" value={tierScores.직무수행역량} onChange={handleScoreChange} /> 점
+            </div>
+            <div className={styles.scoreItem}>
+              <span>T2. 취창업기초역량</span>
+              <input type="number" name="취창업기초역량" value={tierScores.취창업기초역량} onChange={handleScoreChange} /> 점
+            </div>
+          </div>
+          <button className={styles.registerBtn} onClick={handleRegisterScores}>등록</button>
+        </div>
+      );
+    }
+
     function renderTable() {
       return (
         <table className={styles.matrixTable}>
@@ -224,7 +352,8 @@
           </thead>
           <tbody>
             {processedData.map((item, index) => {
-              const { data, detailRows, renderFlags, rowSpans, totalScore, accordionKey } = item;
+              // 필요한거 꺼내오기
+              const { data, detailRows, renderFlags, rowSpans, totalScore, accordionKey, colorClass } = item;
               const hasDetail = detailRows.length > 0;
               const isAccordionOpen = !!openAcc[accordionKey];
               
@@ -234,7 +363,7 @@
                 <React.Fragment key={index}>
                   {/* 대표 행 */}
                   <tr>
-                    {renderFlags.isFirstInCompetency && <td rowSpan={rowSpans.competency}>{data['핵심역량']}</td>}
+                    {renderFlags.isFirstInCompetency && <td rowSpan={rowSpans.competency} className={colorClass}>{data['핵심역량']}</td>}
                     {renderFlags.isFirstInDivision && <td rowSpan={rowSpans.division}>{data['구분']}</td>}
                     <td rowSpan={programRowSpan}>{data['프로그램명']}</td>
                     <td>
@@ -287,6 +416,11 @@
     return (
       <div className={styles.pageWrap}>
         <Header user={user} onLogout={onLogout} />
+         <div className={styles.topContentContainer}>
+          <h1 className={styles.mainTitle}>매트릭스 점수</h1>
+          {renderScoreInput()}
+        </div>
+       
         <div className={styles.filterBar}>
           <div className={styles.filterLeft}>
             <div className={styles.filterGroup}>
@@ -318,7 +452,14 @@
           </div>
         </div>
         <div className={styles.container_wrap}>
-          {matrixData.length > 0 ? renderTable() : <h2 className={styles.placeholderText}>조회 버튼을 눌러 매트릭스를 불러오세요.</h2>}
+          {/* 매트릭스 점수 입력 및 테이블 출력(조회 버튼 클릭 시) */}
+          {matrixData.length > 0 ? (
+            <div className={styles.matrixContent}>
+              {renderTable()}
+            </div>
+          ) : (
+            <h2 className={styles.placeholderText}>조회 버튼을 눌러 매트릭스를 불러오세요.</h2>
+          )}
         </div>
         <Footer />
       </div>

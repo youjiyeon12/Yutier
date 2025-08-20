@@ -352,7 +352,87 @@ app.post('/api/save-matrix', async (req, res) => {
   }
 });
 
+// 매트릭스 핵심역량별 점수 저장
+app.post('/api/save-tier-scores', async (req, res) => {
+  const { id, scores } = req.body;
 
+  if (!id || !scores) {
+    return res.status(400).json({ success: false, message: 'ID와 점수 데이터는 필수입니다.' });
+  }
+
+  try {
+    const tierSheet = doc.sheetsByTitle['tier'];
+    if (!tierSheet) {
+      return res.status(404).json({ success: false, message: "'tier' 시트를 찾을 수 없습니다." });
+    }
+
+    const rows = await tierSheet.getRows();
+    let userRow = rows.find(row => row.아이디 === id);
+
+    // 합산 점수 계산
+    const totalScore = Object.values(scores).reduce((sum, score) => sum + (parseFloat(score) || 0), 0);
+
+    if (userRow) {
+      // 기존 사용자의 점수 업데이트
+      userRow.유한인성역량 = scores.유한인성역량;
+      userRow.기초학습역량 = scores.기초학습역량;
+      userRow.직업기초역량 = scores.직업기초역량;
+      userRow.직무수행역량 = scores.직무수행역량;
+      userRow.취창업기초역량 = scores.취창업기초역량;
+      userRow['합산 점수'] = totalScore;
+      await userRow.save();
+    } else {
+      // 신규 사용자의 점수 추가
+      await tierSheet.addRow({
+        아이디: id,
+        ...scores,
+        '합산 점수': totalScore,
+      });
+    }
+
+    res.json({ success: true, message: '점수가 성공적으로 등록되었습니다.' });
+
+  } catch (err) {
+    console.error('Tier 점수 저장 오류:', err.message);
+    res.status(500).json({ success: false, message: '서버 오류가 발생했습니다.' });
+  }
+});
+
+// 매트릭스 핵심역량별 점수 조회
+app.get('/api/get-tier-scores/:id', async (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ success: false, message: 'ID가 없습니다.' });
+  }
+  try {
+    const tierSheet = doc.sheetsByTitle['tier'];
+    if (!tierSheet) {
+      return res.status(404).json({ success: false, message: "'tier' 시트를 찾을 수 없습니다." });
+    }
+    const rows = await tierSheet.getRows();
+    const userRow = rows.find(row => row.아이디 === id);
+
+    if (userRow) {
+      res.json({
+        success: true,
+        scores: {
+          유한인성역량: userRow.유한인성역량 || '',
+          기초학습역량: userRow.기초학습역량 || '',
+          직업기초역량: userRow.직업기초역량 || '',
+          직무수행역량: userRow.직무수행역량 || '',
+          취창업기초역량: userRow.취창업기초역량 || '',
+        },
+        totalScore: userRow['합산 점수'] || 0 
+      });
+    } else {
+      // 데이터가 없을 때
+      res.json({ success: true, scores: null, totalScore: 0 });
+    }
+  } catch (err) {
+    console.error('Tier 점수 불러오기 오류:', err.message);
+    res.status(500).json({ success: false, message: '서버 오류가 발생했습니다.' });
+  }
+});
 
 
 
