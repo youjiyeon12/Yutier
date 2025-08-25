@@ -217,10 +217,24 @@ p {
 }
 
 .contentCell {
-  width: 170px;
-  height: 100px;
+  width: 130px;
+  height: 130px;
+  vertical-align: middle; 
+  text-align: center;
+}
+
+.tierItem {
+  display: flex;
+  flex-direction: column; 
   justify-content: center;
   align-items: center;
+  gap: 8px;
+  height: 100%; 
+}
+
+.tierItem img {
+  height: 60px;
+  width: auto;
 }
 
 .contentCell2 {
@@ -228,6 +242,13 @@ p {
   height: 70px;
   justify-content: center;
   align-items: center;
+}
+
+.contentCell2 p{
+  font-size: 13px;
+  width: 100%;
+  text-align: center;
+  line-height: 1.4; 
 }
 
 .contentCell3 {

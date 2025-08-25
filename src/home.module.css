@@ -1,11 +1,97 @@
-/* 요소가 적을 때 footer 하단 고정 위함 필요 시 수정/삭제 가능 */
-/*.container {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}*/
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #fdfdfd;
+}
 
-.content {
-  flex: 1; /* ✅ 남은 공간 모두 차지해서 Footer를 아래로 밀어냄 */
-  padding: 20px;
+.container_wrap {
+  flex-grow: 1;
+  width: 100%;
+  max-width: 1200px; 
+  margin: 0 auto;   
+  padding: 80px 150px; 
+  /*필요시 수정*/
+  display: flex;
+  flex-direction: column; 
+  align-items: center;
+  gap: 40px;
+}
+
+.bannerCard {
+  width: 100%; 
+  height: 150px; 
+  background-color: #ffffff;
+  border: 1px solid #eef0f4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #393f59;
+}
+
+.profileCard {
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.07);
+  padding: 48px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px; 
+  width: 100%;
+  max-width: 230px; 
+  border: 1px solid #eef0f4;
+}
+
+.tierIcon {
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tierImage {
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+}
+
+.userInfo {
+  margin-top: 20px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.userMajor {
+  font-size: 16px;
+  color: #555c7a;
+  margin: 0;
+  font-family: 'Pretendard-Regular', sans-serif;
+}
+
+.userName {
+  font-size: 20px;
+  color: #393f59;
+  margin: 4px 0 0 0;
+  font-family: 'Pretendard-SemiBold', sans-serif;
+}
+
+.scoreLink {
+  font-size: 16px;
+  color: #393f59;
+  text-decoration: none;
+  border: none;
+  background: none;
+  padding: 8px 16px;
+  border-bottom: 1.5px solid #393f59;
+  cursor: pointer;
+  font-family: 'Pretendard-Regular', sans-serif;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.scoreLink:hover {
+  color: #5a638a;
+  border-color: #5a638a;
 }
