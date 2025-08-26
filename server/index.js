@@ -610,11 +610,80 @@ app.get('/api/tier-info', async (req, res) => {
       currentScore: currentScore,
       nextTier: nextTier,
       scoreForNextTier: scoreForNextTier,
+
       isRankOne: isRankOne
     });
 
   } catch (err) {
     console.error('티어 정보 조회 오류:', err);
     res.status(500).json({ success: false, message: '서버 오류' });
+  }
+});
+
+// 추천 프로그램 조회 API
+app.get('/api/get-recommended-programs', async (req, res) => {
+  const { id, year, semester } = req.query;
+  try {
+    const rows = await sheet.getRows();
+    const userRow = rows.find(row => row.아이디 === id);
+    if (!userRow || !userRow.url) {
+      return res.json({ success: false, message: '시트 URL 미등록' });
+    }
+
+    const match = userRow.url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    if (!match) return res.json({ success: false, message: '잘못된 URL' });
+
+    const sheetId = match[1];
+    const userDoc = new GoogleSpreadsheet(sheetId);
+    await userDoc.useServiceAccountAuth(credentials);
+    await userDoc.loadInfo();
+
+    const semesterTitle = `${year}-${semester}`;
+    const matrixSheet = userDoc.sheetsByTitle[semesterTitle];
+    if (!matrixSheet) return res.json({ success: false, message: `${semesterTitle} 시트를 찾을 수 없습니다.` });
+
+    await matrixSheet.loadHeaderRow();
+    const matrixRows = await matrixSheet.getRows();
+
+    // 시트 데이터 객체화
+    const data = matrixRows.map(row => {
+      const obj = {};
+      matrixSheet.headerValues.forEach(col => obj[col] = row[col] || "");
+      return obj;
+    });
+
+    // 1. 핵심역량별 총점 계산
+    const competencyScores = {};
+    data.forEach(item => {
+      const competency = item['핵심역량'];
+      if (!competencyScores[competency]) competencyScores[competency] = 0;
+      competencyScores[competency] += parseFloat(item['내 점수'] || 0);
+    });
+
+    // 2. 총점 기준 오름차순 정렬 (낮은 점수부터 우선 추천)
+    const sortedCompetencies = Object.keys(competencyScores)
+      .sort((a, b) => competencyScores[a] - competencyScores[b]);
+
+    // 3. 추천 프로그램 선택
+    const recommended = [];
+    sortedCompetencies.forEach((competency, index) => {
+      const items = data
+        .filter(item => item['핵심역량'] === competency && item['내 점수'] === "")
+        .sort((a, b) => parseFloat(b['1회 점수'] || 0) - parseFloat(a['1회 점수'] || 0));
+
+      if (index === 0) {
+        // 가장 점수 낮은 핵심역량에서 2개 추천
+        recommended.push(...items.slice(0, 2));
+      } else if (index >= 1 && index <= 3) {
+        // 2~4번째 핵심역량에서 1개씩 추천
+        if (items.length > 0) recommended.push(items[0]);
+      }
+    });
+
+    res.json({ success: true, data: recommended });
+
+  } catch (err) {
+    console.error('추천 프로그램 조회 오류:', err.message);
+    res.status(500).json({ success: false, message: '추천 프로그램을 불러오는 중 서버 오류가 발생했습니다.' });
   }
 });
