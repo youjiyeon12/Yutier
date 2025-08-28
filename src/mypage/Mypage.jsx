@@ -127,10 +127,18 @@ function Mypage({ user, setUser, onLogout }) {
     { key: "withdraw", label: "회원 탈퇴", active: false },
   ];
 
+  // 아이디 마스킹 함수
+  const maskId = (id) => {
+    if (!id) return "yutierid"; // 아이디가 없으면 기본값 반환
+    if (id.length <= 3) return id; // 3글자 이하면 마스킹하지 않음
+    return id.substring(0, 3) + '*'.repeat(id.length - 3);
+  };
+
+
   // 회원 상세 정보 - user 객체에서 값 가져옴 (없으면 기본값)
   const memberDetails = [
     { label: "이름", value: user?.name || "유티어" },
-    { label: "아이디", value: user?.id || "yutierid" },
+    { label: "아이디", value: maskId(user?.id) }, 
     { label: "학부/전공", value: user?.department && user?.major ? `${user.department} ${user.major}` : (user?.department || "유한전공") },
     { label: "학번", value: user?.studentId || "123456789" },
   ];
