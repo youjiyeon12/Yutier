@@ -10,7 +10,7 @@ import cron from 'node-cron'; // 스케줄러 라이브러리
 // 구글드라이브 API 사용
 const authDrive = new google.auth.GoogleAuth({
   keyFile: './credentials.json',
-  scopes: ['https://www.googleapis.com/auth/drive.readonly'],
+  scopes: ['https://www.googleapis.com/auth/spreadsheets'],
 });
 
 const drive = google.drive({ version: 'v3', auth: await authDrive.getClient() });
@@ -52,8 +52,6 @@ app.post('/signup', async (req, res) => {
   });
   res.json({ success: true });
 });
-
-app.listen(3001, () => console.log('서버 실행 중: http://localhost:3001'));
 
 // 로그인 검증 API
 app.post('/login', async (req, res) => {
@@ -687,3 +685,71 @@ app.get('/api/get-recommended-programs', async (req, res) => {
     res.status(500).json({ success: false, message: '추천 프로그램을 불러오는 중 서버 오류가 발생했습니다.' });
   }
 });
+
+// 비밀번호 확인 API
+app.post('/api/verify-password', async (req, res) => {
+  try {
+    const { id, password } = req.body;
+    if (!id || !password) {
+      return res.status(400).json({ message: 'ID와 비밀번호를 모두 입력해주세요.' });
+    }
+
+    const usersSheet = doc.sheetsByTitle['users'];
+    const rows = await usersSheet.getRows();
+    const userRow = rows.find(row => row.아이디 === id);
+
+    if (!userRow) {
+      return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+    }
+
+    if (userRow.비밀번호 !== password) {
+      return res.status(401).json({ message: '비밀번호가 일치하지 않습니다.' });
+    }
+
+    // 비밀번호 일치 시 성공 응답
+    res.status(200).json({ success: true, message: '비밀번호가 확인되었습니다.' });
+
+  } catch (error) {
+    console.error('비밀번호 확인 중 서버 오류:', error);
+    res.status(500).json({ message: '서버 오류가 발생했습니다.' });
+  }
+});
+
+// 회원 탈퇴 API
+app.post('/api/delete-account', async (req, res) => {
+  try {
+    const { id, password } = req.body;
+
+    if (!id || !password) {
+      return res.status(400).json({ message: '아이디와 비밀번호를 모두 입력해주세요.' });
+    }
+
+    // 1. 'users' 시트에 접근
+    const usersSheet = doc.sheetsByTitle['users'];
+    const rows = await usersSheet.getRows();
+
+    // 2. '아이디'로 일치하는 사용자를 찾음
+    const userRow = rows.find(row => row.아이디 === id);
+
+    if (!userRow) {
+      return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+    }
+
+    // 3. 비밀번호를 확인
+    if (userRow.비밀번호 !== password) {
+      return res.status(401).json({ message: '비밀번호가 일치하지 않습니다.' });
+    }
+
+    // 4. 사용자 정보를 삭제
+    await userRow.delete();
+
+    console.log(`[회원 탈퇴] 아이디: ${id} 계정이 성공적으로 삭제되었습니다.`);
+    res.status(200).json({ message: '회원 탈퇴가 성공적으로 처리되었습니다.' });
+
+  } catch (error) {
+    console.error('회원 탈퇴 처리 중 서버 오류 발생:', error);
+    res.status(500).json({ message: '서버 오류가 발생했습니다.' });
+  }
+});
+
+app.listen(3001, () => console.log('서버 실행 중: http://localhost:3001'));

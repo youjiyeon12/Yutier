@@ -365,7 +365,7 @@
 }
 
 .confirmButton {
-  display: flex;
+  display: flex;  
   height: 35px;
   padding: 0px 21px;
   justify-content: center;
@@ -439,4 +439,26 @@
   .nextGradeBox {
     text-align: center;
   }
+}
+
+.deleteButton {
+  display: flex;
+  height: 35px;
+  padding: 0px 21px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-radius: 5px;
+  border: 0;
+  background: #E53935;
+  color: #fff;
+  text-align: center;
+  font-size: 16px;
+  line-height: 24px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.deleteButton:hover {
+  background: #C62828; 
 }

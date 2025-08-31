@@ -8,6 +8,7 @@ import MemInfoEdit from './MemInfoEdit'; // 회원 정보 수정 컴포넌트
 import { useNavigate } from 'react-router-dom';
 import List from "./List";
 import axios from 'axios'
+import DeleteAccount from './DeleteAccount';
 
 // props로 로그인한 사용자 정보 user를 받아서 화면에 표시
 function Mypage({ user, setUser, onLogout }) {
@@ -284,6 +285,11 @@ function Mypage({ user, setUser, onLogout }) {
           {/* 회원 정보 수정 */}
           {selectedMenuKey === "회원 정보 수정" && (
             <MemInfoEdit user={user} setUser={setUser} />
+          )}
+
+          {/* 회원 탈퇴 */}
+          {selectedMenuKey === "회원 탈퇴" && (
+            <DeleteAccount user={user} onLogout={onLogout} />
           )}
         </div>
       </div>
