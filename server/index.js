@@ -10,7 +10,9 @@ import cron from 'node-cron'; // 스케줄러 라이브러리
 // 구글드라이브 API 사용
 const authDrive = new google.auth.GoogleAuth({
   keyFile: './credentials.json',
-  scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  scopes: ['https://www.googleapis.com/auth/spreadsheets',
+    'https://www.googleapis.com/auth/drive.readonly'
+  ],
 });
 
 const drive = google.drive({ version: 'v3', auth: await authDrive.getClient() });
