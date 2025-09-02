@@ -1,22 +1,29 @@
 import React from "react";
 
-// 추천 프로그램 리스트 렌더링
+// 추천 프로그램 리스트 렌더링 
 function List({ data }) {
   return (
     <div style={{ marginTop: "0px" }}>
       <h3 style={{
         textAlign: "left",
         marginBottom: "20px",
-        paddingLeft: "45px"
+        paddingLeft: "0px"
       }}>
         추천 프로그램 리스트
       </h3>
       <table style={{
-        width: "90%",
+        width: "800px",          
+        tableLayout: "fixed",  // 테이블 전체 고정 
         borderCollapse: "collapse",
         textAlign: "center",
         margin: "0 auto"
       }}>
+        {/* 행 배치 */}
+        <colgroup>
+          <col style={{ width: "20%" }} />   {/* 핵심역량 */}
+          <col style={{ width: "60%" }} />   {/* 프로그램명 */}
+          <col style={{ width: "20%" }} />   {/* 부여 점수 */}
+        </colgroup>
         <thead>
           <tr style={{ backgroundColor: "#f5f5f5" }}>
             <th style={{ border: "1px solid #ccc", padding: "8px" }}>핵심역량</th>
@@ -28,9 +35,9 @@ function List({ data }) {
           {data && data.length > 0 ? (
             data.map((row, index) => (
               <tr key={index}>
-                <td style={{ border: "1px solid #ccc", padding: "8px" }}>{row['핵심역량']}</td>
-                <td style={{ border: "1px solid #ccc", padding: "8px" }}>{row['프로그램명']}</td>
-                <td style={{ border: "1px solid #ccc", padding: "8px" }}>{row['1회 점수'] || ''}</td>
+                <td style={{ border: "1px solid #ccc", padding: "8px", wordWrap: "break-word" }}>{row['핵심역량']}</td>
+                <td style={{ border: "1px solid #ccc", padding: "8px", wordWrap: "break-word" }}>{row['프로그램명']}</td>
+                <td style={{ border: "1px solid #ccc", padding: "8px", wordWrap: "break-word" }}>{row['1회 점수'] || ''}</td>
               </tr>
             ))
           ) : (

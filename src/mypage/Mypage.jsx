@@ -6,9 +6,8 @@ import Footer from "../Footer";
 import styles from "./mypage.module.css";
 import MemInfoEdit from './MemInfoEdit'; // 회원 정보 수정 컴포넌트
 import { useNavigate } from 'react-router-dom';
-import List from "./List";
+import List from "./list";
 import axios from 'axios'
-import DeleteAccount from './DeleteAccount';
 
 // props로 로그인한 사용자 정보 user를 받아서 화면에 표시
 function Mypage({ user, setUser, onLogout }) {
@@ -23,7 +22,9 @@ function Mypage({ user, setUser, onLogout }) {
   const [tierInfo, setTierInfo] = useState(null);
 
   // 서버에서 가져온 추천 프로그램 데이터
- const [recommended, setRecommended] = useState([]);;
+  const [recommended, setRecommended] = useState([]);;
+  // 추천 프로그램 로딩 상태 
+  const [loading, setLoading] = useState(false);
 
   // 메뉴 클릭 시 localStorage에 저장
   const handleMenuClick = async (menuKey) => {
@@ -84,17 +85,20 @@ function Mypage({ user, setUser, onLogout }) {
     }
   }, [user]);
 
+
+
   useEffect(() => {
     const fetchRecommendedPrograms = async () => {
-      // 사용자 정보가 없거나, 매트릭스 URL이 없으면 API 호출 중단
+      // 사용자 정보가 없거나 매트릭스 URL이 없으면 API 호출 중단
       if (!user?.id || !user?.matrixUrl) {
-        console.log('사용자 정보 또는 매트릭스 URL이 없어 추천 프로그램을 불러오지 못했습니다.');
+        console.log('추천 프로그램을 불러오지 못했습니다.');
         setRecommended([]); // 추천 프로그램 목록을 비움
         return;
       }
-      
-      const [year, semester] = [2024, 1]; // 예시: 현재 학년과 학기를 설정. 필요에 따라 변경
-      
+
+      setLoading(true); // 로딩 시작
+      const [year, semester] = [2025, 2]; // 호출할 시트의 연도와 학기
+
       try {
         const response = await axios.get('http://localhost:3001/api/get-recommended-programs', {
           params: { id: user.id, year: year, semester: semester }
@@ -109,10 +113,12 @@ function Mypage({ user, setUser, onLogout }) {
       } catch (err) {
         console.error("API 호출 오류:", err);
         setRecommended([]);
+      } finally {
+        setLoading(false); // 로딩 종료
       }
     };
-    
-    // "회원 정보" 메뉴일 때만 추천 프로그램 목록을 가져옴
+
+    // 회원 정보 메뉴만 추천 프로그램 목록 호출 ( 과도한 API 호출 방지 )
     if (selectedMenuKey === "회원 정보") {
       fetchRecommendedPrograms();
     } else {
@@ -128,29 +134,21 @@ function Mypage({ user, setUser, onLogout }) {
     { key: "withdraw", label: "회원 탈퇴", active: false },
   ];
 
-  // 아이디 마스킹 함수
-  const maskId = (id) => {
-    if (!id) return "yutierid"; // 아이디가 없으면 기본값 반환
-    if (id.length <= 3) return id; // 3글자 이하면 마스킹하지 않음
-    return id.substring(0, 3) + '*'.repeat(id.length - 3);
-  };
-
-
   // 회원 상세 정보 - user 객체에서 값 가져옴 (없으면 기본값)
   const memberDetails = [
     { label: "이름", value: user?.name || "유티어" },
-    { label: "아이디", value: maskId(user?.id) }, 
+    { label: "아이디", value: user?.id || "yutierid" },
     { label: "학부/전공", value: user?.department && user?.major ? `${user.department} ${user.major}` : (user?.department || "유한전공") },
     { label: "학번", value: user?.studentId || "123456789" },
   ];
 
   const tierImageMap = {
-    Bronze: '/tier1.png',
-    Silver: '/tier2.png',
-    Gold: '/tier3.png',
-    Diamond: '/tier4.png',
+    Bronze: '/tier1.svg',
+    Silver: '/tier2.svg',
+    Gold: '/tier3.svg',
+    Diamond: '/tier4.svg',
     // 기본값
-    Unranked: '/tier1.png' 
+    Unranked: '/tier1.svg'
   };
 
   return (
@@ -274,9 +272,20 @@ function Mypage({ user, setUser, onLogout }) {
 
               {/* 추천 프로그램 리스트 */}
               <div className={styles.programCard}>
-                <div className={styles.programContent}>
-                  <p className={styles.sectionTitle}></p>
-                  <List data={recommended} />
+                <div
+                  className={styles.programContent}
+                  style={{
+                    minHeight: "150px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center"
+                  }}
+                >
+                  {loading ? (
+                    <span>추천 프로그램 리스트 로딩 중...</span>
+                  ) : (
+                    <List data={recommended} />
+                  )}
                 </div>
               </div>
             </>
@@ -285,11 +294,6 @@ function Mypage({ user, setUser, onLogout }) {
           {/* 회원 정보 수정 */}
           {selectedMenuKey === "회원 정보 수정" && (
             <MemInfoEdit user={user} setUser={setUser} />
-          )}
-
-          {/* 회원 탈퇴 */}
-          {selectedMenuKey === "회원 탈퇴" && (
-            <DeleteAccount user={user} onLogout={onLogout} />
           )}
         </div>
       </div>

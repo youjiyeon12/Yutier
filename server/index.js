@@ -674,8 +674,8 @@ app.get('/api/get-recommended-programs', async (req, res) => {
       if (index === 0) {
         // 가장 점수 낮은 핵심역량에서 2개 추천
         recommended.push(...items.slice(0, 2));
-      } else if (index >= 1 && index <= 3) {
-        // 2~4번째 핵심역량에서 1개씩 추천
+      } else if (index >= 1 && index <= 4) {
+        //  나머지 핵심역량에서 1개씩 추천
         if (items.length > 0) recommended.push(items[0]);
       }
     });
