@@ -5,41 +5,58 @@
   background-color: #fdfdfd;
 }
 
-.container_wrap {
-  flex-grow: 1;
-  width: 100%;
-  max-width: 1200px; 
-  margin: 0 auto;   
-  padding: 80px 150px; 
-  /*필요시 수정*/
-  display: flex;
-  flex-direction: column; 
-  align-items: center;
-  gap: 40px;
-}
-
 .bannerCard {
-  width: 100%; 
-  height: 150px; 
+  width: 100%;
+  height: 150px;
   background-color: #ffffff;
   border: 1px solid #eef0f4;
   display: flex;
   justify-content: center;
   align-items: center;
   color: #393f59;
+  margin-top: 50px;
+  margin-bottom: none;
+}
+
+.container_wrap {
+  max-width: 1500px;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 100px;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.programCard {
+  flex: 1;
+  min-width: 300px;
+  max-width: 800px;
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.07);
+  padding: 32px;
+  border: 1px solid #eef0f4;
+}
+
+.programTable {
+  width: 100%;
+  margin: 0 auto;
+  table-layout: fixed;
+  border-collapse: collapse;
 }
 
 .profileCard {
   background-color: #ffffff;
   border-radius: 20px;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.07);
-  padding: 48px 40px;
+  padding: 68px 60px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px; 
+  gap: 24px;
   width: 100%;
-  max-width: 230px; 
+  max-width: 230px;
   border: 1px solid #eef0f4;
 }
 
@@ -89,9 +106,50 @@
   cursor: pointer;
   font-family: 'Pretendard-Regular', sans-serif;
   transition: color 0.2s, border-color 0.2s;
+  margin-left: 100px;
 }
 
 .scoreLink:hover {
   color: #5a638a;
   border-color: #5a638a;
 }
+
+.loadingWrapper {
+  display: flex;
+  justify-content: center;  
+  align-items: center;     
+  height: 120px;           
+  font-size: 16px;
+  color: #393f59;
+}
+
+/* 바로가기 */
+.linkSection {
+  display: flex;
+  justify-content: center; 
+  gap: 50px;               
+  margin-top: 100px;
+  margin-bottom: 50px;
+  flex-wrap: nowrap;       
+}
+
+.linkCard {
+   flex: 0 0 auto;
+  width: 450px;                     
+  height: 70px;
+  background-color: #ffffff;
+  box-shadow: 0 0 10px rgba(0,0,0,0.07);
+  border: 1px solid #eef0f4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  color: #393f59;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.linkCard:hover {
+  transform: translateY(-5px);
+}
+
