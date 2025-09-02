@@ -143,12 +143,12 @@ function Mypage({ user, setUser, onLogout }) {
   ];
 
   const tierImageMap = {
-    Bronze: '/tier1.svg',
-    Silver: '/tier2.svg',
-    Gold: '/tier3.svg',
-    Diamond: '/tier4.svg',
+    Bronze: '/tier1.png',
+    Silver: '/tier2.png',
+    Gold: '/tier3.png',
+    Diamond: '/tier4.png',
     // 기본값
-    Unranked: '/tier1.svg'
+    Unranked: '/tier1.png'
   };
 
   return (
