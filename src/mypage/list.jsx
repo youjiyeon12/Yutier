@@ -13,16 +13,16 @@ function List({ data }) {
       </h3>
       <table style={{
         width: "800px",          
-        tableLayout: "fixed",  // 테이블 전체 고정 
+        tableLayout: "fixed",  
         borderCollapse: "collapse",
         textAlign: "center",
         margin: "0 auto"
       }}>
         {/* 행 배치 */}
         <colgroup>
-          <col style={{ width: "20%" }} />   {/* 핵심역량 */}
-          <col style={{ width: "60%" }} />   {/* 프로그램명 */}
-          <col style={{ width: "20%" }} />   {/* 부여 점수 */}
+          <col style={{ width: "20%" }} />   
+          <col style={{ width: "60%" }} />   
+          <col style={{ width: "20%" }} />   
         </colgroup>
         <thead>
           <tr style={{ backgroundColor: "#f5f5f5" }}>

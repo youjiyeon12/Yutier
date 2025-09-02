@@ -652,7 +652,7 @@ app.get('/api/get-recommended-programs', async (req, res) => {
       return obj;
     });
 
-    // 1. 핵심역량별 총점 계산
+    // 핵심역량별 총점 계산
     const competencyScores = {};
     data.forEach(item => {
       const competency = item['핵심역량'];
@@ -660,11 +660,11 @@ app.get('/api/get-recommended-programs', async (req, res) => {
       competencyScores[competency] += parseFloat(item['내 점수'] || 0);
     });
 
-    // 2. 총점 기준 오름차순 정렬 (낮은 점수부터 우선 추천)
+    // 총점 기준 오름차순 정렬 (낮은 점수부터 우선 추천)
     const sortedCompetencies = Object.keys(competencyScores)
       .sort((a, b) => competencyScores[a] - competencyScores[b]);
 
-    // 3. 추천 프로그램 선택
+    // 추천 프로그램 선택
     const recommended = [];
     sortedCompetencies.forEach((competency, index) => {
       const items = data
