@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 import styles from './home.module.css';
-import List from './Mypage/list';
+import List from './mypage/List';
 import axios from 'axios';
 
 function Home({ user, onLogout }) {
@@ -87,7 +87,6 @@ function Home({ user, onLogout }) {
           <p>배너자리</p>
         </div>
 
-        <div className={styles.profileSection}>
           <div className={styles.profileCard}>
             <div className={styles.tierIcon}>
               {/* 로딩 중이거나 점수가 없을 때는 기본 아이콘, 점수가 있으면 티어 아이콘 */}
@@ -107,7 +106,7 @@ function Home({ user, onLogout }) {
               <p className={styles.userMajor}>{user.department || '전공 정보 없음'}</p>
               <p className={styles.userName}>{user.name || user.id} 님</p>
             </div>
-          </div>
+          
 
           {/* 점수 상태에 따라 다른 버튼*/}
           {!tierInfo ? (
@@ -123,7 +122,8 @@ function Home({ user, onLogout }) {
               점수 입력하러 가기
             </button>
           )}
-        </div>
+          </div>
+
 
         {/* 추천 프로그램 리스트 */}
         <div className={styles.programCard}>

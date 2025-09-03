@@ -6,7 +6,7 @@ import Footer from "../Footer";
 import styles from "./mypage.module.css";
 import MemInfoEdit from './MemInfoEdit'; // 회원 정보 수정 컴포넌트
 import { useNavigate } from 'react-router-dom';
-import List from "./list";
+import List from "./List";
 import axios from 'axios'
 
 // props로 로그인한 사용자 정보 user를 받아서 화면에 표시
