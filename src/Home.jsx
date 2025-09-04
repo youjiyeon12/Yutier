@@ -127,13 +127,21 @@ function Home({ user, onLogout }) {
 
         {/* 추천 프로그램 리스트 */}
         <div className={styles.programCard}>
-          {loading ? (
-            <div className={styles.loadingWrapper}>
-              추천 프로그램 로딩 중...
-            </div>
-          ) : (
-            <List data={recommended} />
-          )}
+          <div
+            className={styles.programContent}
+            style={{
+              minHeight: "150px",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center"
+            }}
+          >
+            {loading ? (
+              <span>추천 프로그램 리스트 로딩 중...</span>
+            ) : (
+              <List data={recommended} />
+            )}
+          </div>
         </div>
       </div>
 

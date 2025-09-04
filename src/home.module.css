@@ -28,15 +28,17 @@
   margin: 0 auto;
 }
 
+.programContent {
+  padding: 1.5rem;
+}
+
 .programCard {
   flex: 1;
-  min-width: 370px;
-  max-width: 1000px;
-  background-color: #ffffff;
+  background-color: white;
+  border-radius: 20px;
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
   border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.07);
-  padding: 32px;
-  border: 1px solid #eef0f4;
+
 }
 
 .programTable {
