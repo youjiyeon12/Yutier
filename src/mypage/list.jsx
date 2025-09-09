@@ -12,7 +12,7 @@ function List({ data }) {
         추천 프로그램 리스트
       </h3>
       <table style={{
-        width: "900px",          
+        width: "800px",          
         tableLayout: "fixed",  
         borderCollapse: "collapse",
         textAlign: "center",

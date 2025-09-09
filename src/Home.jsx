@@ -27,7 +27,7 @@ function Home({ user, onLogout }) {
     if (user && user.id) {
       const checkUserScoreStatus = async () => {
         try {
-          const res = await fetch(`http://localhost:3001/api/tier-info?id=${user.id}`);
+          const res = await fetch(`${import.meta.env.VITE_API_URL}/api/tier-info?id=${user.id}`);
           const data = await res.json();
           setTierInfo(data); // API 응답 전체를 저장
         } catch (err) {
@@ -47,7 +47,7 @@ function Home({ user, onLogout }) {
       setLoading(true);
       try {
         const [year, semester] = [2025, 2];
-        const res = await axios.get('http://localhost:3001/api/get-recommended-programs', {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/get-recommended-programs`, {
           params: { id: user.id, year, semester }
         });
         if (res.data.success) setRecommended(res.data.data);
@@ -66,7 +66,7 @@ function Home({ user, onLogout }) {
   // '점수 입력하러 가기' 버튼 클릭 시 실행될 함수
   const handleGoToMatrix = async () => {
     try {
-      const res = await fetch(`http://localhost:3001/api/validate-matrix-url?id=${user.id}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/validate-matrix-url?id=${user.id}`);
       const data = await res.json();
       if (data.valid) {
         navigate('/matrix');
@@ -123,25 +123,17 @@ function Home({ user, onLogout }) {
             </button>
           )}
           </div>
-
+        
 
         {/* 추천 프로그램 리스트 */}
         <div className={styles.programCard}>
-          <div
-            className={styles.programContent}
-            style={{
-              minHeight: "150px",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center"
-            }}
-          >
-            {loading ? (
-              <span>추천 프로그램 리스트 로딩 중...</span>
-            ) : (
-              <List data={recommended} />
-            )}
-          </div>
+          {loading ? (
+            <div className={styles.loadingWrapper}>
+              추천 프로그램 로딩 중...
+            </div>
+          ) : (
+            <List data={recommended} />
+          )}
         </div>
       </div>
 

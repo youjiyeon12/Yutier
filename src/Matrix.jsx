@@ -119,7 +119,7 @@
       const fetchTierScores = async () => {
         if (!userId) return;
         try {
-          const res = await fetch(`http://localhost:3001/api/get-tier-scores/${userId}`);
+          const res = await fetch(`${import.meta.env.VITE_API_URL}/api/get-tier-scores/${userId}`);
           const data = await res.json();
           if (data.success && data.scores) {
             setTierScores(data.scores);
@@ -166,7 +166,7 @@
     const handleSearch = async () => {
       try {
         const res = await fetch(
-          `http://localhost:3001/api/load-matrix?id=${userId}&year=${year}&semester=${semester}`
+          `${import.meta.env.VITE_API_URL}/api/load-matrix?id=${userId}&year=${year}&semester=${semester}`
         );
         const json = await res.json();
         if (json.success) {
@@ -181,7 +181,7 @@
         alert("서버와 통신 중 오류가 발생했습니다.");
       }
       try {
-        const res = await fetch(`http://localhost:3001/api/get-tier-scores/${userId}`);
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/get-tier-scores/${userId}`);
         const data = await res.json();
         const emptyScores = { 유한인성역량: '', 기초학습역량: '', 직업기초역량: '', 직무수행역량: '', 취창업기초역량: '' };
 
@@ -226,7 +226,7 @@
       setIsSaving(true);
 
       try {
-        const res = await fetch('http://localhost:3001/api/save-matrix', {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/save-matrix`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -279,7 +279,7 @@
           }
 
           try {
-            const res = await fetch('http://localhost:3001/api/save-tier-scores', {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/save-tier-scores`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',

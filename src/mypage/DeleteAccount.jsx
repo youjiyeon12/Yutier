@@ -19,13 +19,13 @@ function DeleteAccount({ user, onLogout }) {
         if(window.confirm("정말로 탈퇴하시겠습니까? 탈퇴 후에는 계정을 복구할 수 없습니다.")){
             try{
                 // 비밀번호 확인
-                await axios.post("http://localhost:3001/api/verify-password", {
+                await axios.post(`${import.meta.env.VITE_API_URL}/api/verify-password`, {
                     id: user.id,
                     password: password,
                 });
 
                 // 서버에 탈퇴 요청
-                const response = await axios.post("http://localhost:3001/api/delete-account", {
+                const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/delete-account`, {
                     id: user.id,
                     password: password,
                 });

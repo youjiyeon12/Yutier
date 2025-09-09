@@ -26,3 +26,5 @@ dist-ssr
 # Environment variables
 .env
 /server/credentials.json
+/server/.env
+/server/node_modules

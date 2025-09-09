@@ -26,7 +26,7 @@ app.use(express.json()); // JSON 파싱 미들웨어
 const credentials = JSON.parse(fs.readFileSync('./credentials.json', 'utf-8'));
 
 // Administator 시트 URL
-const doc = new GoogleSpreadsheet('13QT8_OnNJ0FZaPkpx0_yMHz-v8ERg14lf9CXB_7bFzA'); // 구글 시트 ID
+const doc = new GoogleSpreadsheet(process.env.VITE_GOOGLE_SHEET_ID); // 구글 시트 ID
 await doc.useServiceAccountAuth(credentials); // 서비스 계정으로 인증
 await doc.loadInfo(); // 시트 정보 로딩
 const sheet = doc.sheetsByTitle['users']; // users 시트 연결
@@ -754,4 +754,4 @@ app.post('/api/delete-account', async (req, res) => {
   }
 });
 
-app.listen(3001, () => console.log('서버 실행 중: http://localhost:3001'));
+app.listen(3001, () => console.log(`서버 실행 중: ${process.env.VITE_API_URL}`));

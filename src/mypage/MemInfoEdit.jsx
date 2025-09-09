@@ -21,7 +21,6 @@ function MemInfoEdit({ user, setUser }) {
   // 비밀번호 유효성 
   const pwRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!?/@#$%^])[a-zA-Z\d!?/@#$%^]{8,20}$/;
 
-
   // 확인 버튼 클릭 시
   const handleSave = async () => {
     // 아무것도 변경되지 않았을 경우
@@ -48,7 +47,7 @@ function MemInfoEdit({ user, setUser }) {
 
     // 사용자 정보 업데이트 요청
     try {
-      const res = await fetch("http://localhost:3001/api/update-user", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/update-user`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -90,7 +89,7 @@ function MemInfoEdit({ user, setUser }) {
 
   useEffect(() => {
     // 학부/전공 목록 불러오기
-    fetch("http://localhost:3001/api/major-list")
+    fetch(`${import.meta.env.VITE_API_URL}/api/major-list`)
       .then((res) => res.json())
       .then((data) => {
         setDepartments(Object.keys(data)); // 학부 목록 설정
@@ -109,7 +108,7 @@ function MemInfoEdit({ user, setUser }) {
     }
 
     // 선택된 학부에 해당하는 전공 목록 요청
-    fetch("http://localhost:3001/api/major-list")
+    fetch(`${import.meta.env.VITE_API_URL}/api/major-list`)
       .then((res) => res.json())
       .then((data) => {
         setMajors(data[selectedDept] || []); // 전공 목록 세팅

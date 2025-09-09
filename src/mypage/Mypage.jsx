@@ -36,7 +36,7 @@ function Mypage({ user, setUser, onLogout }) {
     // 매트릭스 페이지로 이동
     if (menuKey === "매트릭스 관리") {
       try {
-        const res = await fetch(`http://localhost:3001/api/validate-matrix-url?id=${user.id}`);
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/validate-matrix-url?id=${user.id}`);
         const data = await res.json();
 
         if (data.valid) {
@@ -66,7 +66,7 @@ function Mypage({ user, setUser, onLogout }) {
       const fetchTierInfo = async () => {
         try {
           // 서버에 티어 정보를 요청합
-          const res = await fetch(`http://localhost:3001/api/tier-info?id=${user.id}`);
+          const res = await fetch(`${import.meta.env.VITE_API_URL}/api/tier-info?id=${user.id}`);
           const data = await res.json();
           setTierInfo(data); // 받아온 데이터를 tierInfo state에 저장
         } catch (err) {
@@ -100,7 +100,7 @@ function Mypage({ user, setUser, onLogout }) {
       const [year, semester] = [2025, 2]; // 호출할 시트의 연도와 학기
 
       try {
-        const response = await axios.get('http://localhost:3001/api/get-recommended-programs', {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/get-recommended-programs`, {
           params: { id: user.id, year: year, semester: semester }
         });
 
@@ -126,13 +126,6 @@ function Mypage({ user, setUser, onLogout }) {
     }
   }, [user, selectedMenuKey]);
 
-  // 아이디 마스킹 함수
-    const maskId = (id) => {
-      if (!id) return "yutierid"; // 아이디가 없으면 기본값 반환
-      if (id.length <= 3) return id; // 3글자 이하면 마스킹하지 않음
-      return id.substring(0, 3) + '*'.repeat(id.length - 3);
-    };
-
   // 왼쪽 사이드바에 표시될 목록
   const navigationItems = [
     { key: "profile", label: "회원 정보", active: true },
@@ -144,7 +137,7 @@ function Mypage({ user, setUser, onLogout }) {
   // 회원 상세 정보 - user 객체에서 값 가져옴 (없으면 기본값)
   const memberDetails = [
     { label: "이름", value: user?.name || "유티어" },
-    { label: "아이디", value: maskId(user?.id) },
+    { label: "아이디", value: user?.id || "yutierid" },
     { label: "학부/전공", value: user?.department && user?.major ? `${user.department} ${user.major}` : (user?.department || "유한전공") },
     { label: "학번", value: user?.studentId || "123456789" },
   ];

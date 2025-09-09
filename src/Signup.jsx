@@ -28,7 +28,7 @@ function Signup({ onRegister }) {
   const studentIDRef = useRef(null);
 
   useEffect(() => {
-    fetch('http://localhost:3001/api/major-list')
+    fetch(`${import.meta.env.VITE_API_URL}/api/major-list`)
       .then(res => res.json())
       .then(data => setMajorData(data));
   }, []);
@@ -105,7 +105,7 @@ function Signup({ onRegister }) {
     if (!validateForm()) return;
 
     try {
-      const res = await fetch('http://localhost:3001/signup', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -136,7 +136,7 @@ function Signup({ onRegister }) {
   // 아이디 확인
   const checkSignupId = async () => {
     try {
-      const res = await fetch('http://localhost:3001/check-id', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/check-id`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id }),
@@ -160,7 +160,7 @@ function Signup({ onRegister }) {
   // 학번 확인
   const checkStudentID = async () => {
   try {
-    const res = await fetch('http://localhost:3001/check-studentID', {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/check-studentID`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ studentID }),
