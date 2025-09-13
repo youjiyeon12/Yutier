@@ -285,3 +285,17 @@ footer {
   color: #223a7d;
 }
 
+.competencyName {
+  cursor: pointer;
+  text-decoration: underline; 
+  transition: color 0.15s, font-weight 0.15s; 
+}
+
+.competencyName:hover {
+  color: #007bff; 
+}
+
+.activeCompetency {
+  color: #007bff; 
+  font-weight: bold; 
+}
