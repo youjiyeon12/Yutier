@@ -1,0 +1,61 @@
+.listContainer {
+  width: 100%;
+}
+
+.title {
+  text-align: left;
+  margin-bottom: 20px;
+  padding-left: 0px;
+  font-size: 20px;
+  font-family: 'Pretendard-Bold', sans-serif;
+  color: var(--text-primary-color);
+}
+
+.programTable {
+  width: 100%;       
+  table-layout: fixed;  
+  border-collapse: collapse;
+  text-align: center;
+  margin: 0 auto;
+  font-size: 15px;
+  background-color: var(--content-bg-color);
+}
+
+/* 테이블 컬럼 너비 설정 */
+.colCategory { width: 20%; }
+.colName { width: 60%; }
+.colScore { width: 20%; }
+
+.programTable th,
+.programTable td {
+  border: 1px solid var(--border-color);
+  padding: 12px 8px;
+  word-wrap: break-word;
+}
+
+.programTable th {
+  background-color: #e9ecef;
+  font-family: 'Pretendard-SemiBold', sans-serif;
+  color: #495057;
+}
+
+/* 다크 모드일 때의 테이블 헤더 스타일 */
+:global([data-theme='dark']) .programTable th {
+    background-color: #343a40;
+    color: var(--text-primary-color);
+}
+
+.noDataContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  min-height: 150px;
+  color: var(--text-secondary-color);
+}
+
+.noDataContainer p {
+  margin: 4px 0;
+}
+

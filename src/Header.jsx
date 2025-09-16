@@ -2,9 +2,11 @@
 //import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './header.module.css';
+import { useTheme } from './ThemeContext';
 
 function Header({ user, onLogout }){
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
   const handleLogout = () => {
     onLogout();
@@ -32,6 +34,10 @@ function Header({ user, onLogout }){
           <button className={styles.btn2} onClick={() => navigate('/signup')}>회원가입</button>
           </>
         )}
+        {/* [추가] 다크 모드 토글 버튼 */}
+        <button onClick={toggleTheme} className={styles.themeToggleButton}>
+          {theme === 'light' ? '⏾' : '☀︎'}
+        </button>
       </div>
     </div>
     );

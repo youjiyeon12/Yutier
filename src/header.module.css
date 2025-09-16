@@ -2,16 +2,15 @@
     position: sticky;
     top: 0;
     align-items: center;
-    background-color: #ffffff;
-    border-bottom-style: solid;
-    border-bottom-width: 1px;
-    border-color: #d9d9d9;
+    background-color: var(--content-bg-color);
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     height: 60px;
     justify-content: space-between;
     padding: 10px 90px;
     min-width: 1000px;
-    z-index: 1; /*맨 앞으로*/
+    z-index: 1;
+    transition: background-color 0.3s, border-color 0.3s;
 }
 
 .symbol {
@@ -26,13 +25,13 @@
     display: flex;
     align-items: center;
     gap: 30px;
-    color: #393F59;
+    color: var(--text-primary-color);
     cursor: pointer;
 }
 
 .btn1 {
     font-size: 16px;
-    color: #FFFFFF;
+    color: var(--accent-text-color);
     display: flex;
     height: 40px;
     padding: 12px 20px;
@@ -41,10 +40,11 @@
     gap: 10px;
     border-radius: 8px;
     border: 0px;
-    background: #393F59;
+    background: var(--accent-color);
     line-height: 24px;
     letter-spacing: 0.5px;
     cursor: pointer;
+    transition: background-color 0.3s;
 }
 
 .btn2 {
@@ -56,9 +56,20 @@
     align-items: center;
     gap: 10px;
     border-radius: 8px;
-    border: 1.5px solid #393F59;
-    background: #FFF;
+    border: 1.5px solid var(--accent-color);
+    background: var(--content-bg-color);
+    color: var(--accent-color);
     line-height: 24px;
     letter-spacing: 0.5px;
     cursor: pointer;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+.themeToggleButton {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
 }

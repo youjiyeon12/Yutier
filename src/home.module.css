@@ -2,18 +2,19 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #fdfdfd;
+  background-color: var(--background-color);
+  transition: background-color 0.2s, color 0.2s;
 }
 
 .bannerCard {
   width: 100%;
   height: 150px;
-  background-color: #ffffff;
-  border: 1px solid #eef0f4;
+  background-color: var(--content-bg-color);
+  border: 1px solid var(--border-color);
   display: flex;
   justify-content: center;
   align-items: center;
-  color: #393f59;
+  color: var(--text-primary-color);
   margin-top: 20px;
   margin-bottom: none;
 }
@@ -26,6 +27,7 @@
   gap: 20px;
   justify-content: center;
   margin: 0 auto;
+  flex-grow: 1; /* 푸터 하단 고정을 위해 추가 */
 }
 
 .programContent {
@@ -35,9 +37,10 @@
 .programCard {
   flex: 1;
   min-width: none;
-  background-color: white;
+  background-color: var(--content-bg-color);
   border-radius: 10px;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 5px 0 var(--shadow-color);
+  border: 1px solid var(--border-color);
 }
 
 .programTable {
@@ -48,9 +51,9 @@
 }
 
 .profileCard {
-  background-color: #ffffff;
+  background-color: var(--content-bg-color);
   border-radius: 10px;
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.07);
+  box-shadow: 0 0 10px 0 var(--shadow-color);
   padding: 68px 60px;
   display: flex;
   flex-direction: column;
@@ -58,7 +61,7 @@
   gap: 24px;
   width: 100%;
   max-width: 230px;
-  border: 1px solid #eef0f4;
+  border: 1px solid var(--border-color);
 }
 
 .tierIcon {
@@ -84,34 +87,33 @@
 
 .userMajor {
   font-size: 16px;
-  color: #555c7a;
+  color: var(--text-secondary-color);
   margin: 0;
   font-family: 'Pretendard-Regular', sans-serif;
 }
 
 .userName {
   font-size: 20px;
-  color: #393f59;
+  color: var(--text-primary-color);
   margin: 4px 0 0 0;
   font-family: 'Pretendard-SemiBold', sans-serif;
 }
 
 .scoreLink {
   font-size: 16px;
-  color: #393f59;
+  color: var(--text-primary-color);
   text-decoration: none;
   border: none;
   background: none;
   padding: 7px 10px;
-  border-bottom: 1.5px solid #393f59;
+  border-bottom: 1.5px solid var(--text-primary-color);
   cursor: pointer;
   font-family: 'Pretendard-Regular', sans-serif;
-  transition: color 0.2s, border-color 0.2s;
+  transition: color 0.2s, border-color 0.2s, filter 0.2s;
 }
 
 .scoreLink:hover {
-  color: #5a638a;
-  border-color: #5a638a;
+  filter: brightness(0.8);
 }
 
 .loadingWrapper {
@@ -120,7 +122,7 @@
   align-items: center;     
   height: 120px;           
   font-size: 16px;
-  color: #393f59;
+  color: var(--text-primary-color);
 }
 
 /* 바로가기 */
@@ -136,15 +138,15 @@
   flex: 0 0 auto;
   width: 450px;                     
   height: 50px;
-  background-color: #ffffff;
+  background-color: var(--content-bg-color);
   border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.07);
-  border: 1px solid #eef0f4;
+  box-shadow: 0 0 10px var(--shadow-color);
+  border: 1px solid var(--border-color);
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 16px;
-  color: #393f59;
+  color: var(--text-primary-color);
   cursor: pointer;
   transition: transform 0.2s;
   margin-bottom: 20px
@@ -153,4 +155,3 @@
 .linkCard:hover {
   transform: translateY(-5px);
 }
-

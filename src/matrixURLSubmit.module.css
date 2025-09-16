@@ -4,16 +4,19 @@
   align-items: center;
   padding: 40px 16px;
   min-height: 80vh;
-  background-color: #f5f5f5;
+  background-color: var(--background-color);
+  transition: background-color 0.2s;
 }
 
 .mainContent {
   width: 100%;
   max-width: 1300px;
-  background: #fff;
+  background: var(--content-bg-color);
   padding: 80px;
   border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px var(--shadow-color);
+  border: 1px solid var(--border-color);
+  transition: background-color 0.2s, border-color 0.2s;
 }
 
 .content {
@@ -21,13 +24,14 @@
   flex-direction: column;
   gap: 20px;
   font-family: 'Pretendard', sans-serif;
+  color: var(--text-primary-color);
 }
 
 /* 텍스트 설명 부분 */
 .content h2 {
   font-size: 24px;
   font-weight: bold;
-  color: #333;
+  color: var(--text-primary-color);
 }
 
 .content ol {
@@ -41,7 +45,7 @@
 }
 
 .content a {
-  color: #4f86f7;
+  color: var(--accent-color);
   text-decoration: underline;
 }
 
@@ -49,16 +53,18 @@
 .input {
   padding: 12px 16px;
   font-size: 16px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   width: 100%;
   box-sizing: border-box;
+  background-color: var(--background-color);
+  color: var(--text-primary-color);
 }
 
 .button {
   padding: 12px 16px;
-  background-color: #4f86f7;
-  color: white;
+  background-color: var(--accent-color);
+  color: var(--accent-text-color);
   border: none;
   border-radius: 8px;
   font-size: 16px;
@@ -68,7 +74,7 @@
 }
 
 .button:hover {
-  background-color: #3a6fd9;
+  filter: brightness(0.9);
 }
 
 p {

@@ -1,16 +1,16 @@
 .footer {
     align-items: center;
-    background-color: #393f59;
+    background-color: var(--accent-color);
+    color: var(--accent-text-color);
     display: flex;
     flex-direction: column;
     justify-content: center;
     padding: 30px 0px;
-    bottom: 0;
     width: 100%;
     min-height: 300px;
     margin-top: auto;
-    color: #fdfdfd;
     box-sizing: border-box;
+    transition: background-color 0.2s, color 0.2s;
 }
 
 .container {
@@ -43,7 +43,6 @@
 
 .sentence_text {
     font-size: 14px;
-    font-style: normal;
     line-height: 18px;
     letter-spacing: 0.5px;
     word-wrap: break-word;
@@ -56,7 +55,6 @@
     align-items: flex-end;
     gap: 10px;
     flex-shrink: 0;
-
 }
 
 .social_div {
@@ -77,16 +75,16 @@
     width: auto;
     height: 16px;
     cursor: pointer;
+    filter: brightness(0) invert(1); /* SVG 아이콘을 흰색으로 만듭니다 */
 }
 
 .bottom_container {
     align-items: flex-end;
     align-self: stretch;
-    border-color: #e6e6e6;
+    border-color: var(--hover-bg-color); /* 다크모드에서도 잘 보이도록 수정 */
     border-top-style: solid;
     border-top-width: 1px;
     display: flex;
-    flex: 0 0 auto;
     justify-content: space-between;
     padding: 30px 0px 0px;
     position: relative;
@@ -126,7 +124,7 @@
 }
 
 .coptlight span {
-    color: #e6e6e6;
+    color: var(--hover-bg-color); /* 다크모드에서도 잘 보이도록 수정 */
     font-size: 12px;
     letter-spacing: 0.5px;
     line-height: 15px;

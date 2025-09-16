@@ -42,7 +42,51 @@
     font-family: 'Pretendard-Regular', sans-serif;
 }
 
+/* 라이트 모드 (기본) 색상 정의 */
+:root {
+  --background-color: #fdfdfd; /* 전체 배경색 */
+  --content-bg-color: #ffffff; /* 카드 등 콘텐츠 배경색 */
+  --text-primary-color: #393F59; /* 기본 텍스트 색상 */
+  --text-secondary-color: #555c7a; /* 보조 텍스트 색상 */
+  --accent-color: #393F59; /* 포인트 색상 (버튼 등) */
+  --accent-text-color: #ffffff; /* 포인트 색상 위의 텍스트 */
+  --border-color: #eef0f4; /* 테두리 색상 */
+  --shadow-color: rgba(0, 0, 0, 0.07); /* 그림자 색상 */
+}
+
+/* 다크 모드 색상 정의 */
+[data-theme='dark'] {
+  --background-color: #1a1a1a;
+  --content-bg-color: #242424;
+  --text-primary-color: #fdfdfd;
+  --text-secondary-color: #a0a0a0;
+  --accent-color: #5865f2;
+  --accent-text-color: #ffffff;
+  --border-color: #3a3a3a;
+  --shadow-color: rgba(0, 0, 0, 0.2);
+}
+
 body {
     margin: 0;
     padding: 0;
+    background-color: var(--background-color); 
+    color: var(--text-primary-color); 
+    transition: background-color 0.3s, color 0.3s; 
+}
+
+:root {
+  /* 라이트 모드 역량별 색상 */
+  --c0-bg: #eff6ff; 
+  --c1-bg: #f0fdf4; 
+  --c2-bg: #fefce8; 
+  --c3-bg: #fef2f2; 
+  --c4-bg: #fdf2f8; 
+}
+[data-theme='dark'] {
+  /* 다크 모드 역량별 색상 (투명도 조절) */
+  --c0-bg: rgba(59, 130, 246, 0.2);
+  --c1-bg: rgba(34, 197, 94, 0.2);
+  --c2-bg: rgba(234, 179, 8, 0.2);
+  --c3-bg: rgba(239, 68, 68, 0.2);
+  --c4-bg: rgba(236, 72, 153, 0.2);
 }

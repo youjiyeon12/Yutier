@@ -14,6 +14,7 @@ import Detail2 from './Detail2';
 import Mypage from './mypage/Mypage';
 import Matrix from './Matrix';
 import MatrixURLSubmit from './MatrixURLSubmit';
+import { ThemeProvider } from './ThemeContext';
 //** route는 Home.jsx
 
 function App() {
@@ -31,65 +32,67 @@ function App() {
 
   // 주석 형식 {/* */}
   return (
-    <Router>
-      <Routes>
-        {/* 홈 화면: 로그인된 유저만 접근 가능 */}
-        <Route
-          path="/"
-          element={
-            user ? <Home user={user} onLogout={() => setUser(null)} />
-              : <Navigate to="/login" />
-          }
-        />
-        {/* 로그인 페이지: 비로그인 상태에서만 접근 가능 */}
-        <Route
-          path="/login"
-          element={
-            user ? <Navigate to="/" /> : <Login onLogin={setUser} />
-          }
-        />
-        {/* 회원가입 페이지 */}
-        <Route
-          path="/signup"
-          element={
-            user ? <Navigate to="/" /> : <Signup onRegister={setUser} />
-          }
-        />
-        {/* trust 설명 페이지 */}
-        <Route path="/detail" element={<Detail user={user} onLogout={() => setUser(null)} />} />
-        
-        {/* 이용가이드 페이지 */}
-        <Route
-          path="/guide"
-          element={<Guide user={user} onLogout={() => setUser(null)} />}
-        />
-        {/* 마이 페이지 */}
-        <Route
-          path="/mypage"
-          element={
-            user ? <Mypage user={user} setUser={setUser} onLogout={() => setUser(null)} />
-              : <Navigate to="/login" />
-          }
-        />
+    <ThemeProvider>
+      <Router>
+        <Routes>
+          {/* 홈 화면: 로그인된 유저만 접근 가능 */}
+          <Route
+            path="/"
+            element={
+              user ? <Home user={user} onLogout={() => setUser(null)} />
+                : <Navigate to="/login" />
+            }
+          />
+          {/* 로그인 페이지: 비로그인 상태에서만 접근 가능 */}
+          <Route
+            path="/login"
+            element={
+              user ? <Navigate to="/" /> : <Login onLogin={setUser} />
+            }
+          />
+          {/* 회원가입 페이지 */}
+          <Route
+            path="/signup"
+            element={
+              user ? <Navigate to="/" /> : <Signup onRegister={setUser} />
+            }
+          />
+          {/* trust 설명 페이지 */}
+          <Route path="/detail" element={<Detail user={user} onLogout={() => setUser(null)} />} />
+          
+          {/* 이용가이드 페이지 */}
+          <Route
+            path="/guide"
+            element={<Guide user={user} onLogout={() => setUser(null)} />}
+          />
+          {/* 마이 페이지 */}
+          <Route
+            path="/mypage"
+            element={
+              user ? <Mypage user={user} setUser={setUser} onLogout={() => setUser(null)} />
+                : <Navigate to="/login" />
+            }
+          />
 
-        {/* 매트릭스 페이지 */}
-        <Route
-        path="/matrix"
-        element={
-          user ? <Matrix user={user} onLogout={() => setUser(null)} />
+          {/* 매트릭스 페이지 */}
+          <Route
+          path="/matrix"
+          element={
+            user ? <Matrix user={user} onLogout={() => setUser(null)} />
+                : <Navigate to="/login" />
+            }
+          />
+
+          <Route
+          path="/matrix-url"
+          element={
+          user ? <MatrixURLSubmit user={user} onLogout={() => setUser(null)} />
               : <Navigate to="/login" />
           }
-        />
-
-        <Route
-        path="/matrix-url"
-        element={
-        user ? <MatrixURLSubmit user={user} onLogout={() => setUser(null)} />
-            : <Navigate to="/login" />
-        }
-        />
-      </Routes>
-    </Router>
+          />
+        </Routes>
+      </Router>
+    </ThemeProvider>
   );
 }
 
