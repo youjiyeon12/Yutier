@@ -224,6 +224,7 @@ function Matrix({ user, onLogout }) {
   const dataToRender = activeFilter ? matrixData.filter(row => row['핵심역량'] === activeFilter) : matrixData;
   const processedData = processDataForRender(dataToRender, openAcc);
 
+  // 핵심역량별 매트릭스 점수 입력
   function renderScoreInput() {
     const handleTierScoreChange = (e) => {
       const { name, value } = e.target;
@@ -253,6 +254,7 @@ function Matrix({ user, onLogout }) {
         }
       };
 
+    // 점수 입력란
     return (
       <div className={styles.scoreInputContainer}>
         <div className={styles.scoreTitle}>TRUST 인증 점수 총점 <span className={styles.totalScore}>{totalTierScore}</span></div>

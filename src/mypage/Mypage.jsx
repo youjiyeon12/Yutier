@@ -7,6 +7,7 @@ import styles from "./mypage.module.css";
 import MemInfoEdit from './MemInfoEdit'; // 회원 정보 수정 컴포넌트
 import { useNavigate } from 'react-router-dom';
 import List from "./List";
+import DeleteAccount from './DeleteAccount';
 import axios from 'axios'
 
 // props로 로그인한 사용자 정보 user를 받아서 화면에 표시
@@ -126,6 +127,13 @@ function Mypage({ user, setUser, onLogout }) {
     }
   }, [user, selectedMenuKey]);
 
+  // 아이디 마스킹 함수
+    const maskId = (id) => {
+      if (!id) return "yutierid"; // 아이디가 없으면 기본값 반환
+      if (id.length <= 3) return id; // 3글자 이하면 마스킹하지 않음
+      return id.substring(0, 3) + '*'.repeat(id.length - 3);
+    };
+
   // 왼쪽 사이드바에 표시될 목록
   const navigationItems = [
     { key: "profile", label: "회원 정보", active: true },
@@ -137,7 +145,7 @@ function Mypage({ user, setUser, onLogout }) {
   // 회원 상세 정보 - user 객체에서 값 가져옴 (없으면 기본값)
   const memberDetails = [
     { label: "이름", value: user?.name || "유티어" },
-    { label: "아이디", value: user?.id || "yutierid" },
+    { label: "아이디", value: maskId(user?.id) },
     { label: "학부/전공", value: user?.department && user?.major ? `${user.department} ${user.major}` : (user?.department || "유한전공") },
     { label: "학번", value: user?.studentId || "123456789" },
   ];
@@ -294,6 +302,11 @@ function Mypage({ user, setUser, onLogout }) {
           {/* 회원 정보 수정 */}
           {selectedMenuKey === "회원 정보 수정" && (
             <MemInfoEdit user={user} setUser={setUser} />
+          )}
+
+          {/* 회원 탈퇴 */}
+          {selectedMenuKey === "회원 탈퇴" && (
+            <DeleteAccount user={user} onLogout={onLogout} />
           )}
         </div>
       </div>
