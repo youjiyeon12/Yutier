@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import styles from './signup.module.css';
+import styles from './styles/signup.module.css';
+import { googleSheetsService } from '../../services/googleSheetsService';
 
 function Signup({ onRegister }) {
   const [id, setId] = useState('');
@@ -28,9 +29,9 @@ function Signup({ onRegister }) {
   const studentIDRef = useRef(null);
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/major-list`)
-      .then(res => res.json())
-      .then(data => setMajorData(data));
+    googleSheetsService.getMajorList()
+      .then(data => setMajorData(data))
+      .catch(error => console.error('학부/전공 목록 로드 실패:', error));
   }, []);
 
   const departments = Object.keys(majorData);
@@ -105,21 +106,16 @@ function Signup({ onRegister }) {
     if (!validateForm()) return;
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id,
-          password,
-          name,
-          email,
-          studentID,
-          department: selectedDept,
-          major: selectedMajor,
-        }),
+      const data = await googleSheetsService.signup({
+        id,
+        password,
+        name,
+        email,
+        studentID,
+        department: selectedDept,
+        major: selectedMajor,
       });
 
-      const data = await res.json();
       if (data.success) {
         //alert('회원가입 성공!');
         onRegister({ id, name });
@@ -136,13 +132,7 @@ function Signup({ onRegister }) {
   // 아이디 확인
   const checkSignupId = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/check-id`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
-      });
-
-      const data = await res.json();
+      const data = await googleSheetsService.checkId(id);
 
       if (data.exists) {
         alert('이미 사용 중인 아이디입니다.');
@@ -160,13 +150,7 @@ function Signup({ onRegister }) {
   // 학번 확인
   const checkStudentID = async () => {
   try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/check-studentID`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ studentID }),
-    });
-
-    const data = await res.json();
+    const data = await googleSheetsService.checkStudentID(studentID);
 
     if (data.exists) {
       alert('이미 등록된 학번입니다.');

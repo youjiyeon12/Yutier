@@ -1,8 +1,8 @@
 // 회원 탈퇴 컴포넌트
-import styles from "./mypage.module.css";
+import styles from "./styles/mypage.module.css";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { googleSheetsService } from "../../services/googleSheetsService";
 
 function DeleteAccount({ user, onLogout }) {
     const [password, setPassword] = useState(""); 
@@ -18,33 +18,20 @@ function DeleteAccount({ user, onLogout }) {
         // 사용자에게 재확인
         if(window.confirm("정말로 탈퇴하시겠습니까? 탈퇴 후에는 계정을 복구할 수 없습니다.")){
             try{
-                // 비밀번호 확인
-                await axios.post(`${import.meta.env.VITE_API_URL}/api/verify-password`, {
-                    id: user.id,
-                    password: password,
-                });
-
-                // 서버에 탈퇴 요청
-                const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/delete-account`, {
-                    id: user.id,
-                    password: password,
-                });
-
-                if(response.status === 200){
+                // googleSheetsService를 사용하여 회원 탈퇴 처리
+                const result = await googleSheetsService.deleteAccount(user.id, password);
+                
+                if(result.message && result.message.includes("성공")){
                     alert("회원 탈퇴가 완료되었습니다.");
                     onLogout(); // 로그아웃 처리
                     navigate("/"); // 메인 페이지로 이동
+                } else {
+                    alert(result.message || "탈퇴 처리 중 오류가 발생했습니다.");
                 }
             }
             catch (error){
-                // 오류 처리
-                if(error.response && error.response.status == 401){
-                    alert("비밀번호가 일치하지 않습니다. 다시 확인해주세요.");
-                }
-                else{
-                    alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-                    console.error("Delete account error:", error);
-                }
+                console.error("Delete account error:", error);
+                alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
                 setPassword(""); // 비밀번호 입력 필드 초기화
             }
         }

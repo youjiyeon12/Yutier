@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import styles from './login.module.css';
+import styles from './styles/login.module.css';
+import { googleSheetsService } from '../../services/googleSheetsService';
 
 function Login({ onLogin }) {
   const [id, setId] = useState('');
@@ -16,13 +17,7 @@ function Login({ onLogin }) {
     }
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, password }),
-      });
-
-      const data = await res.json();
+      const data = await googleSheetsService.login(id, password);
 
       if (data.success) {
         onLogin(data.user);

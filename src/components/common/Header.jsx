@@ -1,7 +1,7 @@
 // 상단 화면
 //import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import styles from './header.module.css';
+import styles from './styles/header.module.css';
 
 function Header({ user, onLogout }){
   const navigate = useNavigate();

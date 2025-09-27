@@ -18,6 +18,129 @@
   min-height: 50px;
 }
 
+/* 핵심역량 필터링 스타일 */
+.competencyFilter {
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 8px;
+}
+
+.filterTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.currentFilter {
+  font-size: 13px;
+  color: #3b82f6;
+  background: #eff6ff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #dbeafe;
+}
+
+.filterButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filterBtn {
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filterBtn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.filterBtn.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #fff;
+}
+
+.filterBtn.active:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+/* 필터링된 역량 정보 표시 */
+.filteredInfo {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.filteredTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0369a1;
+}
+
+.filteredCount {
+  font-size: 14px;
+  color: #0284c7;
+  background: #e0f2fe;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+/* 클릭 가능한 역량 텍스트 스타일 */
+.clickableCompetency {
+  cursor: pointer;
+  color: #3b82f6;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: all 0.2s ease;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.clickableCompetency:hover {
+  background: #eff6ff;
+  text-decoration-color: #3b82f6;
+  transform: translateY(-1px);
+}
+
+/* 필터 초기화 버튼 */
+.clearFilterBtn {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 12px;
+}
+
+.clearFilterBtn:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
 .filterLeft {
   display: flex;
   align-items: center;
@@ -285,17 +408,3 @@ footer {
   color: #223a7d;
 }
 
-.competencyName {
-  cursor: pointer;
-  text-decoration: underline; 
-  transition: color 0.15s, font-weight 0.15s; 
-}
-
-.competencyName:hover {
-  color: #007bff; 
-}
-
-.activeCompetency {
-  color: #007bff; 
-  font-weight: bold; 
-}

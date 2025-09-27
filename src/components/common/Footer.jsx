@@ -1,6 +1,6 @@
 // 상단 화면
 import { useNavigate } from 'react-router-dom';
-import styles from './footer.module.css';
+import styles from './styles/footer.module.css';
 
 function Footer() {
   const navigate = useNavigate();

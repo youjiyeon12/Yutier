@@ -1,12 +1,16 @@
 // 회원 정보 수정 컴포넌트
-import styles from "./mypage.module.css";
+import styles from "./styles/mypage.module.css";
 import { useState, useEffect } from "react";
+import { googleSheetsService } from "../../services/googleSheetsService";
 
 function MemInfoEdit({ user, setUser }) {
+  // 사용자 정보에 "학부 전공" 같이 합쳐진 값이 올 수 있어 분리
+  const initialDept = user?.department ? user.department.split(" ")[0] : "";
+  const initialMajorFromCombined = user?.department ? (user.department.split(" ")[1] || "") : "";
   // 현재 선택된 학부
-  const [selectedDept, setSelectedDept] = useState(user?.department || "");
+  const [selectedDept, setSelectedDept] = useState(initialDept);
   // 현재 선택된 전공 
-  const [selectedMajor, setSelectedMajor] = useState(user?.major || "");
+  const [selectedMajor, setSelectedMajor] = useState(user?.major || initialMajorFromCombined || "");
   // 전체 학부 목록
   const [departments, setDepartments] = useState([]);
   // 선택된 학부에 속한 전공 목록
@@ -24,9 +28,16 @@ function MemInfoEdit({ user, setUser }) {
   // 확인 버튼 클릭 시
   const handleSave = async () => {
     // 아무것도 변경되지 않았을 경우
+    const currentDept = user?.department ? user.department.split(" ")[0] : "";
+    const currentMajor = user?.major || (user?.department ? user.department.split(" ")[1] || "" : "");
+    
+    console.log("현재 학부:", currentDept, "선택된 학부:", selectedDept);
+    console.log("현재 전공:", currentMajor, "선택된 전공:", selectedMajor);
+    console.log("새 비밀번호:", newPassword);
+    
     if (
-      selectedDept.trim() === (user?.department || "").trim() &&
-      selectedMajor.trim() === (user?.major || "").trim() &&
+      selectedDept.trim() === currentDept.trim() &&
+      selectedMajor.trim() === currentMajor.trim() &&
       !newPassword
     ) {
       alert("변경된 내용이 없습니다.");
@@ -47,30 +58,24 @@ function MemInfoEdit({ user, setUser }) {
 
     // 사용자 정보 업데이트 요청
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/update-user`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: user.id,              // ID
-          department: selectedDept, // 선택한 학부
-          major: selectedMajor,     // 선택한 전공
-          currentPassword,          // 현재 비번
-          newPassword,              // 새 비번
-        }),
-      });
+      const updateData = {
+        department: selectedDept,
+        major: selectedMajor,
+        currentPassword,
+        newPassword: newPassword || undefined
+      };
 
-      if (!res.ok) {
-        throw new Error(`서버 오류: ${res.status}`);
-      }
+      console.log("전송할 데이터:", updateData);
+      console.log("사용자 ID:", user.id);
 
-      // 서버로부터 응답 받아 파싱
-      const data = await res.json();
+      const result = await googleSheetsService.updateUser(user.id, updateData);
+      console.log("서버 응답:", result);
 
       // 응답 결과에 따라 알림
-      if (data.success) {
+      if (result.success) {
         alert("정보가 성공적으로 수정되었습니다!");
 
-        // 변경된  정보로 업데이트
+        // 변경된 정보로 업데이트
         const updatedUser = {
           ...user,
           department: selectedDept,
@@ -78,8 +83,9 @@ function MemInfoEdit({ user, setUser }) {
         };
         setUser(updatedUser); // 상태 업데이트
         localStorage.setItem("user", JSON.stringify(updatedUser)); // 로컬스토리지도 동기화
+        console.log("사용자 정보 업데이트됨:", updatedUser);
       } else {
-        alert(data.message || "수정에 실패했습니다.");
+        alert(result.message || "수정에 실패했습니다.");
       }
     } catch (err) {
       console.error("저장 실패:", err);
@@ -88,17 +94,15 @@ function MemInfoEdit({ user, setUser }) {
   }
 
   useEffect(() => {
-    // 학부/전공 목록 불러오기
-    fetch(`${import.meta.env.VITE_API_URL}/api/major-list`)
-      .then((res) => res.json())
+    // 학부/전공 목록 불러오기 (Apps Script 경유 서비스 사용)
+    googleSheetsService
+      .getMajorList()
       .then((data) => {
-        setDepartments(Object.keys(data)); // 학부 목록 설정
-        if (user?.department) {
-          setMajors(data[user.department] || []); // 학부에 따른 전공 목록 설정
-        }
+        setDepartments(Object.keys(data || {}));
+        console.log("학부 목록 로드됨:", Object.keys(data || {}));
       })
       .catch((err) => console.error("학부/전공 불러오기 오류:", err));
-  }, [user?.department]);
+  }, []);
 
   // 선택 학부의 전공 목록 세팅
   useEffect(() => {
@@ -107,13 +111,31 @@ function MemInfoEdit({ user, setUser }) {
       return;
     }
 
-    // 선택된 학부에 해당하는 전공 목록 요청
-    fetch(`${import.meta.env.VITE_API_URL}/api/major-list`)
-      .then((res) => res.json())
+    // 선택된 학부에 해당하는 전공 목록 요청 (서비스 사용)
+    googleSheetsService
+      .getMajorList()
       .then((data) => {
-        setMajors(data[selectedDept] || []); // 전공 목록 세팅
+        const majorList = (data && data[selectedDept]) || [];
+        setMajors(majorList);
+        console.log(`${selectedDept} 학부의 전공 목록:`, majorList);
+      })
+      .catch((err) => {
+        console.error("전공 목록 불러오기 오류:", err);
+        setMajors([]);
       });
   }, [selectedDept]); // 학부 바뀔 때마다 실행
+
+  // 사용자 정보가 바뀌었을 때 선택값 동기화 (합쳐진 문자열 대비)
+  useEffect(() => {
+    const dept = user?.department ? user.department.split(" ")[0] : "";
+    const majFromCombined = user?.department ? (user.department.split(" ")[1] || "") : "";
+    setSelectedDept(dept);
+    setSelectedMajor(user?.major || majFromCombined || "");
+  }, [user]);
+
+  // 디버깅 정보
+  console.log("MemInfoEdit 렌더링 - selectedDept:", selectedDept, "selectedMajor:", selectedMajor);
+  console.log("MemInfoEdit 렌더링 - departments:", departments, "majors:", majors);
 
   return (
     <div className={styles.detailCard}>
@@ -139,6 +161,7 @@ function MemInfoEdit({ user, setUser }) {
               className={styles.select}
               value={selectedDept}
               onChange={(e) => {
+                console.log("학부 선택됨:", e.target.value);
                 setSelectedDept(e.target.value);
                 setSelectedMajor("");
               }}
@@ -150,7 +173,10 @@ function MemInfoEdit({ user, setUser }) {
             <select
               className={styles.select}
               value={selectedMajor}
-              onChange={(e) => setSelectedMajor(e.target.value)}
+              onChange={(e) => {
+                console.log("전공 선택됨:", e.target.value);
+                setSelectedMajor(e.target.value);
+              }}
               disabled={!selectedDept}
             >
               <option value="">전공</option>

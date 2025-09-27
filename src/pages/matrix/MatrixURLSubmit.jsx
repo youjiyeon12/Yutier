@@ -1,46 +1,59 @@
 // URL 제출 화면
 import { useState } from 'react';
-import Header from './Header';
-import Footer from './Footer';
-import style from './matrixURLSubmit.module.css';
+import Header from '../../components/common/Header';
+import Footer from '../../components/common/Footer';
+import style from './styles/matrixURLSubmit.module.css';
 import { useNavigate } from 'react-router-dom'
+import { googleSheetsService } from '../../services/googleSheetsService';
 
 // 조회 버튼 클릭 시 실행
 function MatrixURLSubmit({ user, onLogout }) {
+  console.log("🔍 [MatrixURLSubmit] 컴포넌트 렌더링 시작");
+  console.log("🔍 [MatrixURLSubmit] 받은 user 정보:", user);
+  console.log("🔍 [MatrixURLSubmit] user.id:", user?.id);
+  
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async () => {
+    console.log("🔍 [MatrixURLSubmit] handleSubmit 시작");
+    console.log("🔍 [MatrixURLSubmit] 입력된 URL:", url);
+    
     if (!url.trim()) {
+      console.log("❌ [MatrixURLSubmit] URL이 비어있습니다.");
       setError('URL을 입력하세요.');
       setSuccess(false);
       return;
     }
 
-    // 서버 응답
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/verify-matrix-url`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id: user.id, url }),
-      });
+    if (!user?.id) {
+      console.error("❌ [MatrixURLSubmit] user.id가 없습니다.");
+      setError('사용자 정보가 없습니다.');
+      setSuccess(false);
+      return;
+    }
 
-      const result = await response.json();
+    // Apps Script 경유 서비스 호출
+    try {
+      console.log("🔍 [MatrixURLSubmit] verifyMatrixUrl API 호출 시작");
+      const result = await googleSheetsService.verifyMatrixUrl(user.id, url);
+      console.log("🔍 [MatrixURLSubmit] verifyMatrixUrl 응답:", result);
 
       if (result.success) {
+        console.log("✅ [MatrixURLSubmit] URL 검증 성공");
         setError('');
         setSuccess(true);
         navigate('/matrix');
       } else {
+        console.error("❌ [MatrixURLSubmit] URL 검증 실패:", result.message);
         setError(result.message || '서버 오류');
         setSuccess(false);
       }
     } catch (err) {
-      setError('서버 연결 실패');
+      console.error("❌ [MatrixURLSubmit] API 호출 오류:", err);
+      setError('요청 실패');
       setSuccess(false);
     }
   };
@@ -66,9 +79,7 @@ return (
               </a>
             </li>
             <li>
-              👥 사본 시트에서 공유 ▶ 서비스 계정 이메일 추가:
-              <br />
-              <code>yuhantrust@yuhan-459709.iam.gserviceaccount.com</code>
+              👥 사본 시트는 Apps Script 웹앱이 접근 가능한 위치(스크립트 소유자 계정이 접근 가능한 드라이브)에 두세요.
             </li>
             <li>🔍 아래에 본인의 시트 URL을 붙여넣고 ‘조회’를 클릭하세요.</li>
           </ol>

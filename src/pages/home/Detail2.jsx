@@ -2,7 +2,7 @@
 //import { useState } from 'react';
 //import { useNavigate } from 'react-router-dom';
 
-import dmc from './detail.module.css';
+import dmc from './styles/detail.module.css';
 
 
 

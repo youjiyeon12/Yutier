@@ -1,11 +1,11 @@
 // 메인 화면
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from './Header';
-import Footer from './Footer';
-import styles from './home.module.css';
-import List from './mypage/List';
-import axios from 'axios';
+import Header from '../../components/common/Header';
+import Footer from '../../components/common/Footer';
+import styles from './styles/home.module.css';
+import List from '../../components/ui/List';
+import { googleSheetsService } from '../../services/googleSheetsService';
 
 function Home({ user, onLogout }) {
   const navigate = useNavigate();
@@ -27,8 +27,9 @@ function Home({ user, onLogout }) {
     if (user && user.id) {
       const checkUserScoreStatus = async () => {
         try {
-          const res = await fetch(`${import.meta.env.VITE_API_URL}/api/tier-info?id=${user.id}`);
-          const data = await res.json();
+          console.log("홈화면 - 티어 정보 조회 시작");
+          const data = await googleSheetsService.getTierInfo(user.id);
+          console.log("홈화면 - 티어 정보 응답:", data);
           setTierInfo(data); // API 응답 전체를 저장
         } catch (err) {
           console.error("점수 정보 확인 실패:", err);
@@ -41,17 +42,22 @@ function Home({ user, onLogout }) {
 
   // 추천 프로그램 가져오기
   useEffect(() => {
-    if (!user?.id || !user?.matrixUrl) return;
+    if (!user?.id) return;
 
     const fetchRecommendedPrograms = async () => {
       setLoading(true);
       try {
+        console.log("홈화면 - 추천 프로그램 조회 시작");
         const [year, semester] = [2025, 2];
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/get-recommended-programs`, {
-          params: { id: user.id, year, semester }
-        });
-        if (res.data.success) setRecommended(res.data.data);
-        else setRecommended([]);
+        const data = await googleSheetsService.getRecommendedPrograms(user.id, year, semester);
+        console.log("홈화면 - 추천 프로그램 응답:", data);
+        
+        if (data.success) {
+          setRecommended(data.data || []);
+        } else {
+          console.log("추천 프로그램 조회 실패:", data.message);
+          setRecommended([]);
+        }
       } catch (err) {
         console.error("추천 프로그램 조회 실패:", err);
         setRecommended([]);
@@ -66,8 +72,10 @@ function Home({ user, onLogout }) {
   // '점수 입력하러 가기' 버튼 클릭 시 실행될 함수
   const handleGoToMatrix = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/validate-matrix-url?id=${user.id}`);
-      const data = await res.json();
+      console.log("홈화면 - 매트릭스 URL 검증 시작");
+      const data = await googleSheetsService.validateMatrixUrl(user.id);
+      console.log("홈화면 - URL 검증 결과:", data);
+      
       if (data.valid) {
         navigate('/matrix');
       } else {
@@ -78,6 +86,12 @@ function Home({ user, onLogout }) {
       navigate('/matrix-url');
     }
   };
+
+  // 디버깅 정보
+  console.log("홈화면 렌더링 - user:", user);
+  console.log("홈화면 렌더링 - tierInfo:", tierInfo);
+  console.log("홈화면 렌더링 - recommended:", recommended);
+  console.log("홈화면 렌더링 - loading:", loading);
 
   return (
     <div className={styles.container}>
@@ -138,8 +152,15 @@ function Home({ user, onLogout }) {
           >
             {loading ? (
               <span>추천 프로그램 리스트 로딩 중...</span>
-            ) : (
+            ) : recommended && recommended.length > 0 ? (
               <List data={recommended} />
+            ) : (
+              <div style={{ textAlign: "center", color: "#666" }}>
+                <p>추천 프로그램이 없습니다.</p>
+                <p style={{ fontSize: "14px", marginTop: "10px" }}>
+                  매트릭스 URL을 등록하고 점수를 입력하면 추천 프로그램을 확인할 수 있습니다.
+                </p>
+              </div>
             )}
           </div>
         </div>

@@ -2,9 +2,9 @@
 import { useState, useEffect } from 'react';
 //import { useSearchParams } from 'react-router-dom';
 
-import Header from './Header';
-import Footer from './Footer';
-import dmc from './detail.module.css';
+import Header from '../../components/common/Header';
+import Footer from '../../components/common/Footer';
+import dmc from './styles/detail.module.css';
 import Detail2 from './Detail2';
 
 function Detail({ user, onLogout }) {

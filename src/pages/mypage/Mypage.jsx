@@ -1,18 +1,36 @@
-// 마이페이지
+/**
+ * 마이페이지 컴포넌트
+ * 사용자의 개인정보, 티어 정보, 추천 프로그램을 표시하는 메인 페이지
+ * 
+ * 주요 기능:
+ * - 사용자 정보 표시 및 수정
+ * - 티어 정보 조회 및 표시
+ * - 추천 프로그램 조회 및 표시
+ * - 매트릭스 관리 페이지로 이동
+ * 
+ * @param {Object} props - 컴포넌트 props
+ * @param {Object} props.user - 로그인한 사용자 정보
+ * @param {Function} props.setUser - 사용자 정보 업데이트 함수
+ * @param {Function} props.onLogout - 로그아웃 함수
+ */
 import { useState, useEffect } from 'react';
-//import { useSearchParams } from 'react-router-dom';
-import Header from "../Header";
-import Footer from "../Footer";
-import styles from "./mypage.module.css";
-import MemInfoEdit from './MemInfoEdit'; // 회원 정보 수정 컴포넌트
+import Header from "../../components/common/Header";
+import Footer from "../../components/common/Footer";
+import styles from "./styles/mypage.module.css";
+import MemInfoEdit from './MemInfoEdit';
+import DeleteAccount from './DeleteAccount'
 import { useNavigate } from 'react-router-dom';
-import List from "./List";
-import DeleteAccount from './DeleteAccount';
-import axios from 'axios'
+import List from "../../components/ui/list";
+import { googleSheetsService } from '../../services/googleSheetsService';
 
-// props로 로그인한 사용자 정보 user를 받아서 화면에 표시
 function Mypage({ user, setUser, onLogout }) {
-  // console.log("Mypage에서 받은 user 정보:", user);
+  // 개발 모드에서만 로깅
+  if (import.meta.env.DEV) {
+    console.log("🏠 [Mypage] 컴포넌트 렌더링 시작");
+    console.log("👤 [Mypage] 사용자 정보:", user);
+    console.log("🆔 [Mypage] 사용자 ID:", user?.id);
+    console.log("🔗 [Mypage] 매트릭스 URL:", user?.matrixUrl);
+  }
 
   const navigate = useNavigate();
 
@@ -37,8 +55,7 @@ function Mypage({ user, setUser, onLogout }) {
     // 매트릭스 페이지로 이동
     if (menuKey === "매트릭스 관리") {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/validate-matrix-url?id=${user.id}`);
-        const data = await res.json();
+        const data = await googleSheetsService.validateMatrixUrl(user.id);
 
         if (data.valid) {
           navigate('/matrix'); // URL이 있으면 matrix로
@@ -62,16 +79,22 @@ function Mypage({ user, setUser, onLogout }) {
 
   // 서버에서 티어 정보를 가져오는 useEffect
   useEffect(() => {
+    console.log("🔍 [Mypage] 티어 정보 useEffect 실행");
+    console.log("🔍 [Mypage] user 존재 여부:", !!user);
+    console.log("🔍 [Mypage] user.id 존재 여부:", !!user?.id);
+    
     // 로그인한 사용자 정보(user.id)가 있을 때만 API를 호출
     if (user && user.id) {
+      console.log("🔍 [Mypage] 티어 정보 API 호출 시작");
       const fetchTierInfo = async () => {
         try {
+          console.log("🔍 [Mypage] getTierInfo 호출 중...");
           // 서버에 티어 정보를 요청합
-          const res = await fetch(`${import.meta.env.VITE_API_URL}/api/tier-info?id=${user.id}`);
-          const data = await res.json();
+          const data = await googleSheetsService.getTierInfo(user.id);
+          console.log("🔍 [Mypage] getTierInfo 응답:", data);
           setTierInfo(data); // 받아온 데이터를 tierInfo state에 저장
         } catch (err) {
-          console.error("티어 정보 로딩 실패:", err);
+          console.error("❌ [Mypage] 티어 정보 로딩 실패:", err);
           // 기본값
           setTierInfo({
             currentTier: 'Unranked',
@@ -83,46 +106,119 @@ function Mypage({ user, setUser, onLogout }) {
       };
 
       fetchTierInfo();
+    } else {
+      console.log("⚠️ [Mypage] user 또는 user.id가 없어서 티어 정보를 가져오지 않습니다.");
     }
   }, [user]);
 
 
 
+
+  /**
+   * 추천 프로그램 조회 useEffect
+   * 회원 정보 메뉴가 선택되었을 때만 추천 프로그램을 조회
+   */
   useEffect(() => {
+    if (import.meta.env.DEV) {
+      console.log("🎯 [Mypage] 추천 프로그램 useEffect 실행");
+      console.log("📋 [Mypage] 선택된 메뉴:", selectedMenuKey);
+      console.log("👤 [Mypage] 사용자 ID:", user?.id);
+      console.log("🔗 [Mypage] 매트릭스 URL:", user?.matrixUrl);
+    }
+    
+    /**
+     * 추천 프로그램 조회 함수
+     * 1. 사용자 정보 확인
+     * 2. 매트릭스 URL 확인 (없으면 서버에서 조회)
+     * 3. 추천 프로그램 API 호출
+     */
     const fetchRecommendedPrograms = async () => {
-      // 사용자 정보가 없거나 매트릭스 URL이 없으면 API 호출 중단
-      if (!user?.id || !user?.matrixUrl) {
-        console.log('추천 프로그램을 불러오지 못했습니다.');
-        setRecommended([]); // 추천 프로그램 목록을 비움
+      // 1. 사용자 정보 확인
+      if (!user?.id) {
+        if (import.meta.env.DEV) {
+          console.log("⚠️ [Mypage] 사용자 ID가 없어서 추천 프로그램을 불러오지 못했습니다.");
+        }
+        setRecommended([]);
         return;
       }
 
-      setLoading(true); // 로딩 시작
-      const [year, semester] = [2025, 2]; // 호출할 시트의 연도와 학기
+      // 2. 매트릭스 URL 확인 및 조회
+      let currentUser = user;
+      
+      if (!user.matrixUrl || user.matrixUrl === '') {
+        if (import.meta.env.DEV) {
+          console.log("🔍 [Mypage] 매트릭스 URL이 없어서 서버에서 조회");
+        }
+        
+        try {
+          const userData = await googleSheetsService.getUserMatrixUrl(user.id);
+          if (userData.success && userData.matrixUrl) {
+            currentUser = { ...user, matrixUrl: userData.matrixUrl };
+            if (import.meta.env.DEV) {
+              console.log("✅ [Mypage] 매트릭스 URL 조회 성공:", currentUser.matrixUrl);
+            }
+            // 사용자 정보 업데이트
+            if (setUser) {
+              setUser(currentUser);
+            }
+          } else {
+            if (import.meta.env.DEV) {
+              console.log("⚠️ [Mypage] 매트릭스 URL을 찾을 수 없습니다.");
+            }
+            setRecommended([]);
+            return;
+          }
+        } catch (error) {
+          console.error("❌ [Mypage] 매트릭스 URL 조회 실패:", error);
+          setRecommended([]);
+          return;
+        }
+      }
+
+      // 3. 추천 프로그램 API 호출
+      if (import.meta.env.DEV) {
+        console.log("🚀 [Mypage] 추천 프로그램 API 호출 시작");
+      }
+      
+      setLoading(true);
+      const [year, semester] = [2025, 2]; // 현재 연도/학기
 
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/get-recommended-programs`, {
-          params: { id: user.id, year: year, semester: semester }
-        });
+        const data = await googleSheetsService.getRecommendedPrograms(user.id, year, semester);
 
-        if (response.data.success) {
-          setRecommended(response.data.data);
+        if (data.success) {
+          if (import.meta.env.DEV) {
+            console.log("✅ [Mypage] 추천 프로그램 조회 성공");
+            console.log("📊 [Mypage] 추천된 프로그램 수:", data.data?.length || 0);
+          }
+          setRecommended(data.data || []);
         } else {
-          console.error("추천 프로그램 조회 실패:", response.data.message);
+          if (import.meta.env.DEV) {
+            console.log("⚠️ [Mypage] 추천 프로그램 조회 실패:", data.message);
+          }
           setRecommended([]);
         }
       } catch (err) {
-        console.error("API 호출 오류:", err);
+        console.error("❌ [Mypage] API 호출 오류:", err);
         setRecommended([]);
       } finally {
-        setLoading(false); // 로딩 종료
+        setLoading(false);
+        if (import.meta.env.DEV) {
+          console.log("🏁 [Mypage] 추천 프로그램 로딩 완료");
+        }
       }
     };
 
-    // 회원 정보 메뉴만 추천 프로그램 목록 호출 ( 과도한 API 호출 방지 )
+    // 회원 정보 메뉴만 추천 프로그램 조회 (과도한 API 호출 방지)
     if (selectedMenuKey === "회원 정보") {
+      if (import.meta.env.DEV) {
+        console.log("📋 [Mypage] 회원 정보 메뉴 선택됨, 추천 프로그램 호출");
+      }
       fetchRecommendedPrograms();
     } else {
+      if (import.meta.env.DEV) {
+        console.log("📋 [Mypage] 다른 메뉴 선택됨, 추천 프로그램 목록 비움");
+      }
       setRecommended([]); // 다른 메뉴 선택 시 추천 목록을 비움
     }
   }, [user, selectedMenuKey]);
@@ -149,6 +245,12 @@ function Mypage({ user, setUser, onLogout }) {
     { label: "학부/전공", value: user?.department && user?.major ? `${user.department} ${user.major}` : (user?.department || "유한전공") },
     { label: "학번", value: user?.studentId || "123456789" },
   ];
+
+  console.log("🔍 [Mypage] 현재 상태:");
+  console.log("🔍 [Mypage] tierInfo:", tierInfo);
+  console.log("🔍 [Mypage] recommended:", recommended);
+  console.log("🔍 [Mypage] loading:", loading);
+  console.log("🔍 [Mypage] selectedMenuKey:", selectedMenuKey);
 
   const tierImageMap = {
     Bronze: '/tier1.png',
@@ -228,13 +330,13 @@ function Mypage({ user, setUser, onLogout }) {
                         </div>
                       </div>
                       <div className={styles.nextGradeBox}>
-                        {/* 1위이면 축하 메시지 표시 */}
+                        {/* 1등이면 축하 메시지 표시 */}
                         {tierInfo.isRankOne ? (
                           <div className={styles.rankOneMessage}>
-                            🥳 전체 1위입니다! 🥳<br />🎉 축하합니다! 🎉
+                            🥳 전체 1등입니다! 🥳<br />🎉 축하합니다! 🎉
                           </div>
-                          // 언랭크일 경우
                         ) : tierInfo.currentTier === 'Unranked' ? (
+                          // 언랭크일 경우 - 자격 조건 안내
                           <div className={styles.unrankedGoal}>
                             <div className={styles.nextGradeText}>
                               다음 등급인 <span className={styles.gradeLabel}>Bronze</span>까지
@@ -244,21 +346,35 @@ function Mypage({ user, setUser, onLogout }) {
                             </div>
                           </div>
                         ) : (
-                          // 1등이 아닐 경우, 다음 목표(등급 또는 1등)와 필요 점수 표시
+                          // 자격이 있는 경우 - 다음 티어 커트라인 점수 표시
                           (() => {
-                            const scoreNeeded = Math.max(0, tierInfo.scoreForNextTier - tierInfo.currentScore);
-                            const displayScore = scoreNeeded % 1 === 0 ? scoreNeeded : scoreNeeded.toFixed(1);
-                            return (
-                              <>
-                                <div className={styles.nextGradeText}>
-                                  {tierInfo.nextTier === '1위' ? '전체 ' : '다음 등급인 '}
-                                  <span className={styles.gradeLabel}>{tierInfo.nextTier}</span>까지
-                                </div>
-                                <div className={styles.score}>
-                                  {displayScore}점 필요
-                                </div>
-                              </>
-                            );
+                            // 다음 티어가 1위인 경우와 다른 티어인 경우를 구분
+                            if (tierInfo.nextTier === '1위') {
+                              return (
+                                <>
+                                  <div className={styles.nextGradeText}>
+                                    전체 <span className={styles.gradeLabel}>1위</span>까지
+                                  </div>
+                                  <div className={styles.score}>
+                                    {tierInfo.scoreForNextTier}점 필요
+                                  </div>
+                                </>
+                              );
+                            } else {
+                              // 다른 티어로의 상승
+                              const scoreNeeded = Math.max(0, tierInfo.scoreForNextTier - tierInfo.currentScore);
+                              const displayScore = scoreNeeded % 1 === 0 ? scoreNeeded : scoreNeeded.toFixed(1);
+                              return (
+                                <>
+                                  <div className={styles.nextGradeText}>
+                                    다음 등급인 <span className={styles.gradeLabel}>{tierInfo.nextTier}</span>까지
+                                  </div>
+                                  <div className={styles.score}>
+                                    {displayScore}점 필요
+                                  </div>
+                                </>
+                              );
+                            }
                           })()
                         )}
                       </div>
@@ -275,6 +391,7 @@ function Mypage({ user, setUser, onLogout }) {
                       </div>
                     ))}
                   </div>
+                  
                 </div>
               </div>
 

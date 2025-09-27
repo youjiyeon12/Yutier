@@ -3,17 +3,17 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 // Navigate = redirect 느낌 / Route = 특정 URL 경로에 대해 어떤 컴포넌트 보여줄지
 import { useEffect, useState } from 'react';
 // 파일 import
-import Login from './Login';
-import Signup from './Signup';
-import Home from './Home';
-import Detail from './Detail';
-import Footer from './Footer';
-import Guide from './Guide';
-import Header from './Header';
-import Detail2 from './Detail2';
-import Mypage from './mypage/Mypage';
-import Matrix from './Matrix';
-import MatrixURLSubmit from './MatrixURLSubmit';
+import Login from './pages/auth/Login';
+import Signup from './pages/auth/Signup';
+import Home from './pages/home/Home';
+import Detail from './pages/home/Detail';
+import Footer from './components/common/Footer';
+import Guide from './pages/home/Guide';
+import Header from './components/common/Header';
+import Detail2 from './pages/home/Detail2';
+import Mypage from './pages/mypage/Mypage';
+import Matrix from './pages/matrix/Matrix';
+import MatrixURLSubmit from './pages/matrix/MatrixURLSubmit';
 //** route는 Home.jsx
 
 function App() {
