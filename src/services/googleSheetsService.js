@@ -220,7 +220,7 @@ export const googleSheetsService = {
 
   // 매트릭스 데이터 저장 (간소화된 버전)
   // 입력: id, updates [{ programName, myScore?, detailName?, isCompleted? }] → 반환: { success: boolean, message: string }
-  async saveMatrix(id, updates) {
+  async saveMatrix(id, updates, year, semester) {
     console.log(`💾 [saveMatrix] 매트릭스 저장 시작, id:`, id, "updates:", updates);
     
     // URL 길이 제한을 피하기 위해 데이터를 작은 청크로 나누어 전송
@@ -235,9 +235,9 @@ export const googleSheetsService = {
     
     try {
       // 각 청크를 순차적으로 처리
-      for (let i = 0; i < chunks.length; i++) {
+      for (let i = 0; i < chunks  .length; i++) {
         console.log(`💾 [saveMatrix] 청크 ${i + 1}/${chunks.length} 처리 중...`);
-        const result = await callAppsScriptAPI('saveMatrix', { id, updates: chunks[i] });
+        const result = await callAppsScriptAPI('saveMatrix', { id, updates: chunks[i], year, semester });
         
         if (!result.success) {
           console.error(`❌ [saveMatrix] 청크 ${i + 1} 저장 실패:`, result.message);

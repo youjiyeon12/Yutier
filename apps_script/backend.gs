@@ -16,54 +16,86 @@ const SHEET_NAMES = {
 function doGet(e) {
   try {
     const { action, ...data } = e.parameter || {};
-    console.log('=== API 호출 시작 ===');
+    console.log('=== API 호출 시작 (GET) ===');
     console.log('요청된 액션:', action);
     console.log('전체 파라미터:', e.parameter);
     console.log('현재 시간:', new Date().toISOString());
-    console.log('=== 강제 업데이트 테스트 ===');
     
-    switch (action) {
-      case 'login':
-        return handleLogin(data);
-      case 'signup':
-        return handleSignup(data);
-      case 'checkId':
-        return handleCheckId(data);
-      case 'checkStudentID':
-        return handleCheckStudentID(data);
-      case 'getMajorList':
-        return handleGetMajorList();
-      case 'updateUser':
-        return handleUpdateUser(data);
-      case 'verifyMatrixUrl':
-        return handleVerifyMatrixUrl(data);
-      case 'validateMatrixUrl':
-        return handleValidateMatrixUrl(data);
+    return routeRequest(action, data);
+  } catch (err) {
+    return json(500, { success: false, message: 'Server error', detail: String(err) });
+  }
+}
+
+// POST 요청 처리: JSON 데이터를 받아서 처리합니다.
+function doPost(e) {
+  try {
+    console.log('=== API 호출 시작 (POST) ===');
+    console.log('POST 데이터:', e.postData);
+    console.log('현재 시간:', new Date().toISOString());
+    
+    let data = {};
+    if (e.postData && e.postData.contents) {
+      try {
+        data = JSON.parse(e.postData.contents);
+      } catch (parseError) {
+        console.error('JSON 파싱 오류:', parseError);
+        return json(200, { success: false, message: 'JSON 파싱 오류: ' + String(parseError) });
+      }
+    }
+    
+    const { action, ...requestData } = data;
+    console.log('요청된 액션:', action);
+    console.log('요청 데이터:', requestData);
+    
+    return routeRequest(action, requestData);
+  } catch (error) {
+    console.error('POST API 처리 중 오류:', error);
+    return json(200, { success: false, message: '서버 오류: ' + String(error) });
+  }
+}
+
+// 공통 라우팅 함수
+function routeRequest(action, data) {
+  switch (action) {
+    case 'login':
+      return handleLogin(data);
+    case 'signup':
+      return handleSignup(data);
+    case 'checkId':
+      return handleCheckId(data);
+    case 'checkStudentID':
+      return handleCheckStudentID(data);
+    case 'getMajorList':
+      return handleGetMajorList();
+    case 'updateUser':
+      return handleUpdateUser(data);
+    case 'verifyMatrixUrl':
+      return handleVerifyMatrixUrl(data);
+    case 'validateMatrixUrl':
+      return handleValidateMatrixUrl(data);
     case 'getMatrix':
       return handleGetMatrix(data);
     case 'saveMatrix':
       return handleSaveMatrix(data);
-      case 'saveTierScores':
-        return handleSaveTierScores(data);
-      case 'getTierScores':
-        return handleGetTierScores(data);
-      case 'getTierInfo':
-        return handleGetTierInfo(data);
-      case 'getRecommendedPrograms':
-        return handleGetRecommendedPrograms(data);
-      case 'getUserMatrixUrl':
-        return handleGetUserMatrixUrl(data);
-      case 'verifyPassword':
-        return handleVerifyPassword(data);
-      case 'deleteAccount':
-        return handleDeleteAccount(data);
-      case 'recalculateAllTiers':
-        return recalculateAllTiers();
-      default:
-        return json(400, { success: false, message: 'Unknown action' });
-    }
-  } catch (err) {
-    return json(500, { success: false, message: 'Server error', detail: String(err) });
+    case 'saveTierScores':
+      return handleSaveTierScores(data);
+    case 'getTierScores':
+      return handleGetTierScores(data);
+    case 'getTierInfo':
+      return handleGetTierInfo(data);
+    case 'getRecommendedPrograms':
+      return handleGetRecommendedPrograms(data);
+    case 'getUserMatrixUrl':
+      return handleGetUserMatrixUrl(data);
+    case 'verifyPassword':
+      return handleVerifyPassword(data);
+    case 'deleteAccount':
+      return handleDeleteAccount(data);
+    case 'recalculateAllTiers':
+      return recalculateAllTiers();
+    default:
+      return json(400, { success: false, message: 'Unknown action' });
   }
 }
 
@@ -299,7 +331,7 @@ function handleVerifyMatrixUrl(data) {
   if (!match) {
     return json(200, { success: false, message: '잘못된 URL 형식입니다.' });
   }
-
+  
   const user = findUserById(id);
   if (!user) {
     return json(200, { success: false, message: '사용자를 찾을 수 없습니다.' });
@@ -319,7 +351,7 @@ function handleVerifyMatrixUrl(data) {
   return json(200, { success: true, message: 'URL이 저장되었습니다.' });
 }
 
-// 매트릭스 URL 유효성 검사(**)
+// 매트릭스 URL 유효성 검사
 function handleValidateMatrixUrl(data) {
   const { id } = data;
   const user = findUserById(id);
@@ -328,32 +360,12 @@ function handleValidateMatrixUrl(data) {
     return json(200, { valid: false, message: '매트릭스 URL이 등록되어 있지 않습니다.' });
   }
   
-    try {
-    const match = user.url.match(/\/d\/([a-zA-Z0-9-_]+)/);
-    if (!match) {
-      return json(200, { valid: false, message: '유효한 구글 시트 URL 형식이 아닙니다.' });
-    }
-    const fileId = match[1];
-
-    const file = DriveApp.getFileById(fileId);
-
-    // 휴지통에 있는지 확인
-    if (file.isTrashed()) {
-      return json(200, {
-        valid: false,
-        message: '해당 시트가 휴지통에 있어 접근할 수 없습니다.'
-      });
-    }
-    
-    return json(200, { valid: true });
-
-  } catch (e) {
-    console.error(`[handleValidateMatrixUrl] 파일 상태 확인 불가 (ID: ${id}): ${e.message}`);
-    return json(200, {
-      valid: false,
-      message: '시트를 찾을 수 없거나 접근 권한이 없습니다.'
-    });
+  const match = user.url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if (!match) {
+    return json(200, { valid: false, message: 'URL 형식이 잘못되었습니다.' });
   }
+  
+  return json(200, { valid: true });
 }
 
 // 사용자의 URL에서 스프레드시트 ID 추출
@@ -413,7 +425,21 @@ function handleGetMatrix(data) {
 // 매트릭스 데이터 저장: 프로그램별 점수와 이수 여부 저장
 // 입력: updates 배열 [{ programName, myScore?, detailName?, isCompleted? }]
 function handleSaveMatrix(data) {
-  const { id, updates } = data;
+  const { id, updates, year, semester } = data;
+  
+  // updates가 JSON 문자열인 경우 파싱
+  let parsedUpdates = updates;
+  if (typeof updates === 'string') {
+    try {
+      parsedUpdates = JSON.parse(updates);
+    } catch (e) {
+      console.error('updates 파싱 오류:', e);
+      return json(200, { success: false, message: '데이터 파싱 오류가 발생했습니다.' });
+    }
+  }
+  
+  console.log('파싱된 updates:', parsedUpdates);
+  
   const user = findUserById(id);
   if (!user || !user.url) {
     return json(200, { success: false, message: '시트 URL 미등록' });
@@ -422,13 +448,23 @@ function handleSaveMatrix(data) {
   if (!spreadsheetId) {
     return json(200, { success: false, message: 'URL에서 스프레드시트 ID를 추출할 수 없습니다.' });
   }
-  if (!updates || !updates.length) {
+  if (!parsedUpdates || !parsedUpdates.length) {
     return json(200, { success: false, message: '업데이트할 내용이 없습니다.' });
   }
   
+  if (!year || !semester) {
+    return json(200, { success: false, message: '연도와 학기 정보가 필요합니다.' });
+  }
+
   try {
     const ss = SpreadsheetApp.openById(spreadsheetId);
-    const sheet = ss.getSheets()[0];
+    const sheetName = `${year}-${semester}`;
+    const sheet = ss.getSheetByName(sheetName);
+
+    if (!sheet) {
+      return json(404, { success: false, message: `'${sheetName}' 시트를 찾을 수 없습니다.` });
+    }
+    
     const dataRange = sheet.getDataRange();
     const values = dataRange.getValues();
     
@@ -447,7 +483,7 @@ function handleSaveMatrix(data) {
     }
     
     // 각 업데이트를 적용
-    updates.forEach(update => {
+    parsedUpdates.forEach(update => {
       const { programName, myScore, detailName, isCompleted } = update;
       
       // 데이터 행에서 해당 프로그램 찾기
@@ -485,6 +521,20 @@ function handleSaveMatrix(data) {
 // 입력: id, updateData { department?, major?, currentPassword?, newPassword? }
 function handleUpdateUser(data) {
   const { id, updateData } = data;
+  
+  // updateData가 JSON 문자열인 경우 파싱
+  let parsedUpdateData = updateData;
+  if (typeof updateData === 'string') {
+    try {
+      parsedUpdateData = JSON.parse(updateData);
+    } catch (e) {
+      console.error('updateData 파싱 오류:', e);
+      return json(200, { success: false, message: '데이터 파싱 오류가 발생했습니다.' });
+    }
+  }
+  
+  console.log('파싱된 updateData:', parsedUpdateData);
+  
   const user = findUserById(id);
   
   if (!user) {
@@ -492,7 +542,7 @@ function handleUpdateUser(data) {
   }
   
   // 비밀번호 검증
-  if (updateData.newPassword && user.password !== updateData.currentPassword) {
+  if (parsedUpdateData.newPassword && user.password !== parsedUpdateData.currentPassword) {
     return json(200, { success: false, message: '현재 비밀번호가 일치하지 않습니다.' });
   }
   
@@ -502,14 +552,17 @@ function handleUpdateUser(data) {
   
   for (let i = 1; i < sheetData.length; i++) {
     if (sheetData[i][0] === id) {
-      if (updateData.department) {
-        sheet.getRange(i + 1, 6).setValue(updateData.department);
+      if (parsedUpdateData.department) {
+        sheet.getRange(i + 1, 6).setValue(parsedUpdateData.department);
+        console.log('학부 업데이트:', parsedUpdateData.department);
       }
-      if (updateData.major) {
-        sheet.getRange(i + 1, 7).setValue(updateData.major);
+      if (parsedUpdateData.major) {
+        sheet.getRange(i + 1, 7).setValue(parsedUpdateData.major);
+        console.log('전공 업데이트:', parsedUpdateData.major);
       }
-      if (updateData.newPassword) {
-        sheet.getRange(i + 1, 2).setValue(updateData.newPassword);
+      if (parsedUpdateData.newPassword) {
+        sheet.getRange(i + 1, 2).setValue(parsedUpdateData.newPassword);
+        console.log('비밀번호 업데이트됨');
       }
       break;
     }
@@ -809,27 +862,34 @@ function getMatrixDataFromUrl(matrixUrl, year, semester) {
     console.log('매트릭스 URL에서 데이터 가져오기:', matrixUrl);
     
     // URL에서 스프레드시트 ID 추출
+    console.log('🔍 추출할 URL:', matrixUrl);
     const spreadsheetId = extractSpreadsheetId(matrixUrl);
+    console.log('🔍 추출된 스프레드시트 ID:', spreadsheetId);
     if (!spreadsheetId) {
       throw new Error('유효하지 않은 매트릭스 URL입니다.');
     }
     
     // 스프레드시트 열기
     const ss = SpreadsheetApp.openById(spreadsheetId);
+    console.log(`✅ 스프레드시트 열기 성공: ${ss.getName()}`);
     
     // 시트 이름 생성 (예: "2025-2")
     const sheetName = `${year}-${semester}`;
     let sheet = ss.getSheetByName(sheetName);
+    console.log(`초기 sheet 객체 (ss.getSheetByName 결과):`, sheet ? sheet.getName() : 'null/undefined');
+    
+    console.log(`=== 시트 선택 디버깅 ===`);
+    console.log(`찾고 있는 시트 이름: ${sheetName}`);
+    
+    // 사용 가능한 시트 목록 확인
+    const allSheets = ss.getSheets();
+    console.log('사용 가능한 시트들:');
+    allSheets.forEach(s => {
+      console.log(`- ${s.getName()}`);
+    });
     
     if (!sheet) {
       console.log(`시트 ${sheetName}을 찾을 수 없습니다.`);
-      
-      // 사용 가능한 시트 목록 확인
-      const allSheets = ss.getSheets();
-      console.log('사용 가능한 시트들:');
-      allSheets.forEach(s => {
-        console.log(`- ${s.getName()}`);
-      });
       
       // 최신 시트 찾기 (2025-2, 2025-1, 2024-2, 2024-1 순서)
       const yearSemesterPattern = /^(\d{4})-(\d{1,2})$/;
@@ -851,17 +911,91 @@ function getMatrixDataFromUrl(matrixUrl, year, semester) {
         sheet = allSheets[0];
       } else {
         console.log('사용 가능한 시트가 없습니다.');
-        return [];
+        throw new Error('사용 가능한 시트가 없습니다.');
+      }
+    } else {
+      console.log(`시트 ${sheetName}을 찾았습니다.`);
+    }
+    
+    // sheet가 여전히 undefined인지 확인
+    if (!sheet) {
+      console.log('❌ 시트를 찾을 수 없습니다.');
+      throw new Error('시트를 찾을 수 없습니다.');
+    }
+    
+    console.log(`최종 선택된 시트: ${sheet.getName()}`);
+    console.log(`최종 선택된 시트 (데이터 로드 직전):`, sheet ? sheet.getName() : 'null/undefined');
+    
+    if (!sheet) {
+      console.error('❌ 최종적으로 유효한 시트를 찾지 못했습니다. 데이터 로드를 진행할 수 없습니다.');
+      throw new Error('데이터를 로드할 유효한 시트를 찾을 수 없습니다.');
+    }
+    
+    // 선택된 시트에서 이수/미이수 데이터가 있는지 확인
+    const testRange = sheet.getRange(1, 1, Math.min(10, sheet.getLastRow()), sheet.getLastColumn());
+    const testValues = testRange.getValues();
+    const testCompletionColumnIndex = testValues[0].findIndex(header => header === '이수/미이수');
+    
+    if (testCompletionColumnIndex !== -1) {
+      const completionValues = testValues.slice(1).map(row => row[testCompletionColumnIndex]).filter(val => val && val.toString().trim() !== '');
+      console.log(`선택된 시트의 이수/미이수 값들 (처음 10개):`, completionValues);
+      
+      if (completionValues.length === 0) {
+        console.log('⚠️ 선택된 시트에 이수/미이수 데이터가 없습니다. 다른 시트를 찾아보겠습니다.');
+        
+        // 다른 시트에서 이수/미이수 데이터가 있는 시트 찾기
+        for (const testSheet of allSheets) {
+          console.log(`루프 내 시트 확인: ${testSheet.name}, 유효성:`, testSheet.sheet ? '유효함' : '유효하지 않음');
+          if (!testSheet.sheet) {
+            console.error(`❌ 루프 내에서 시트 객체가 유효하지 않습니다: ${testSheet.name}`);
+            continue; // 유효하지 않은 시트는 건너뛰기
+          }
+          
+          const testRange2 = testSheet.sheet.getRange(1, 1, Math.min(10, testSheet.sheet.getLastRow()), testSheet.sheet.getLastColumn());
+          const testValues2 = testRange2.getValues();
+          const testCompletionColumnIndex2 = testValues2[0].findIndex(header => header === '이수/미이수');
+          
+          if (testCompletionColumnIndex2 !== -1) {
+            const completionValues2 = testValues2.slice(1).map(row => row[testCompletionColumnIndex2]).filter(val => val && val.toString().trim() !== '');
+            if (completionValues2.length > 0) {
+              console.log(`✅ 시트 "${testSheet.name}"에서 이수/미이수 데이터를 찾았습니다!`);
+              sheet = testSheet.sheet;
+              break;
+            }
+          }
+        }
       }
     }
     
-    // 데이터 범위 가져오기 (헤더 포함)
-    const range = sheet.getDataRange();
+    // 데이터 범위 가져오기 (헤더 포함) - 더 넓은 범위로 읽기
+    const lastRow = sheet.getLastRow();
+    const lastCol = sheet.getLastColumn();
+    console.log(`시트의 마지막 행: ${lastRow}, 마지막 열: ${lastCol}`);
+    
+    // A1부터 마지막 셀까지 모든 데이터 읽기
+    const range = sheet.getRange(1, 1, lastRow, lastCol);
     const values = range.getValues();
+    
+    console.log(`데이터 범위: ${range.getA1Notation()}`);
+    console.log(`읽어온 데이터 행 수: ${values.length}`);
+    console.log(`읽어온 데이터 열 수: ${values[0] ? values[0].length : 0}`);
     
     if (values.length <= 1) {
       console.log('데이터가 없습니다.');
       return [];
+    }
+    
+    // 첫 번째 행(헤더) 확인
+    console.log('첫 번째 행 (헤더):', values[0]);
+    
+    // 이수/미이수 컬럼이 있는지 확인
+    const completionColumnIndex = values[0].findIndex(header => header === '이수/미이수');
+    console.log('이수/미이수 컬럼 인덱스:', completionColumnIndex);
+    
+    if (completionColumnIndex !== -1) {
+      // 이수/미이수 컬럼의 실제 값들 확인 (처음 10개 행)
+      const completionValues = values.slice(1, 11).map(row => row[completionColumnIndex]);
+      console.log('이수/미이수 컬럼의 실제 값들 (처음 10개):', completionValues);
     }
     
     // 헤더와 데이터 분리
@@ -925,6 +1059,30 @@ function getMatrixDataFromUrl(matrixUrl, year, semester) {
     });
     
     console.log(`매트릭스 데이터 변환 완료: ${matrixData.length}개 행`);
+    
+    // 이수/미이수 컬럼 데이터 확인을 위한 디버깅
+    console.log('=== 이수/미이수 컬럼 디버깅 ===');
+    console.log('헤더 목록:', headers);
+    
+    // 이수/미이수 컬럼 인덱스 찾기 (이미 위에서 선언됨)
+    console.log('이수/미이수 컬럼 인덱스:', completionColumnIndex);
+    
+    if (completionColumnIndex !== -1) {
+      // 이수/미이수 컬럼의 모든 값들 확인
+      const completionValues = matrixData.map(row => row['이수/미이수']).filter(val => val && val.trim() !== '');
+      console.log('이수/미이수 컬럼의 고유 값들:', [...new Set(completionValues)]);
+      console.log('빈 값이 아닌 이수/미이수 값 개수:', completionValues.length);
+      
+      const completedItems = matrixData.filter(row => row['이수/미이수'] === '이수');
+      console.log(`이수 완료된 항목 수: ${completedItems.length}개`);
+      if (completedItems.length > 0) {
+        console.log('이수 완료된 항목 샘플:', completedItems.slice(0, 3));
+      }
+    } else {
+      console.log('❌ 이수/미이수 컬럼을 찾을 수 없습니다!');
+      console.log('사용 가능한 컬럼들:', headers);
+    }
+    
     return matrixData;
     
   } catch (error) {
@@ -935,7 +1093,7 @@ function getMatrixDataFromUrl(matrixUrl, year, semester) {
 
 // URL에서 스프레드시트 ID 추출
 function extractSpreadsheetId(url) {
-  const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
   return match ? match[1] : null;
 }
 

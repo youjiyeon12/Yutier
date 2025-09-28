@@ -339,7 +339,7 @@
       setIsSaving(true);
 
       try {
-        const json = await googleSheetsService.saveMatrix(userId, updates);
+        const json = await googleSheetsService.saveMatrix(userId, updates, year, semester);
         if (json.success) {
           alert(`저장 완료! (${updates.length}개 항목 변경됨)`);
           // 저장 성공 시 원본 데이터 업데이트
