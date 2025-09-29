@@ -36,8 +36,8 @@ function List({ data }) {
     <div style={{ marginTop: "0px" }}>
       <h3 style={{
         textAlign: "left",
-        marginBottom: "20px",
-        paddingLeft: "0px"
+        paddingLeft: "0px",
+        display: "inline"
       }}>
         추천 프로그램 리스트
       </h3>
@@ -50,7 +50,7 @@ function List({ data }) {
           fontSize: '12px', 
           color: '#666' 
         }}>
-          * = 상세항목 존재
+          * 상세항목 존재
         </div>
       )}
       

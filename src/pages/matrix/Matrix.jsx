@@ -109,6 +109,7 @@
     const [originalMatrixData, setOriginalMatrixData] = useState([]); // 원본 데이터 저장
     const [openAcc, setOpenAcc] = useState({});
     const [isSaving, setIsSaving] = useState(false);
+    const [isFilter, setIsFilter] = useState(false);
     const [tierScores, setTierScores] = useState({
       유한인성역량: '',
       기초학습역량: '',
@@ -126,6 +127,7 @@
     console.log("🔍 [Matrix] year:", year, "semester:", semester);
     console.log("🔍 [Matrix] matrixData 길이:", matrixData.length);
     console.log("🔍 [Matrix] isSaving:", isSaving);
+    console.log("🔍 [Matrix] isFilter:", isFilter);
 
     // 페이지 진입 시 URL 유효성 검사 및 저장된 점수를 자동으로 불러옴
     useEffect(() => {
@@ -204,6 +206,8 @@
         return;
       }
 
+      setIsFilter(true); // 조회 시작
+
       // URL 유효성 검사 - 서버에서 직접 확인
       try {
         const urlValidation = await googleSheetsService.validateMatrixUrl(userId);
@@ -263,6 +267,10 @@
         console.error("❌ [Matrix] 데이터 조회 실패:", error);
         alert("서버와 통신 중 오류가 발생했습니다.");
       }
+      finally
+      {
+        setIsFilter(false);
+      }
       
       try {
         console.log("🔍 [Matrix] getTierScores API 호출 시작");
@@ -282,7 +290,7 @@
         }
       } catch (error) {
         console.error("❌ [Matrix] Tier 점수 조회 중 오류:", error);
-      }
+      } 
     };
 
     // 변경된 데이터만 감지하는 함수
@@ -582,7 +590,9 @@
             </div>
           </div>
           <div className={styles.buttonGroup}>
-            <button className={styles.searchBtn} onClick={handleSearch} disabled={isSaving}>조회</button>
+            <button className={styles.searchBtn} onClick={handleSearch} disabled={isFilter}>
+              {isFilter ? '조회 중...' : '조회'}
+            </button>
             <button className={styles.saveBtn} onClick={handlesave} disabled={isSaving}>
               {isSaving ? '저장 중...' : '저장'}
             </button>
