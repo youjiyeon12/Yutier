@@ -198,12 +198,10 @@ function handleGetMajorList() {
 function handleSaveTierScores(data) {
   const { id } = data;
   var scores = data.scores;
-  // URL 쿼리로 전달된 경우 문자열이므로 파싱
   if (typeof scores === 'string') {
     try { scores = JSON.parse(scores); } catch (e) { scores = {}; }
   }
   
-  // 1. 5개 핵심역량 점수 추출
   const competencyScores = {
     유한인성역량: parseFloat(scores.유한인성역량) || 0,
     기초학습역량: parseFloat(scores.기초학습역량) || 0,
@@ -211,39 +209,10 @@ function handleSaveTierScores(data) {
     직무수행역량: parseFloat(scores.직무수행역량) || 0,
     취창업기초역량: parseFloat(scores.취창업기초역량) || 0
   };
-  
   const totalScore = Object.values(competencyScores).reduce((sum, score) => sum + score, 0);
-  
-  // 2. 티어 자격 확인: 모든 핵심역량이 70점 이상인지 확인
-  const isQualified = Object.values(competencyScores).every(score => score >= 70);
-  
-  // 3. 티어 계산
-  let tierValue = 'Unranked';
-  let nextTier = 'Bronze';
-  let scoreForNextTier = 70;
-  let isRankOne = false;
-  
-  if (isQualified) {
-    // 자격이 있는 경우, 전체 학생들과 비교하여 상위 % 계산
-    const tierResult = calculateTierByRanking(id, totalScore);
-    tierValue = tierResult.tier;
-    nextTier = tierResult.nextTier;
-    scoreForNextTier = tierResult.scoreForNextTier;
-    isRankOne = tierResult.isRankOne;
-    
-    console.log('🎯 [handleSaveTierScores] 티어 계산 결과:');
-    console.log('🏆 계산된 티어:', tierValue);
-    console.log('🎯 다음 목표:', nextTier);
-    console.log('📊 필요 점수:', scoreForNextTier);
-    console.log('🥇 1등 여부:', isRankOne);
-  } else {
-    console.log('❌ [handleSaveTierScores] 자격 미달 - Unranked 처리');
-  }
-  
+
   const sheet = getSheet(SHEET_NAMES.TIER);
   const sheetData = sheet.getDataRange().getValues();
-  
-  // 기존 사용자 찾기
   let rowIndex = -1;
   for (let i = 1; i < sheetData.length; i++) {
     if (sheetData[i][0] === id) {
@@ -252,19 +221,18 @@ function handleSaveTierScores(data) {
     }
   }
   
-  const values = [id, scores.유한인성역량, scores.기초학습역량, scores.직업기초역량, scores.직무수행역량, scores.취창업기초역량, totalScore, tierValue, nextTier, scoreForNextTier, isRankOne];
+  const values = [id, scores.유한인성역량, scores.기초학습역량, scores.직업기초역량, scores.직무수행역량, scores.취창업기초역량, totalScore];
   
   if (rowIndex > 0) {
-    // 기존 행 업데이트
-    for (let i = 0; i < values.length; i++) {
-      sheet.getRange(rowIndex + 1, i + 1).setValue(values[i]);
-    }
+    // 7개 항목만 먼저 업데이트 (티어 정보 제외)
+    sheet.getRange(rowIndex + 1, 1, 1, values.length).setValues([values]);
   } else {
-    // 새 행 추가
+    // 새 행 추가 시에도 7개 항목만 먼저 추가
     sheet.appendRow(values);
   }
-  
-  return json(200, { success: true, message: '점수가 성공적으로 등록되었습니다.' });
+
+  // 모든 사용자의 티어 재계산 실행
+  return recalculateAllTiers();
 }
 
 // 티어 점수 조회
@@ -1222,225 +1190,95 @@ function findTierUserById(id) {
 }
 
 /**
- * 상위 % 기반 티어 계산 함수
- * 자격이 있는 학생들 중에서 합산 점수 순위에 따라 티어를 결정
- * 
- * @param {string} currentUserId - 현재 사용자 ID
- * @param {number} currentUserScore - 현재 사용자의 합산 점수
- * @returns {Object} { tier, nextTier, scoreForNextTier, isRankOne }
- */
-function calculateTierByRanking(currentUserId, currentUserScore) {
-  console.log('🎯 [calculateTierByRanking] 티어 계산 시작');
-  console.log('👤 [calculateTierByRanking] 사용자 ID:', currentUserId);
-  console.log('📊 [calculateTierByRanking] 사용자 점수:', currentUserScore);
-  
-  try {
-    // 1. 자격이 있는 모든 학생들의 점수 조회
-    const qualifiedStudents = getQualifiedStudents();
-    console.log('📋 [calculateTierByRanking] 자격 있는 학생 수:', qualifiedStudents.length);
-    
-    if (qualifiedStudents.length === 0) {
-      console.log('⚠️ [calculateTierByRanking] 자격 있는 학생이 없음');
-      return { tier: 'Bronze', nextTier: 'Silver', scoreForNextTier: 0, isRankOne: false };
-    }
-    
-    // 2. 점수 기준으로 내림차순 정렬
-    qualifiedStudents.sort((a, b) => b.totalScore - a.totalScore);
-    console.log('📊 [calculateTierByRanking] 정렬된 학생들:', qualifiedStudents.slice(0, 5).map(s => `${s.id}: ${s.totalScore}점`));
-    
-    // 3. 현재 사용자의 순위 찾기
-    const currentUserRank = qualifiedStudents.findIndex(student => student.id === currentUserId) + 1;
-    console.log('🏆 [calculateTierByRanking] 현재 사용자 순위:', currentUserRank);
-    
-    if (currentUserRank === 0) {
-      console.log('❌ [calculateTierByRanking] 사용자를 찾을 수 없음');
-      return { tier: 'Bronze', nextTier: 'Silver', scoreForNextTier: 0, isRankOne: false };
-    }
-    
-    // 4. 상위 % 계산
-    const totalQualified = qualifiedStudents.length;
-    const percentile = (currentUserRank / totalQualified) * 100;
-    console.log('📈 [calculateTierByRanking] 상위 퍼센트:', percentile.toFixed(2) + '%');
-    
-    // 5. 티어 결정
-    let tier, nextTier, scoreForNextTier, isRankOne;
-    
-    if (percentile <= 5) {
-      tier = 'Diamond';
-      if (currentUserRank === 1) {
-        // 1등인 경우
-        nextTier = '1위';
-        scoreForNextTier = 0; // 이미 1등
-        isRankOne = true;
-      } else {
-        // Diamond이지만 1등이 아닌 경우
-        nextTier = '1위';
-        scoreForNextTier = qualifiedStudents[0].totalScore + 1; // 1등 점수 + 1
-        isRankOne = false;
-      }
-    } else if (percentile <= 10) {
-      tier = 'Gold';
-      nextTier = 'Diamond';
-      // Diamond 커트라인 찾기 (상위 5% 경계)
-      const diamondCutoff = Math.ceil(totalQualified * 0.05);
-      scoreForNextTier = qualifiedStudents[diamondCutoff - 1].totalScore + 1;
-      isRankOne = false;
-    } else if (percentile <= 30) {
-      tier = 'Silver';
-      nextTier = 'Gold';
-      // Gold 커트라인 찾기 (상위 10% 경계)
-      const goldCutoff = Math.ceil(totalQualified * 0.10);
-      scoreForNextTier = qualifiedStudents[goldCutoff - 1].totalScore + 1;
-      isRankOne = false;
-    } else {
-      tier = 'Bronze';
-      nextTier = 'Silver';
-      // Silver 커트라인 찾기 (상위 30% 경계)
-      const silverCutoff = Math.ceil(totalQualified * 0.30);
-      scoreForNextTier = qualifiedStudents[silverCutoff - 1].totalScore + 1;
-      isRankOne = false;
-    }
-    
-    console.log('✅ [calculateTierByRanking] 최종 결과:');
-    console.log('🏆 티어:', tier);
-    console.log('🎯 다음 목표:', nextTier);
-    console.log('📊 필요 점수:', scoreForNextTier);
-    console.log('🥇 1위 여부:', isRankOne);
-    
-    return { tier, nextTier, scoreForNextTier, isRankOne };
-    
-  } catch (error) {
-    console.error('❌ [calculateTierByRanking] 오류 발생:', error);
-    return { tier: 'Bronze', nextTier: 'Silver', scoreForNextTier: 0, isRankOne: false };
-  }
-}
-
-/**
- * 자격이 있는 학생들 조회
- * 모든 핵심역량이 70점 이상인 학생들만 반환
- * 
- * @returns {Array} 자격 있는 학생들의 배열 [{ id, totalScore, scores }]
- */
-function getQualifiedStudents() {
-  console.log('🔍 [getQualifiedStudents] 자격 있는 학생들 조회 시작');
-  
-  try {
-    const sheet = getSheet(SHEET_NAMES.TIER);
-    const sheetData = sheet.getDataRange().getValues();
-    
-    if (sheetData.length <= 1) {
-      console.log('📋 [getQualifiedStudents] 데이터가 없음');
-      return [];
-    }
-    
-    const qualifiedStudents = [];
-    
-    // 각 행을 순회하며 자격 확인
-    for (let i = 1; i < sheetData.length; i++) {
-      const row = sheetData[i];
-      const id = row[0];
-      const scores = {
-        유한인성역량: parseFloat(row[1]) || 0,
-        기초학습역량: parseFloat(row[2]) || 0,
-        직업기초역량: parseFloat(row[3]) || 0,
-        직무수행역량: parseFloat(row[4]) || 0,
-        취창업기초역량: parseFloat(row[5]) || 0
-      };
-      
-      const totalScore = parseFloat(row[6]) || 0;
-      
-      // 모든 핵심역량이 70점 이상인지 확인
-      const isQualified = Object.values(scores).every(score => score >= 70);
-      
-      if (isQualified) {
-        qualifiedStudents.push({
-          id: id,
-          totalScore: totalScore,
-          scores: scores
-        });
-        console.log(`✅ [getQualifiedStudents] 자격 통과: ${id} (${totalScore}점)`);
-      } else {
-        console.log(`❌ [getQualifiedStudents] 자격 미달: ${id} (점수: ${Object.values(scores).join(', ')})`);
-      }
-    }
-    
-    console.log(`📊 [getQualifiedStudents] 총 자격 있는 학생: ${qualifiedStudents.length}명`);
-    return qualifiedStudents;
-    
-  } catch (error) {
-    console.error('❌ [getQualifiedStudents] 오류 발생:', error);
-    return [];
-  }
-}
-
-/**
  * 전체 티어 시스템 재계산
- * 모든 학생의 티어를 새로운 규칙에 따라 재계산합니다.
- * 기존 데이터가 있는 경우 사용할 수 있습니다.
+ * 모든 학생의 티어를 새로운 규칙에 따라 재계산하고 시트에 한 번에 업데이트합니다.
  */
 function recalculateAllTiers() {
   console.log('🔄 [recalculateAllTiers] 전체 티어 재계산 시작');
-  
   try {
     const sheet = getSheet(SHEET_NAMES.TIER);
     const sheetData = sheet.getDataRange().getValues();
-    
     if (sheetData.length <= 1) {
-      console.log('📋 [recalculateAllTiers] 데이터가 없음');
-      return { success: true, message: '재계산할 데이터가 없습니다.' };
+      return json(200, { success: true, message: '재계산할 데이터가 없습니다.' });
     }
-    
-    let updatedCount = 0;
-    
-    // 각 학생의 티어를 재계산
-    for (let i = 1; i < sheetData.length; i++) {
-      const row = sheetData[i];
-      const id = row[0];
-      
-      if (!id) continue;
-      
-      const scores = {
+
+    // 1. 시트에서 모든 학생 정보를 가져옵니다.
+    const allStudents = sheetData.slice(1).map(row => ({
+      id: row[0],
+      scores: {
         유한인성역량: parseFloat(row[1]) || 0,
         기초학습역량: parseFloat(row[2]) || 0,
         직업기초역량: parseFloat(row[3]) || 0,
         직무수행역량: parseFloat(row[4]) || 0,
-        취창업기초역량: parseFloat(row[5]) || 0
-      };
-      
-      const totalScore = parseFloat(row[6]) || 0;
-      
-      // 자격 확인
-      const isQualified = Object.values(scores).every(score => score >= 70);
-      
-      let tierValue = 'Unranked';
-      let nextTier = 'Bronze';
-      let scoreForNextTier = 70;
-      let isRankOne = false;
-      
-      if (isQualified) {
-        const tierResult = calculateTierByRanking(id, totalScore);
-        tierValue = tierResult.tier;
-        nextTier = tierResult.nextTier;
-        scoreForNextTier = tierResult.scoreForNextTier;
-        isRankOne = tierResult.isRankOne;
+        취창업기초역량: parseFloat(row[5]) || 0,
+      },
+      totalScore: parseFloat(row[6]) || 0
+    }));
+
+    // 2. 자격이 있는 학생들만 필터링하고 점수 순으로 정렬합니다.
+    const qualifiedStudents = allStudents
+      .filter(student => Object.values(student.scores).every(score => score >= 70))
+      .sort((a, b) => b.totalScore - a.totalScore);
+    
+    const totalQualified = qualifiedStudents.length;
+
+    // 3. 각 티어의 커트라인 순위를 미리 계산합니다.
+    const diamondCutoffRank = Math.ceil(totalQualified * 0.05);
+    const goldCutoffRank = Math.ceil(totalQualified * 0.10);
+    const silverCutoffRank = Math.ceil(totalQualified * 0.30);
+
+    const updates = [];
+
+    // 4. 모든 학생을 순회하며 티어 정보를 계산합니다.
+    allStudents.forEach(student => {
+      const isQualified = Object.values(student.scores).every(score => score >= 70);
+      let tierValue = 'Unranked', nextTier = 'Bronze', scoreForNextTier = 70, isRankOne = false;
+
+      if (isQualified && totalQualified > 0) {
+        const rank = qualifiedStudents.findIndex(s => s.id === student.id) + 1;
+
+        if (rank > 0 && rank <= diamondCutoffRank) {
+          tierValue = 'Diamond';
+          if (rank === 1 && totalQualified > 1) {
+            nextTier = '1위';
+            scoreForNextTier = 0; // 목표 달성
+            isRankOne = true;
+          } else {
+            nextTier = '1위';
+            // 목표 점수 = (1등의 점수 + 1)
+            scoreForNextTier = qualifiedStudents[0].totalScore + 1;
+          }
+        } else if (rank > 0 && rank <= goldCutoffRank) {
+          tierValue = 'Gold';
+          nextTier = 'Diamond';
+          // 목표 점수 = (다이아 커트라인 점수 + 1)
+          scoreForNextTier = qualifiedStudents[Math.max(0, diamondCutoffRank - 1)].totalScore + 1;
+        } else if (rank > 0 && rank <= silverCutoffRank) {
+          tierValue = 'Silver';
+          nextTier = 'Gold';
+          // 목표 점수 = (골드 커트라인 점수 + 1)
+          scoreForNextTier = qualifiedStudents[Math.max(0, goldCutoffRank - 1)].totalScore + 1;
+        } else {
+          tierValue = 'Bronze';
+          nextTier = 'Silver';
+          // 목표 점수 = (실버 커트라인 점수 + 1)
+          scoreForNextTier = qualifiedStudents[Math.max(0, silverCutoffRank - 1)].totalScore + 1;
+        }
       }
-      
-      // 시트 업데이트
-      sheet.getRange(i + 1, 8).setValue(tierValue);        // 티어
-      sheet.getRange(i + 1, 9).setValue(nextTier);         // 다음티어
-      sheet.getRange(i + 1, 10).setValue(scoreForNextTier); // 필요점수
-      sheet.getRange(i + 1, 11).setValue(isRankOne);        // 1위여부
-      
-      updatedCount++;
-      console.log(`✅ [recalculateAllTiers] ${id} 업데이트 완료: ${tierValue}`);
+      updates.push([tierValue, nextTier, scoreForNextTier, isRankOne]);
+    });
+    
+    // 5. 계산된 모든 티어 정보를 시트에 한 번에 업데이트합니다.
+    if (updates.length > 0) {
+      sheet.getRange(2, 8, updates.length, 4).setValues(updates);
     }
     
-    console.log(`🎉 [recalculateAllTiers] 재계산 완료: ${updatedCount}명`);
-    return { success: true, message: `${updatedCount}명의 티어가 재계산되었습니다.` };
+    console.log(`🎉 [recalculateAllTiers] 재계산 완료: ${updates.length}명`);
+    return json(200, { success: true, message: `전체 티어가 성공적으로 업데이트되었습니다.` });
     
   } catch (error) {
     console.error('❌ [recalculateAllTiers] 오류 발생:', error);
-    return { success: false, message: '재계산 중 오류가 발생했습니다: ' + error.message };
+    return json(500, { success: false, message: '재계산 중 오류가 발생했습니다: ' + error.message });
   }
 }
 
