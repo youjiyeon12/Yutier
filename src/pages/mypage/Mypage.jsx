@@ -20,7 +20,7 @@ import styles from "./styles/mypage.module.css";
 import MemInfoEdit from './MemInfoEdit';
 import DeleteAccount from './DeleteAccount'
 import { useNavigate } from 'react-router-dom';
-import List from "../../components/ui/list";
+import List from "../../components/ui/List";
 import { googleSheetsService } from '../../services/googleSheetsService';
 
 function Mypage({ user, setUser, onLogout }) {
@@ -258,7 +258,7 @@ function Mypage({ user, setUser, onLogout }) {
     Gold: '/tier3.png',
     Diamond: '/tier4.png',
     // 기본값
-    Unranked: '/tier1.png'
+    Unranked: '/tier0.png'
   };
 
   return (
