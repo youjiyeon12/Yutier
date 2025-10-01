@@ -19,7 +19,7 @@ function Home({ user, onLogout }) {
     Gold: '/tier3.png',
     Diamond: '/tier4.png',
     // 기본값
-    Unranked: '/tier1.png'
+    Unranked: '/tier0.png'
   };
 
   // 컴포넌트가 로드될 때 사용자의 점수 상태를 확인
@@ -98,7 +98,7 @@ function Home({ user, onLogout }) {
       <Header user={user} onLogout={onLogout} />
       <div className={styles.container_wrap}>
         <div className={styles.bannerCard}>
-          <p>배너자리</p>
+          <img src='/banner.png' alt='배너' ></img>
         </div>
 
           <div className={styles.profileCard}>
@@ -163,13 +163,19 @@ function Home({ user, onLogout }) {
               </div>
             )}
           </div>
-        </div>
+        </div>  
       </div>
 
       <div className={styles.linkSection}>
-        <div className={styles.linkCard}>바로가기 1</div>
-        <div className={styles.linkCard}>바로가기 2</div>
-        <div className={styles.linkCard}>바로가기 3</div>
+        <div className={styles.linkCard}>
+          <a href="https://trust.yuhan.ac.kr/"><img src="/bf.png"></img></a> 
+        </div>
+        <div className={styles.linkCard}>
+          <a href="https://portal.yuhan.ac.kr/"><img src="/portal.png"></img></a>
+        </div>
+        <div className={styles.linkCard}>
+          <a href="https://portal.yuhan.ac.kr/"><img src="/detail.png"></img></a>
+        </div>
       </div>
       <Footer />
     </div>
