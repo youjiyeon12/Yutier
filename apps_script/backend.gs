@@ -12,46 +12,47 @@ const SHEET_NAMES = {
   MAJOR: 'major'
 };
 
-// 웹 앱 진입점: 쿼리 파라미터의 action 값으로 라우팅합니다.
 function doGet(e) {
-  try {
-    const { action, ...data } = e.parameter || {};
-    console.log('=== API 호출 시작 (GET) ===');
-    console.log('요청된 액션:', action);
-    console.log('전체 파라미터:', e.parameter);
-    console.log('현재 시간:', new Date().toISOString());
-    
-    return routeRequest(action, data);
-  } catch (err) {
-    return json(500, { success: false, message: 'Server error', detail: String(err) });
-  }
+  // GET 요청이 오면 doPost로 그대로 전달하여 CORS 문제를 우회합니다.
+  return doPost(e);
 }
 
-// POST 요청 처리: JSON 데이터를 받아서 처리합니다.
 function doPost(e) {
   try {
-    console.log('=== API 호출 시작 (POST) ===');
-    console.log('POST 데이터:', e.postData);
-    console.log('현재 시간:', new Date().toISOString());
-    
-    let data = {};
+    let data;
+    // GET 요청은 e.parameter, POST 요청은 e.postData.contents로 데이터를 받습니다.
     if (e.postData && e.postData.contents) {
       try {
         data = JSON.parse(e.postData.contents);
-      } catch (parseError) {
-        console.error('JSON 파싱 오류:', parseError);
-        return json(200, { success: false, message: 'JSON 파싱 오류: ' + String(parseError) });
+      } catch(err){
+        // POST 요청 본문이 JSON이 아닐 경우를 대비
+        console.error("POST 데이터 파싱 오류:", err);
+        data = {}; // 오류 발생 시 빈 객체로 초기화
       }
+    } else {
+      data = e.parameter;
     }
     
     const { action, ...requestData } = data;
-    console.log('요청된 액션:', action);
-    console.log('요청 데이터:', requestData);
+    console.log(`[API] action: ${action}`);
     
+    // 프론트엔드에서 문자열로 변환된 JSON 파라미터들을 다시 객체로 파싱합니다.
+    const paramsToParse = ['scores', 'updates', 'updateData'];
+    paramsToParse.forEach(param => {
+      if (requestData[param] && typeof requestData[param] === 'string') {
+        try {
+          requestData[param] = JSON.parse(requestData[param]);
+        } catch (err) {
+          console.error(`'${param}' 파라미터 파싱 오류:`, err);
+        }
+      }
+    });
+
     return routeRequest(action, requestData);
+
   } catch (error) {
-    console.error('POST API 처리 중 오류:', error);
-    return json(200, { success: false, message: '서버 오류: ' + String(error) });
+    console.error('API 처리 중 오류:', error);
+    return json(500, { success: false, message: '서버 오류: ' + String(error) });
   }
 }
 
@@ -1202,83 +1203,101 @@ function recalculateAllTiers() {
       return json(200, { success: true, message: '재계산할 데이터가 없습니다.' });
     }
 
-    // 1. 시트에서 모든 학생 정보를 가져옵니다.
     const allStudents = sheetData.slice(1).map(row => ({
       id: row[0],
       scores: {
-        유한인성역량: parseFloat(row[1]) || 0,
-        기초학습역량: parseFloat(row[2]) || 0,
-        직업기초역량: parseFloat(row[3]) || 0,
-        직무수행역량: parseFloat(row[4]) || 0,
+        유한인성역량: parseFloat(row[1]) || 0, 기초학습역량: parseFloat(row[2]) || 0,
+        직업기초역량: parseFloat(row[3]) || 0, 직무수행역량: parseFloat(row[4]) || 0,
         취창업기초역량: parseFloat(row[5]) || 0,
       },
       totalScore: parseFloat(row[6]) || 0
     }));
 
-    // 2. 자격이 있는 학생들만 필터링하고 점수 순으로 정렬합니다.
     const qualifiedStudents = allStudents
-      .filter(student => Object.values(student.scores).every(score => score >= 70))
+      .filter(student => student.id && Object.values(student.scores).every(score => score >= 70))
       .sort((a, b) => b.totalScore - a.totalScore);
     
     const totalQualified = qualifiedStudents.length;
+    let diamondCutoffScore = -1, goldCutoffScore = -1, silverCutoffScore = -1;
 
-    // 3. 각 티어의 커트라인 순위를 미리 계산합니다.
-    const diamondCutoffRank = Math.ceil(totalQualified * 0.05);
-    const goldCutoffRank = Math.ceil(totalQualified * 0.10);
-    const silverCutoffRank = Math.ceil(totalQualified * 0.30);
+    if (totalQualified > 0) {
+        const diamondCutoffRank = Math.ceil(totalQualified * 0.05);
+        const goldCutoffRank = Math.ceil(totalQualified * 0.10);
+        const silverCutoffRank = Math.ceil(totalQualified * 0.30);
+
+        if (qualifiedStudents.length >= diamondCutoffRank) {
+            diamondCutoffScore = qualifiedStudents[diamondCutoffRank - 1].totalScore;
+        }
+        if (qualifiedStudents.length >= goldCutoffRank) {
+            goldCutoffScore = qualifiedStudents[goldCutoffRank - 1].totalScore;
+        }
+        if (qualifiedStudents.length >= silverCutoffRank) {
+            silverCutoffScore = qualifiedStudents[silverCutoffRank - 1].totalScore;
+        }
+    }
 
     const updates = [];
 
-    // 4. 모든 학생을 순회하며 티어 정보를 계산합니다.
     allStudents.forEach(student => {
-      const isQualified = Object.values(student.scores).every(score => score >= 70);
+      const isQualified = student.id && Object.values(student.scores).every(score => score >= 70);
       let tierValue = 'Unranked', nextTier = 'Bronze', scoreForNextTier = 70, isRankOne = false;
 
       if (isQualified && totalQualified > 0) {
-        const rank = qualifiedStudents.findIndex(s => s.id === student.id) + 1;
-
-        if (rank > 0 && rank <= diamondCutoffRank) {
-          tierValue = 'Diamond';
-          if (rank === 1 && totalQualified > 1) {
-            nextTier = '1위';
-            scoreForNextTier = 0; // 목표 달성
-            isRankOne = true;
-          } else {
-            nextTier = '1위';
-            // 목표 점수 = (1등의 점수 + 1)
-            scoreForNextTier = qualifiedStudents[0].totalScore + 1;
-          }
-        } else if (rank > 0 && rank <= goldCutoffRank) {
-          tierValue = 'Gold';
-          nextTier = 'Diamond';
-          // 목표 점수 = (다이아 커트라인 점수 + 1)
-          scoreForNextTier = qualifiedStudents[Math.max(0, diamondCutoffRank - 1)].totalScore + 1;
-        } else if (rank > 0 && rank <= silverCutoffRank) {
-          tierValue = 'Silver';
-          nextTier = 'Gold';
-          // 목표 점수 = (골드 커트라인 점수 + 1)
-          scoreForNextTier = qualifiedStudents[Math.max(0, goldCutoffRank - 1)].totalScore + 1;
+        // 학생의 점수를 '커트라인 점수'와 직접 비교하여 등급을 결정합니다.
+        if (student.totalScore >= diamondCutoffScore) {
+            tierValue = 'Diamond';
+        } else if (student.totalScore >= goldCutoffScore) {
+            tierValue = 'Gold';
+        } else if (student.totalScore >= silverCutoffScore) {
+            tierValue = 'Silver';
         } else {
-          tierValue = 'Bronze';
-          nextTier = 'Silver';
-          // 목표 점수 = (실버 커트라인 점수 + 1)
-          scoreForNextTier = qualifiedStudents[Math.max(0, silverCutoffRank - 1)].totalScore + 1;
+            tierValue = 'Bronze';
+        }
+
+        // 1위 여부 확인
+        if (tierValue === 'Diamond' && student.totalScore >= qualifiedStudents[0].totalScore) {
+            const rank = qualifiedStudents.findIndex(s => s.id === student.id) + 1;
+            if (rank === 1) isRankOne = true;
+        }
+
+        // 결정된 등급을 기준으로 '다음 목표'와 '필요 점수'를 계산합니다.
+        let targetScore = 0;
+        if(isRankOne){
+            nextTier = '1위';
+            scoreForNextTier = 0;
+        } else {
+            switch(tierValue) {
+                case 'Diamond':
+                    nextTier = '1위';
+                    targetScore = qualifiedStudents[0].totalScore + 1;
+                    break;
+                case 'Gold':
+                    nextTier = 'Diamond';
+                    targetScore = diamondCutoffScore + 1;
+                    break;
+                case 'Silver':
+                    nextTier = 'Gold';
+                    targetScore = goldCutoffScore + 1;
+                    break;
+                case 'Bronze':
+                    nextTier = 'Silver';
+                    targetScore = silverCutoffScore + 1;
+                    break;
+            }
+            scoreForNextTier = Math.max(0, targetScore - student.totalScore);
         }
       }
       updates.push([tierValue, nextTier, scoreForNextTier, isRankOne]);
     });
     
-    // 5. 계산된 모든 티어 정보를 시트에 한 번에 업데이트합니다.
     if (updates.length > 0) {
       sheet.getRange(2, 8, updates.length, 4).setValues(updates);
     }
     
-    console.log(`🎉 [recalculateAllTiers] 재계산 완료: ${updates.length}명`);
-    return json(200, { success: true, message: `전체 티어가 성공적으로 업데이트되었습니다.` });
+    return json(200, { success: true, message: `점수가 저장되었습니다.` });
     
   } catch (error) {
-    console.error('❌ [recalculateAllTiers] 오류 발생:', error);
-    return json(500, { success: false, message: '재계산 중 오류가 발생했습니다: ' + error.message });
+    return json(500, { success: false, message: '재계산 중 오류가 발생했습니다: ' + String(error) });
   }
 }
 

@@ -117,7 +117,7 @@ function Home({ user, onLogout }) {
               )}
             </div>
             <div className={styles.userInfo}>
-              <p className={styles.userMajor}>{user.department || '전공 정보 없음'}</p>
+              <p className={styles.userMajor}>{user.department && user.major ? `${user.department} ${user.major}` : user.department || '전공 정보 없음'}</p>
               <p className={styles.userName}>{user.name || user.id} 님</p>
             </div>
           
@@ -129,7 +129,7 @@ function Home({ user, onLogout }) {
             </div>
           ) : tierInfo.success ? (
             <button onClick={() => navigate('/mypage')} className={styles.scoreLink}>
-              내 등급 보러 가기
+              내 정보 보러 가기
             </button>
           ) : (
             <button onClick={handleGoToMatrix} className={styles.scoreLink}>
@@ -168,10 +168,10 @@ function Home({ user, onLogout }) {
 
       <div className={styles.linkSection}>
         <div className={styles.linkCard}>
-          <a href="https://trust.yuhan.ac.kr/"><img src="/bf.png"></img></a> 
+          <a href="https://trust.yuhan.ac.kr/" target="_blank"><img src="/bf.png"></img></a> 
         </div>
         <div className={styles.linkCard}>
-          <a href="https://portal.yuhan.ac.kr/"><img src="/portal.png"></img></a>
+          <a href="https://portal.yuhan.ac.kr/" target="_blank"><img src="/portal.png"></img></a>
         </div>
         <div className={styles.linkCard}>
           <a href="https://portal.yuhan.ac.kr/"><img src="/detail.png"></img></a>

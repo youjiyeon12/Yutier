@@ -16,7 +16,6 @@
   align-items: center;
   color: #393f59;
   margin-top: 20px;
-  margin-bottom: 20px;  
 }
 
 .bannerCard img {
@@ -152,7 +151,6 @@
   transition: transform 0.2s;
   margin-bottom: 40px;
   margin-top: 20px;
-
 }
 
 .linkCard img{

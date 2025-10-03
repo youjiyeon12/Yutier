@@ -361,19 +361,22 @@ function Mypage({ user, setUser, onLogout }) {
                                 </>
                               );
                             } else {
-                              // 다른 티어로의 상승
-                              const scoreNeeded = Math.max(0, tierInfo.scoreForNextTier - tierInfo.currentScore);
-                              const displayScore = scoreNeeded % 1 === 0 ? scoreNeeded : scoreNeeded.toFixed(1);
-                              return (
-                                <>
-                                  <div className={styles.nextGradeText}>
-                                    다음 등급인 <span className={styles.gradeLabel}>{tierInfo.nextTier}</span>까지
-                                  </div>
-                                  <div className={styles.score}>
-                                    {displayScore}점 필요
-                                  </div>
-                                </>
-                              );
+                            // 다른 티어로의 상승
+                            const scoreNeeded = Math.max(0, tierInfo.scoreForNextTier);
+                            //- tierInfo.currentScore
+                            const displayScore = scoreNeeded % 1 === 0 ? scoreNeeded : scoreNeeded.toFixed(1);
+                            
+                            return (
+                              <>
+                                <div className={styles.nextGradeText}>
+                                  {tierInfo.nextTier === '1위' ? '전체 ' : '다음 등급인 '}
+                                  <span className={styles.gradeLabel}>{tierInfo.nextTier}</span>까지
+                                </div>
+                                <div className={styles.score}>
+                                  {displayScore}점 필요
+                                </div>
+                              </>
+                            );
                             }
                           })()
                         )}
