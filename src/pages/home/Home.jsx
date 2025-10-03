@@ -168,13 +168,13 @@ function Home({ user, onLogout }) {
 
       <div className={styles.linkSection}>
         <div className={styles.linkCard}>
-          <a href="https://trust.yuhan.ac.kr/" target="_blank"><img src="/bf.png"></img></a> 
+          <a href="https://trust.yuhan.ac.kr/" target="_blank"><img src="/bs.png" alt ="비통시 바로가기"></img></a> 
         </div>
         <div className={styles.linkCard}>
-          <a href="https://portal.yuhan.ac.kr/" target="_blank"><img src="/portal.png"></img></a>
+          <a href="https://portal.yuhan.ac.kr/" target="_blank"><img src="/portal.png" alt="포털 바로가기"></img></a>
         </div>
         <div className={styles.linkCard}>
-          <a href="https://portal.yuhan.ac.kr/"><img src="/detail.png"></img></a>
+           <a href="/[Yutier]YuhanTRUST_프로그램정리.zip" download><img src="/detail.png" alt="파일 다운로드"></img></a>
         </div>
       </div>
       <Footer />
