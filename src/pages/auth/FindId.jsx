@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import styles from './styles/findidpage.module.css';
+import styles from './styles/findid.module.css';
 import { googleSheetsService } from '../../services/googleSheetsService';
 
-function FindIdPage({login}){
+function FindId(){
     const[name, setName] = useState('');
     const[studentID, setStudentID] = useState('');
     const[email, setEmail] = useState('');
@@ -34,4 +34,4 @@ function FindIdPage({login}){
         </div>
     );
 }
-export default FindIdPage;
+export default FindId;

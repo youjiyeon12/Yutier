@@ -5,12 +5,11 @@ import { useEffect, useState } from 'react';
 // 파일 import
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
+import FindId from './pages/auth/FindId';
+import FindPassword from './pages/auth/FindPassword';
 import Home from './pages/home/Home';
 import Detail from './pages/home/Detail';
-import Footer from './components/common/Footer';
 import Guide from './pages/home/Guide';
-import Header from './components/common/Header';
-import Detail2 from './pages/home/Detail2';
 import Mypage from './pages/mypage/Mypage';
 import Matrix from './pages/matrix/Matrix';
 import MatrixURLSubmit from './pages/matrix/MatrixURLSubmit';
@@ -29,7 +28,6 @@ function App() {
     else localStorage.removeItem('user');
   }, [user]);
 
-  // 주석 형식 {/* */}
   return (
     <Router>
       <Routes>
@@ -41,6 +39,7 @@ function App() {
               : <Navigate to="/login" />
           }
         />
+
         {/* 로그인 페이지: 비로그인 상태에서만 접근 가능 */}
         <Route
           path="/login"
@@ -48,6 +47,7 @@ function App() {
             user ? <Navigate to="/" /> : <Login onLogin={setUser} />
           }
         />
+
         {/* 회원가입 페이지 */}
         <Route
           path="/signup"
@@ -55,14 +55,36 @@ function App() {
             user ? <Navigate to="/" /> : <Signup onRegister={setUser} />
           }
         />
+
+        {/* 아이디 찾기 페이지: 비로그인 상태에서만 접근 가능 */}
+        <Route
+          path="/findid" 
+          element={
+            user ? <Navigate to="/" /> : <FindId />
+          }
+        />
+
+        {/* 비밀번호 찾기 페이지: 비로그인 상태에서만 접근 가능 */}
+        <Route
+          path="/findpassword"
+          element={
+            user ? <Navigate to="/" /> : <FindPassword />
+          }
+        />
+
         {/* trust 설명 페이지 */}
-        <Route path="/detail" element={<Detail user={user} onLogout={() => setUser(null)} />} />
+        <Route path="/detail" 
+          element={
+            <Detail user={user} onLogout={() => setUser(null)} />
+          } 
+        />
         
         {/* 이용가이드 페이지 */}
         <Route
           path="/guide"
           element={<Guide user={user} onLogout={() => setUser(null)} />}
         />
+
         {/* 마이 페이지 */}
         <Route
           path="/mypage"
