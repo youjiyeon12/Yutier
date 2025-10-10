@@ -54,8 +54,12 @@ function Login({ onLogin }) {
           <div className={styles.rowButton}>
             <button type="submit">로그인</button>
             <button type="button" onClick={() => navigate('/signup')}>회원가입</button>
-            <button type="button" onClick={() => navigate('/findid')}>아이디 찾기</button>
-            <button type="button" onClick={() => navigate('/findpassword')}>비밀번호 찾기</button>
+          </div>
+
+            <div className={styles.findLinks}>
+              <span onClick={() => navigate('/findid')}>아이디 찾기</span>
+              <span className={styles.separator}>|</span>
+            <span onClick={() => navigate('/findpassword')}>비밀번호 찾기</span>
           </div>
         </form>
 
