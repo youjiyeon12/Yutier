@@ -12,47 +12,46 @@ const SHEET_NAMES = {
   MAJOR: 'major'
 };
 
+// 웹 앱 진입점: 쿼리 파라미터의 action 값으로 라우팅합니다.
 function doGet(e) {
-  // GET 요청이 오면 doPost로 그대로 전달하여 CORS 문제를 우회합니다.
-  return doPost(e);
+  try {
+    const { action, ...data } = e.parameter || {};
+    console.log('=== API 호출 시작 (GET) ===');
+    console.log('요청된 액션:', action);
+    console.log('전체 파라미터:', e.parameter);
+    console.log('현재 시간:', new Date().toISOString());
+    
+    return routeRequest(action, data);
+  } catch (err) {
+    return json(500, { success: false, message: 'Server error', detail: String(err) });
+  }
 }
 
+// POST 요청 처리: JSON 데이터를 받아서 처리합니다.
 function doPost(e) {
   try {
-    let data;
-    // GET 요청은 e.parameter, POST 요청은 e.postData.contents로 데이터를 받습니다.
+    console.log('=== API 호출 시작 (POST) ===');
+    console.log('POST 데이터:', e.postData);
+    console.log('현재 시간:', new Date().toISOString());
+    
+    let data = {};
     if (e.postData && e.postData.contents) {
       try {
         data = JSON.parse(e.postData.contents);
-      } catch(err){
-        // POST 요청 본문이 JSON이 아닐 경우를 대비
-        console.error("POST 데이터 파싱 오류:", err);
-        data = {}; // 오류 발생 시 빈 객체로 초기화
+      } catch (parseError) {
+        console.error('JSON 파싱 오류:', parseError);
+        return json(200, { success: false, message: 'JSON 파싱 오류: ' + String(parseError) });
       }
-    } else {
-      data = e.parameter;
     }
     
     const { action, ...requestData } = data;
-    console.log(`[API] action: ${action}`);
+    console.log('요청된 액션:', action);
+    console.log('요청 데이터:', requestData);
     
-    // 프론트엔드에서 문자열로 변환된 JSON 파라미터들을 다시 객체로 파싱합니다.
-    const paramsToParse = ['scores', 'updates', 'updateData'];
-    paramsToParse.forEach(param => {
-      if (requestData[param] && typeof requestData[param] === 'string') {
-        try {
-          requestData[param] = JSON.parse(requestData[param]);
-        } catch (err) {
-          console.error(`'${param}' 파라미터 파싱 오류:`, err);
-        }
-      }
-    });
-
     return routeRequest(action, requestData);
-
   } catch (error) {
-    console.error('API 처리 중 오류:', error);
-    return json(500, { success: false, message: '서버 오류: ' + String(error) });
+    console.error('POST API 처리 중 오류:', error);
+    return json(200, { success: false, message: '서버 오류: ' + String(error) });
   }
 }
 
@@ -93,6 +92,10 @@ function routeRequest(action, data) {
       return handleVerifyPassword(data);
     case 'deleteAccount':
       return handleDeleteAccount(data);
+    case 'sendVerificationCode':
+      return handleSendVerificationCode(data);
+    case 'findIdWithVerification':
+      return handleFindIdWithVerification(data);
     case 'recalculateAllTiers':
       return recalculateAllTiers();
     default:
@@ -199,10 +202,12 @@ function handleGetMajorList() {
 function handleSaveTierScores(data) {
   const { id } = data;
   var scores = data.scores;
+  // URL 쿼리로 전달된 경우 문자열이므로 파싱
   if (typeof scores === 'string') {
     try { scores = JSON.parse(scores); } catch (e) { scores = {}; }
   }
   
+  // 1. 5개 핵심역량 점수 추출
   const competencyScores = {
     유한인성역량: parseFloat(scores.유한인성역량) || 0,
     기초학습역량: parseFloat(scores.기초학습역량) || 0,
@@ -210,10 +215,39 @@ function handleSaveTierScores(data) {
     직무수행역량: parseFloat(scores.직무수행역량) || 0,
     취창업기초역량: parseFloat(scores.취창업기초역량) || 0
   };
+  
   const totalScore = Object.values(competencyScores).reduce((sum, score) => sum + score, 0);
-
+  
+  // 2. 티어 자격 확인: 모든 핵심역량이 70점 이상인지 확인
+  const isQualified = Object.values(competencyScores).every(score => score >= 70);
+  
+  // 3. 티어 계산
+  let tierValue = 'Unranked';
+  let nextTier = 'Bronze';
+  let scoreForNextTier = 70;
+  let isRankOne = false;
+  
+  if (isQualified) {
+    // 자격이 있는 경우, 전체 학생들과 비교하여 상위 % 계산
+    const tierResult = calculateTierByRanking(id, totalScore);
+    tierValue = tierResult.tier;
+    nextTier = tierResult.nextTier;
+    scoreForNextTier = tierResult.scoreForNextTier;
+    isRankOne = tierResult.isRankOne;
+    
+    console.log('🎯 [handleSaveTierScores] 티어 계산 결과:');
+    console.log('🏆 계산된 티어:', tierValue);
+    console.log('🎯 다음 목표:', nextTier);
+    console.log('📊 필요 점수:', scoreForNextTier);
+    console.log('🥇 1등 여부:', isRankOne);
+  } else {
+    console.log('❌ [handleSaveTierScores] 자격 미달 - Unranked 처리');
+  }
+  
   const sheet = getSheet(SHEET_NAMES.TIER);
   const sheetData = sheet.getDataRange().getValues();
+  
+  // 기존 사용자 찾기
   let rowIndex = -1;
   for (let i = 1; i < sheetData.length; i++) {
     if (sheetData[i][0] === id) {
@@ -222,18 +256,19 @@ function handleSaveTierScores(data) {
     }
   }
   
-  const values = [id, scores.유한인성역량, scores.기초학습역량, scores.직업기초역량, scores.직무수행역량, scores.취창업기초역량, totalScore];
+  const values = [id, scores.유한인성역량, scores.기초학습역량, scores.직업기초역량, scores.직무수행역량, scores.취창업기초역량, totalScore, tierValue, nextTier, scoreForNextTier, isRankOne];
   
   if (rowIndex > 0) {
-    // 7개 항목만 먼저 업데이트 (티어 정보 제외)
-    sheet.getRange(rowIndex + 1, 1, 1, values.length).setValues([values]);
+    // 기존 행 업데이트
+    for (let i = 0; i < values.length; i++) {
+      sheet.getRange(rowIndex + 1, i + 1).setValue(values[i]);
+    }
   } else {
-    // 새 행 추가 시에도 7개 항목만 먼저 추가
+    // 새 행 추가
     sheet.appendRow(values);
   }
-
-  // 모든 사용자의 티어 재계산 실행
-  return recalculateAllTiers();
+  
+  return json(200, { success: true, message: '점수가 성공적으로 등록되었습니다.' });
 }
 
 // 티어 점수 조회
@@ -1191,113 +1226,315 @@ function findTierUserById(id) {
 }
 
 /**
- * 전체 티어 시스템 재계산
- * 모든 학생의 티어를 새로운 규칙에 따라 재계산하고 시트에 한 번에 업데이트합니다.
+ * 상위 % 기반 티어 계산 함수
+ * 자격이 있는 학생들 중에서 합산 점수 순위에 따라 티어를 결정
+ * 
+ * @param {string} currentUserId - 현재 사용자 ID
+ * @param {number} currentUserScore - 현재 사용자의 합산 점수
+ * @returns {Object} { tier, nextTier, scoreForNextTier, isRankOne }
  */
-function recalculateAllTiers() {
-  console.log('🔄 [recalculateAllTiers] 전체 티어 재계산 시작');
+function calculateTierByRanking(currentUserId, currentUserScore) {
+  console.log('🎯 [calculateTierByRanking] 티어 계산 시작');
+  console.log('👤 [calculateTierByRanking] 사용자 ID:', currentUserId);
+  console.log('📊 [calculateTierByRanking] 사용자 점수:', currentUserScore);
+  
+  try {
+    // 1. 자격이 있는 모든 학생들의 점수 조회
+    const qualifiedStudents = getQualifiedStudents();
+    console.log('📋 [calculateTierByRanking] 자격 있는 학생 수:', qualifiedStudents.length);
+    
+    if (qualifiedStudents.length === 0) {
+      console.log('⚠️ [calculateTierByRanking] 자격 있는 학생이 없음');
+      return { tier: 'Bronze', nextTier: 'Silver', scoreForNextTier: 0, isRankOne: false };
+    }
+    
+    // 2. 점수 기준으로 내림차순 정렬
+    qualifiedStudents.sort((a, b) => b.totalScore - a.totalScore);
+    console.log('📊 [calculateTierByRanking] 정렬된 학생들:', qualifiedStudents.slice(0, 5).map(s => `${s.id}: ${s.totalScore}점`));
+    
+    // 3. 현재 사용자의 순위 찾기
+    const currentUserRank = qualifiedStudents.findIndex(student => student.id === currentUserId) + 1;
+    console.log('🏆 [calculateTierByRanking] 현재 사용자 순위:', currentUserRank);
+    
+    if (currentUserRank === 0) {
+      console.log('❌ [calculateTierByRanking] 사용자를 찾을 수 없음');
+      return { tier: 'Bronze', nextTier: 'Silver', scoreForNextTier: 0, isRankOne: false };
+    }
+    
+    // 4. 상위 % 계산
+    const totalQualified = qualifiedStudents.length;
+    const percentile = (currentUserRank / totalQualified) * 100;
+    console.log('📈 [calculateTierByRanking] 상위 퍼센트:', percentile.toFixed(2) + '%');
+    
+    // 5. 티어 결정
+    let tier, nextTier, scoreForNextTier, isRankOne;
+    
+    if (percentile <= 5) {
+      tier = 'Diamond';
+      if (currentUserRank === 1) {
+        // 1등인 경우
+        nextTier = '1위';
+        scoreForNextTier = 0; // 이미 1등
+        isRankOne = true;
+      } else {
+        // Diamond이지만 1등이 아닌 경우
+        nextTier = '1위';
+        scoreForNextTier = qualifiedStudents[0].totalScore + 1; // 1등 점수 + 1
+        isRankOne = false;
+      }
+    } else if (percentile <= 10) {
+      tier = 'Gold';
+      nextTier = 'Diamond';
+      // Diamond 커트라인 찾기 (상위 5% 경계)
+      const diamondCutoff = Math.ceil(totalQualified * 0.05);
+      scoreForNextTier = qualifiedStudents[diamondCutoff - 1].totalScore + 1;
+      isRankOne = false;
+    } else if (percentile <= 30) {
+      tier = 'Silver';
+      nextTier = 'Gold';
+      // Gold 커트라인 찾기 (상위 10% 경계)
+      const goldCutoff = Math.ceil(totalQualified * 0.10);
+      scoreForNextTier = qualifiedStudents[goldCutoff - 1].totalScore + 1;
+      isRankOne = false;
+    } else {
+      tier = 'Bronze';
+      nextTier = 'Silver';
+      // Silver 커트라인 찾기 (상위 30% 경계)
+      const silverCutoff = Math.ceil(totalQualified * 0.30);
+      scoreForNextTier = qualifiedStudents[silverCutoff - 1].totalScore + 1;
+      isRankOne = false;
+    }
+    
+    console.log('✅ [calculateTierByRanking] 최종 결과:');
+    console.log('🏆 티어:', tier);
+    console.log('🎯 다음 목표:', nextTier);
+    console.log('📊 필요 점수:', scoreForNextTier);
+    console.log('🥇 1위 여부:', isRankOne);
+    
+    return { tier, nextTier, scoreForNextTier, isRankOne };
+    
+  } catch (error) {
+    console.error('❌ [calculateTierByRanking] 오류 발생:', error);
+    return { tier: 'Bronze', nextTier: 'Silver', scoreForNextTier: 0, isRankOne: false };
+  }
+}
+
+/**
+ * 자격이 있는 학생들 조회
+ * 모든 핵심역량이 70점 이상인 학생들만 반환
+ * 
+ * @returns {Array} 자격 있는 학생들의 배열 [{ id, totalScore, scores }]
+ */
+function getQualifiedStudents() {
+  console.log('🔍 [getQualifiedStudents] 자격 있는 학생들 조회 시작');
+  
   try {
     const sheet = getSheet(SHEET_NAMES.TIER);
     const sheetData = sheet.getDataRange().getValues();
+    
     if (sheetData.length <= 1) {
-      return json(200, { success: true, message: '재계산할 데이터가 없습니다.' });
+      console.log('📋 [getQualifiedStudents] 데이터가 없음');
+      return [];
     }
-
-    const allStudents = sheetData.slice(1).map(row => ({
-      id: row[0],
-      scores: {
-        유한인성역량: parseFloat(row[1]) || 0, 기초학습역량: parseFloat(row[2]) || 0,
-        직업기초역량: parseFloat(row[3]) || 0, 직무수행역량: parseFloat(row[4]) || 0,
-        취창업기초역량: parseFloat(row[5]) || 0,
-      },
-      totalScore: parseFloat(row[6]) || 0
-    }));
-
-    const qualifiedStudents = allStudents
-      .filter(student => student.id && Object.values(student.scores).every(score => score >= 70))
-      .sort((a, b) => b.totalScore - a.totalScore);
     
-    const totalQualified = qualifiedStudents.length;
-    let diamondCutoffScore = -1, goldCutoffScore = -1, silverCutoffScore = -1;
-
-    if (totalQualified > 0) {
-        const diamondCutoffRank = Math.ceil(totalQualified * 0.05);
-        const goldCutoffRank = Math.ceil(totalQualified * 0.10);
-        const silverCutoffRank = Math.ceil(totalQualified * 0.30);
-
-        if (qualifiedStudents.length >= diamondCutoffRank) {
-            diamondCutoffScore = qualifiedStudents[diamondCutoffRank - 1].totalScore;
-        }
-        if (qualifiedStudents.length >= goldCutoffRank) {
-            goldCutoffScore = qualifiedStudents[goldCutoffRank - 1].totalScore;
-        }
-        if (qualifiedStudents.length >= silverCutoffRank) {
-            silverCutoffScore = qualifiedStudents[silverCutoffRank - 1].totalScore;
-        }
-    }
-
-    const updates = [];
-
-    allStudents.forEach(student => {
-      const isQualified = student.id && Object.values(student.scores).every(score => score >= 70);
-      let tierValue = 'Unranked', nextTier = 'Bronze', scoreForNextTier = 70, isRankOne = false;
-
-      if (isQualified && totalQualified > 0) {
-        // 학생의 점수를 '커트라인 점수'와 직접 비교하여 등급을 결정합니다.
-        if (student.totalScore >= diamondCutoffScore) {
-            tierValue = 'Diamond';
-        } else if (student.totalScore >= goldCutoffScore) {
-            tierValue = 'Gold';
-        } else if (student.totalScore >= silverCutoffScore) {
-            tierValue = 'Silver';
-        } else {
-            tierValue = 'Bronze';
-        }
-
-        // 1위 여부 확인
-        if (tierValue === 'Diamond' && student.totalScore >= qualifiedStudents[0].totalScore) {
-            const rank = qualifiedStudents.findIndex(s => s.id === student.id) + 1;
-            if (rank === 1) isRankOne = true;
-        }
-
-        // 결정된 등급을 기준으로 '다음 목표'와 '필요 점수'를 계산합니다.
-        let targetScore = 0;
-        if(isRankOne){
-            nextTier = '1위';
-            scoreForNextTier = 0;
-        } else {
-            switch(tierValue) {
-                case 'Diamond':
-                    nextTier = '1위';
-                    targetScore = qualifiedStudents[0].totalScore + 1;
-                    break;
-                case 'Gold':
-                    nextTier = 'Diamond';
-                    targetScore = diamondCutoffScore + 1;
-                    break;
-                case 'Silver':
-                    nextTier = 'Gold';
-                    targetScore = goldCutoffScore + 1;
-                    break;
-                case 'Bronze':
-                    nextTier = 'Silver';
-                    targetScore = silverCutoffScore + 1;
-                    break;
-            }
-            scoreForNextTier = Math.max(0, targetScore - student.totalScore);
-        }
+    const qualifiedStudents = [];
+    
+    // 각 행을 순회하며 자격 확인
+    for (let i = 1; i < sheetData.length; i++) {
+      const row = sheetData[i];
+      const id = row[0];
+      const scores = {
+        유한인성역량: parseFloat(row[1]) || 0,
+        기초학습역량: parseFloat(row[2]) || 0,
+        직업기초역량: parseFloat(row[3]) || 0,
+        직무수행역량: parseFloat(row[4]) || 0,
+        취창업기초역량: parseFloat(row[5]) || 0
+      };
+      
+      const totalScore = parseFloat(row[6]) || 0;
+      
+      // 모든 핵심역량이 70점 이상인지 확인
+      const isQualified = Object.values(scores).every(score => score >= 70);
+      
+      if (isQualified) {
+        qualifiedStudents.push({
+          id: id,
+          totalScore: totalScore,
+          scores: scores
+        });
+        console.log(`✅ [getQualifiedStudents] 자격 통과: ${id} (${totalScore}점)`);
+      } else {
+        console.log(`❌ [getQualifiedStudents] 자격 미달: ${id} (점수: ${Object.values(scores).join(', ')})`);
       }
-      updates.push([tierValue, nextTier, scoreForNextTier, isRankOne]);
-    });
-    
-    if (updates.length > 0) {
-      sheet.getRange(2, 8, updates.length, 4).setValues(updates);
     }
     
-    return json(200, { success: true, message: `점수가 저장되었습니다.` });
+    console.log(`📊 [getQualifiedStudents] 총 자격 있는 학생: ${qualifiedStudents.length}명`);
+    return qualifiedStudents;
     
   } catch (error) {
-    return json(500, { success: false, message: '재계산 중 오류가 발생했습니다: ' + String(error) });
+    console.error('❌ [getQualifiedStudents] 오류 발생:', error);
+    return [];
+  }
+}
+
+/**
+ * 전체 티어 시스템 재계산
+ * 모든 학생의 티어를 새로운 규칙에 따라 재계산합니다.
+ * 기존 데이터가 있는 경우 사용할 수 있습니다.
+ */
+function recalculateAllTiers() {
+  console.log('🔄 [recalculateAllTiers] 전체 티어 재계산 시작');
+  
+  try {
+    const sheet = getSheet(SHEET_NAMES.TIER);
+    const sheetData = sheet.getDataRange().getValues();
+    
+    if (sheetData.length <= 1) {
+      console.log('📋 [recalculateAllTiers] 데이터가 없음');
+      return { success: true, message: '재계산할 데이터가 없습니다.' };
+    }
+    
+    let updatedCount = 0;
+    
+    // 각 학생의 티어를 재계산
+    for (let i = 1; i < sheetData.length; i++) {
+      const row = sheetData[i];
+      const id = row[0];
+      
+      if (!id) continue;
+      
+      const scores = {
+        유한인성역량: parseFloat(row[1]) || 0,
+        기초학습역량: parseFloat(row[2]) || 0,
+        직업기초역량: parseFloat(row[3]) || 0,
+        직무수행역량: parseFloat(row[4]) || 0,
+        취창업기초역량: parseFloat(row[5]) || 0
+      };
+      
+      const totalScore = parseFloat(row[6]) || 0;
+      
+      // 자격 확인
+      const isQualified = Object.values(scores).every(score => score >= 70);
+      
+      let tierValue = 'Unranked';
+      let nextTier = 'Bronze';
+      let scoreForNextTier = 70;
+      let isRankOne = false;
+      
+      if (isQualified) {
+        const tierResult = calculateTierByRanking(id, totalScore);
+        tierValue = tierResult.tier;
+        nextTier = tierResult.nextTier;
+        scoreForNextTier = tierResult.scoreForNextTier;
+        isRankOne = tierResult.isRankOne;
+      }
+      
+      // 시트 업데이트
+      sheet.getRange(i + 1, 8).setValue(tierValue);        // 티어
+      sheet.getRange(i + 1, 9).setValue(nextTier);         // 다음티어
+      sheet.getRange(i + 1, 10).setValue(scoreForNextTier); // 필요점수
+      sheet.getRange(i + 1, 11).setValue(isRankOne);        // 1위여부
+      
+      updatedCount++;
+      console.log(`✅ [recalculateAllTiers] ${id} 업데이트 완료: ${tierValue}`);
+    }
+    
+    console.log(`🎉 [recalculateAllTiers] 재계산 완료: ${updatedCount}명`);
+    return { success: true, message: `${updatedCount}명의 티어가 재계산되었습니다.` };
+    
+  } catch (error) {
+    console.error('❌ [recalculateAllTiers] 오류 발생:', error);
+    return { success: false, message: '재계산 중 오류가 발생했습니다: ' + error.message };
+  }
+}
+
+/**
+ * 아이디 찾기용 인증번호 발송 처리 핸들러
+ * @param {Object} data - { name, studentID, email }
+ * @returns {ContentService.TextOutput} JSON 응답
+ */
+function handleSendVerificationCode(data) {
+  const { name, studentID, email } = data;
+
+  try {
+    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAMES.USERS);
+    const allData = sheet.getDataRange().getValues();
+    let userExists = false;
+
+    // 사용자 존재 여부 확인
+    for (let i = 1; i < allData.length; i++) {
+      const row = allData[i];
+      // C열=이름(2), E열=학번(4), D열=이메일(3)
+      if (row[2] == name && String(row[4]) == String(studentID) && row[3] == email) {
+        userExists = true;
+        break;
+      }
+    }
+
+    if (!userExists) {
+      return json(404, { success: false, message: '입력하신 정보와 일치하는 사용자가 없습니다.' });
+    }
+    
+    // 6자리 랜덤 인증번호 생성
+    const verificationCode = String(Math.floor(100000 + Math.random() * 900000));
+    
+    // CacheService를 이용해 3분(180초) 동안만 인증번호 임시 저장
+    const cache = CacheService.getScriptCache();
+    cache.put(email, verificationCode, 180); // 키: 이메일, 값: 인증번호, 유효시간: 180초
+    
+    // MailApp을 이용해 사용자에게 이메일 발송
+    const subject = "[YUTIER] 아이디 찾기 인증번호 안내";
+    const body = `YUTIER 아이디 찾기를 위한 인증번호는 [ ${verificationCode} ] 입니다. 3분 내에 입력해주세요.`;
+    MailApp.sendEmail(email, subject, body);
+    
+    return json(200, { success: true, message: '인증번호가 발송되었습니다.' });
+
+  } catch (error) {
+    console.error("handleSendVerificationCode 오류:", error);
+    return json(500, { success: false, message: '인증번호 발송 중 오류가 발생했습니다.' });
+  }
+}
+
+/**
+ * 인증번호 확인 후 아이디를 반환하는 핸들러
+ * @param {Object} data - { email, code }
+ * @returns {ContentService.TextOutput} JSON 응답
+ */
+function handleFindIdWithVerification(data) {
+  const { email, code } = data;
+  try {
+    const cache = CacheService.getScriptCache();
+    const storedCode = cache.get(email);
+    
+    // 캐시에 저장된 코드가 있는지, 만료되지는 않았는지 확인
+    if (storedCode == null) {
+      return json(400, { success: false, message: '인증번호 유효 시간이 만료되었습니다. 다시 시도해주세요.' });
+    }
+    
+    // 사용자가 입력한 코드와 저장된 코드가 일치하는지 확인
+    if (storedCode != code) {
+      return json(400, { success: false, message: '인증번호가 일치하지 않습니다.' });
+    }
+    
+    // 인증 성공! 시트에서 아이디를 찾아서 반환
+    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAMES.USERS);
+    const allData = sheet.getDataRange().getValues();
+    
+    for (let i = 1; i < allData.length; i++) {
+      const row = allData[i];
+      // A열=아이디(0), D열=이메일(3)
+      if (row[3] == email) {
+        cache.remove(email); // 인증에 사용된 코드는 즉시 삭제하여 재사용 방지
+        return json(200, { success: true, id: row[0] });
+      }
+    }
+    
+    // 혹시 모를 예외 상황 (인증은 됐는데 DB에 이메일이 없는 경우)
+    return json(404, { success: false, message: '사용자 정보를 찾는 데 실패했습니다.' });
+    
+  } catch (error) {
+    console.error("handleFindIdWithVerification 오류:", error);
+    return json(500, { success: false, message: '인증 확인 중 오류가 발생했습니다.' });
   }
 }
 
