@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import styles from './styles/findid.module.css';
 import { googleSheetsService } from '../../services/googleSheetsService';
 
@@ -17,7 +16,6 @@ function FindId(){
     const[isVerified, setIsVerified] = useState(false); // 인증 완료 여부
     const[timer, setTimer] = useState(0); // 타이머
     const timerRef = useRef(null);
-    const navigage = useNavigate();
 
     // 타이머 효과
     useEffect(() => {
@@ -28,8 +26,9 @@ function FindId(){
         } else {
             clearTimeout(timerRef.current);
             if(isCodeSent && !isVerified) {
-                // 시간이 만료되었지만 아직 인증되지 않았다면
-                // '인증번호 받기' 버튼을 다시 활성화할 수 있도록 상태 초기화
+                setMessage('인증 시간이 만료되었습니다. 다시 요청해주세요.'); 
+                setIsCodeSent(false); 
+                setCheckNumber(''); 
             }
         }
          return () => clearTimeout(timerRef.current);

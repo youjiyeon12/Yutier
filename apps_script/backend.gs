@@ -96,6 +96,12 @@ function routeRequest(action, data) {
       return handleSendVerificationCode(data);
     case 'findIdWithVerification':
       return handleFindIdWithVerification(data);
+     case 'sendVerificationCodeForPassword':
+      return handleSendVerificationCodeForPassword(data);
+    case 'findPasswordWithVerification':
+      return handleFindPasswordWithVerification(data);
+    case 'updatePassword':
+      return handleUpdatePassword(data);
     case 'recalculateAllTiers':
       return recalculateAllTiers();
     default:
@@ -1536,6 +1542,67 @@ function handleFindIdWithVerification(data) {
     console.error("handleFindIdWithVerification 오류:", error);
     return json(500, { success: false, message: '인증 확인 중 오류가 발생했습니다.' });
   }
+}
+
+/**
+ * 비밀번호 찾기용 인증번호 발송 처리
+ */
+function handleSendVerificationCodeForPassword(data) {
+  const { name, id, email } = data;
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAMES.USERS);
+  const allData = sheet.getDataRange().getValues();
+  const userExists = allData.slice(1).some(row => row[2] == name && row[0] == id && row[3] == email);
+  
+  if (!userExists) {
+    return json(404, { success: false, message: '입력하신 정보와 일치하는 사용자가 없습니다.' });
+  }
+  
+  const verificationCode = String(Math.floor(100000 + Math.random() * 900000));
+  try {
+    MailApp.sendEmail(email, '[YUTIER] 비밀번호 찾기 인증번호 안내', `인증번호는 [ ${verificationCode} ] 입니다.`);
+    CacheService.getScriptCache().put(email, verificationCode, 180);
+    return json(200, { success: true, message: '인증번호가 발송되었습니다.' });
+  } catch (err) {
+    return json(500, { success: false, message: '이메일 발송 중 오류가 발생했습니다.' });
+  }
+}
+
+/**
+ * 비밀번호 찾기용 인증번호 확인 처리
+ */
+function handleFindPasswordWithVerification(data) {
+  const { email, code } = data;
+  const cache = CacheService.getScriptCache();
+  const storedCode = cache.get(email);
+  
+  if (storedCode == null) return json(400, { success: false, message: '인증 시간이 만료되었습니다.' });
+  if (storedCode != code) return json(400, { success: false, message: '인증번호가 일치하지 않습니다.' });
+  
+  // 인증 성공 시 프론트엔드에서 UI를 변경할 수 있도록 성공 응답만 보냄
+  return json(200, { success: true });
+}
+
+/**
+ * 새 비밀번호 업데이트 처리 
+ */
+function handleUpdatePassword(data) {
+  const { id, newPassword } = data;
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAMES.USERS);
+  const allData = sheet.getDataRange().getValues();
+  
+  for (let i = 1; i < allData.length; i++) {
+    if (allData[i][0] == id) { // A열(아이디)
+      const hashedPassword = newPassword;
+      sheet.getRange(i + 1, 2).setValue(hashedPassword); // B열(비밀번호)
+      
+      const userEmail = allData[i][3]; // D열(이메일)
+      CacheService.getScriptCache().remove(userEmail);
+      
+      return json(200, { success: true, message: '비밀번호가 성공적으로 변경되었습니다.' });
+    }
+  }
+  
+  return json(404, { success: false, message: '사용자 정보를 찾을 수 없어 비밀번호를 변경할 수 없습니다.' });
 }
 
 // JSON 응답 헬퍼: 항상 JSON 텍스트로 반환합니다.
