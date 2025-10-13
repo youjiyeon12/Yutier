@@ -90,7 +90,7 @@
 
 .userMajor {
   font-size: 16px;
-  color: #555c7a;
+  color: #393f59;
   margin: 0;
   font-family: 'Pretendard-Regular', sans-serif;
 }
@@ -124,7 +124,7 @@
   display: flex;
   justify-content: center;  
   align-items: center;     
-  height: 120px;           
+  height: 50px;           
   font-size: 16px;
   color: #393f59;
 }
@@ -164,3 +164,10 @@
   transform: translateY(-5px);
 }
 
+.gradeLabel {
+  font-size: 15px;
+  color: #555c7a;
+  margin: 0;
+  font-family: 'Pretendard-Regular', sans-serif;
+  margin-bottom: 4px;
+}

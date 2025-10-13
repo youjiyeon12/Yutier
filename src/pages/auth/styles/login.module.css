@@ -31,7 +31,7 @@
   border: 1px solid #ddd;
   padding: 30px;
   border-radius: 10px;
-  width: 300px;
+  width: 330px;
   display: flex;
   flex-direction: column;
 }
@@ -80,7 +80,7 @@
   border: 1px solid #ddd;
   padding: 30px;
   border-radius: 10px;
-  width: 300px;
+  width: 330px;
   font-size: 13px;
 }
 
@@ -95,7 +95,7 @@
 }
 
 .infoBox li {
-  font-size: 15px;
+  font-size: 14px;
   margin-bottom: 3px;
   color: #484848;
 }

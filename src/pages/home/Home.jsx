@@ -117,6 +117,7 @@ function Home({ user, onLogout }) {
               )}
             </div>
             <div className={styles.userInfo}>
+              <p className={styles.gradeLabel}>&lt;{tierInfo?.currentTier || 'Unranked'}&gt;</p>
               <p className={styles.userMajor}>{user.department && user.major ? `${user.department} ${user.major}` : user.department || '전공 정보 없음'}</p>
               <p className={styles.userName}>{user.name || user.id} 님</p>
             </div>
@@ -125,7 +126,7 @@ function Home({ user, onLogout }) {
           {/* 점수 상태에 따라 다른 버튼*/}
           {!tierInfo ? (
             <div className={styles.loadingWrapper}>
-              <p>정보를 불러오는 중...</p>
+              <p>정보를 불러오는 중...</p>  
             </div>
           ) : tierInfo.success ? (
             <button onClick={() => navigate('/mypage')} className={styles.scoreLink}>

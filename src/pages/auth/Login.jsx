@@ -70,6 +70,7 @@ function Login({ onLogin }) {
             <li>TRUST 티어를 확인하고 싶은 학생</li>
             <li>어떤 비교과 프로그램을 들을지 고민 중인 학생</li>
             <li>TRUST 역량 점수 관리에 대한 가이드가 필요한 학생</li>
+            <li>TRUST 역량별 프로그램의 세부사항이 궁금한 학생</li>
           </ul>
           <button className={styles.infoButton} onClick={() => navigate('/detail')}>TRUST 인증제도란?</button>
         </div>
