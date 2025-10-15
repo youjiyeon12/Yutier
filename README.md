@@ -96,7 +96,7 @@
 ## 👏 도움을 주신 분들 (Acknowledgements)
 
 -   **티어 이미지 디자인**: 숙명여자대학교 환경디자인과 박령빈
--   **백엔드 마이그레이션 (Node.js → Google Apps Script)**: 유한대학교 컴퓨터소프트웨어공학과 김형균, 용지순
+-   **백엔드 마이그레이션 (Node.js → Google Apps Script)**: 유한대학교 컴퓨터공학과 김형균, 용지순
 
 ---
 *This project was part of the YUHAN TRUST program.*
