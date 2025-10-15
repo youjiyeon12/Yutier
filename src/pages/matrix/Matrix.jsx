@@ -129,48 +129,20 @@
     console.log("🔍 [Matrix] isSaving:", isSaving);
     console.log("🔍 [Matrix] isFilter:", isFilter);
 
-    // 페이지 진입 시 URL 유효성 검사 및 저장된 점수를 자동으로 불러옴
     useEffect(() => {
-      const initializeMatrix = async () => {
-        if (!userId) return;
-        
-        // URL 유효성 검사
-        try {
-          const urlValidation = await googleSheetsService.validateMatrixUrl(userId);
-          if (!urlValidation.valid) {
-            console.error("❌ [Matrix] 페이지 로드 시 URL이 유효하지 않습니다.");
-            alert("매트릭스 URL이 등록되지 않았거나 유효하지 않습니다. URL 등록 페이지로 이동합니다.");
-            window.location.href = '/matrix-url';
-            return;
-          }
-        } catch (error) {
-          console.error("❌ [Matrix] 페이지 로드 시 URL 검증 실패:", error);
-          alert("매트릭스 URL 검증 중 오류가 발생했습니다. URL 등록 페이지로 이동합니다.");
-          window.location.href = '/matrix-url';
-          return;
-        }
+      if (userId) {
+        handleSearch();
+      }
 
-        // URL이 유효하면 점수 조회
-        try {
-          const data = await googleSheetsService.getTierScores(userId);
-          if (data.success && data.scores) {
-            setTierScores(data.scores);
-          }
-        } catch (error) {
-          console.error("페이지 로드 시 점수 조회 오류:", error);
-        }
-      };
-      
-      initializeMatrix();
-    }, [userId]);
+    }, [userId]); 
 
-    // 점수 입력 시, 실시간으로 합산 점수 계산
-    useEffect(() => {
-      const total = Object.values(tierScores).reduce((sum, score) => {
-        return sum + (Number(score) || 0);
-      }, 0);
-      setTotalTierScore(total);
-    }, [tierScores]);
+      // 점수 입력 시, 실시간으로 합산 점수 계산
+      useEffect(() => {
+        const total = Object.values(tierScores).reduce((sum, score) => {
+          return sum + (Number(score) || 0);
+        }, 0);
+        setTotalTierScore(total);
+      }, [tierScores]);
 
     // 체크박스 상태 변경 핸들러
     const handleCheckboxChange = (programName, detailName, isChecked) => {
