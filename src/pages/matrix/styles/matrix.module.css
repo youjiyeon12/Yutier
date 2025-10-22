@@ -109,19 +109,63 @@
 /* 클릭 가능한 역량 텍스트 스타일 */
 .clickableCompetency {
   cursor: pointer;
-  color: #3b82f6;
   font-weight: 600;
   text-decoration: underline;
   text-decoration-color: transparent;
   transition: all 0.2s ease;
-  padding: 2px 4px;
+  padding: 2px 4px; 
   border-bottom: 1px solid #b8bfcd;
 }
 
 .clickableCompetency:hover {
-  background: #eff6ff;
-  text-decoration-color: #3b82f6;
+  text-decoration-color: inherit;
   transform: translateY(-1px);
+}
+
+/* 역량별 clickable 스타일 */
+.clickableC0 {
+  background-color: #eff6ff; 
+  color: #1d4ed8;
+  border-bottom: 1px solid #bfdbfe;
+}
+.clickableC0:hover {
+  background-color: #dbeafe;
+}
+
+.clickableC1 {
+  background-color: #f0fdf4;
+  color: #166534; 
+  border-bottom: 1px solid #bbf7d0;
+}
+.clickableC1:hover {
+  background-color: #dcfce7;
+}
+
+.clickableC2 {
+  background-color: #fefce8;
+  color: #854d0e;
+  border-bottom: 1px solid #fef08a;
+}
+.clickableC2:hover {
+  background-color: #fef9c3;
+}
+
+.clickableC3 {
+  background-color: #fef2f2;
+  color: #991b1b;
+  border-bottom: 1px solid #fecaca;
+}
+.clickableC3:hover {
+  background-color: #fee2e2;
+}
+
+.clickableC4 {
+  background-color: #fdf2f8; 
+  color: #9d174d;
+  border-bottom: 1px solid #fbcfe8;
+}
+.clickableC4:hover {
+  background-color: #fce7f3;
 }
 
 /* 필터 초기화 버튼 */
@@ -189,12 +233,12 @@
 
 .searchBtn {
   padding: 7px 22px;
-  background: #223a7d;
+  background: #393F59;
   color: #fff;
   border: none;
   border-radius: 6px;
-  font-weight: 600;
   font-size: 16px;
+  font-weight: 300;
   cursor: pointer;
   box-shadow: 0 1px 4px #e3e6ed;
   transition: background 0.12s;
@@ -209,8 +253,8 @@
   color: #fff;
   border: none;
   border-radius: 6px;
-  font-weight: 600;
   font-size: 16px;
+  font-weight: 300;
   cursor: pointer;
   box-shadow: 0 1px 4px #e3e6ed;
   transition: background 0.12s;
@@ -224,7 +268,7 @@
 
 .container_wrap {
   flex: 1 0 auto;
-  margin-bottom: 18px;
+  margin-bottom: 60px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -370,7 +414,7 @@ footer {
   font-weight: 500;
   color: #555555;
   white-space: nowrap; 
-  box-shadow: 1px 1px 1px 1px rgb(149, 149, 149);
+  box-shadow: 1px 1px 1px 1px rgb(188, 188, 188);
   border-radius: 5px;
 }
 
@@ -381,15 +425,15 @@ footer {
   border-radius: 5px;
   text-align: right;
   font-size: 16px;
-}
+} 
 
 .registerBtn {
   padding: 8px 32px;
-  background: #223a7d;
+  background: #393F59;
   color: #fff;
   border: none;
   border-radius: 8px;
-  font-weight: 600;
+  font-weight: 300;
   font-size: 16px;
   cursor: pointer;
   transition: background 0.12s;

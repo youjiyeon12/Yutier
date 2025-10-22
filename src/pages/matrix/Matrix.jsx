@@ -355,7 +355,7 @@
           <div className={styles.scoreInputs}>
             <div className={styles.scoreItem}>
               <span 
-                className={styles.clickableCompetency}
+                className={`${styles.clickableCompetency} ${styles.clickableC0}`}
                 onClick={() => handleCompetencyClick('유한인성역량')}
                 title="유한인성역량 항목들 보기"
               >
@@ -365,7 +365,7 @@
             </div>
             <div className={styles.scoreItem}>
               <span 
-                className={styles.clickableCompetency}
+                className={`${styles.clickableCompetency} ${styles.clickableC1}`}
                 onClick={() => handleCompetencyClick('기초학습역량')}
                 title="기초학습역량 항목들 보기"
               >
@@ -375,7 +375,7 @@
             </div>
             <div className={styles.scoreItem}>
               <span 
-                className={styles.clickableCompetency}
+                className={`${styles.clickableCompetency} ${styles.clickableC2}`}
                 onClick={() => handleCompetencyClick('직업기초역량')}
                 title="직업기초역량 항목들 보기"
               >
@@ -385,7 +385,7 @@
             </div>
             <div className={styles.scoreItem}>
               <span 
-                className={styles.clickableCompetency}
+                className={`${styles.clickableCompetency} ${styles.clickableC3}`}
                 onClick={() => handleCompetencyClick('직무수행역량')}
                 title="직무수행역량 항목들 보기"
               >
@@ -395,7 +395,7 @@
             </div>
             <div className={styles.scoreItem}>
               <span 
-                className={styles.clickableCompetency}
+                className={`${styles.clickableCompetency} ${styles.clickableC4}`}
                 onClick={() => handleCompetencyClick('취창업기초역량')}
                 title="취창업기초역량 항목들 보기"
               >
