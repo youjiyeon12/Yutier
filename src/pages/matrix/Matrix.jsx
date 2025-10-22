@@ -32,7 +32,15 @@
       const { summaryRow, dataRows } = groupData;
       const totalScore = summaryRow ? summaryRow['총점'] : '';
 
-      const colorClass = colorSet[competencyIndex % colorSet.length];
+      const competencyColorMap = {
+        '유한인성역량': styles.c0,
+        '기초학습역량': styles.c1,
+        '직업기초역량': styles.c2,
+        '직무수행역량': styles.c3,
+        '취창업기초역량': styles.c4,
+      };
+
+       const colorClass = competencyColorMap[competencyName] || colorSet[competencyIndex % colorSet.length];
 
       const programGroups = new Map();
       dataRows.forEach(row => {
@@ -97,8 +105,6 @@
   }
 
   function Matrix({ user, onLogout }) {
-    console.log("🔍 [Matrix] 컴포넌트 렌더링 시작");
-    console.log("🔍 [Matrix] 받은 user 정보:", user);
     console.log("🔍 [Matrix] user.id:", user?.id);
     console.log("🔍 [Matrix] user.matrixUrl:", user?.matrixUrl);
     
@@ -123,11 +129,7 @@
     const name = user?.name || "이름";
     const userId = user?.id;
 
-    console.log("🔍 [Matrix] 현재 상태:");
     console.log("🔍 [Matrix] year:", year, "semester:", semester);
-    console.log("🔍 [Matrix] matrixData 길이:", matrixData.length);
-    console.log("🔍 [Matrix] isSaving:", isSaving);
-    console.log("🔍 [Matrix] isFilter:", isFilter);
 
     useEffect(() => {
       if (userId) {
@@ -169,101 +171,62 @@
 
     // 조회
     const handleSearch = async () => {
-      console.log("🔍 [Matrix] handleSearch 시작");
-      console.log("🔍 [Matrix] 조회 파라미터 - userId:", userId, "year:", year, "semester:", semester);
-      
-      if (!userId) {
-        console.error("❌ [Matrix] userId가 없습니다.");
-        alert("사용자 정보가 없습니다.");
-        return;
-      }
+    console.log("🔍 [Matrix] 조회 파라미터 - userId:", userId, "year:", year, "semester:", semester);
+    
+    if (!userId) {
+      console.error("❌ [Matrix] userId가 없습니다.");
+      alert("사용자 정보가 없습니다.");
+      return;
+    }
 
-      setIsFilter(true); // 조회 시작
+    setIsFilter(true); // 조회 시작
 
-      // URL 유효성 검사 - 서버에서 직접 확인
-      try {
-        const urlValidation = await googleSheetsService.validateMatrixUrl(userId);
-        if (!urlValidation.valid) {
-          console.error("❌ [Matrix] 매트릭스 URL이 유효하지 않습니다.");
-          alert("매트릭스 URL이 등록되지 않았거나 유효하지 않습니다. 먼저 URL을 등록해주세요.");
-          // URL이 유효하지 않으면 URL 등록 페이지로 리다이렉트
-          window.location.href = '/matrix-url';
-          return;
-        }
-      } catch (error) {
-        console.error("❌ [Matrix] URL 검증 실패:", error);
-        alert("매트릭스 URL 검증 중 오류가 발생했습니다.");
-        // 오류 발생 시에도 URL 등록 페이지로 리다이렉트
+    try {
+      const urlValidation = await googleSheetsService.validateMatrixUrl(userId);
+      if (!urlValidation.valid) {
+        alert("매트릭스 URL이 등록되지 않았거나 유효하지 않습니다.");
         window.location.href = '/matrix-url';
         return;
       }
 
-      try {
-        console.log("🔍 [Matrix] loadMatrix API 호출 시작");
-        const json = await googleSheetsService.loadMatrix(userId, year, semester);
-        console.log("🔍 [Matrix] loadMatrix 응답:", json);
-        
-        if (json.success) {
-          console.log("✅ [Matrix] 매트릭스 데이터 로드 성공, 데이터 길이:", json.data?.length);
-          
-          // 이수/미이수 데이터 확인 (문자열 정리 후 비교)
-          const completedItems = json.data.filter(row => {
-            const value = row['이수/미이수'];
-            return value && value.toString().trim() === '이수';
-          });
-          console.log(`✅ [Matrix] 이수 완료된 항목 수: ${completedItems.length}개`);
-          
-          // 디버깅: 이수/미이수 컬럼의 실제 값들 확인
-          const completionValues = json.data
-            .map(row => row['이수/미이수'])
-            .filter(val => val && val.toString().trim() !== '')
-            .slice(0, 5);
-          console.log('🔍 [Matrix] 이수/미이수 컬럼의 실제 값들 (처음 5개):', completionValues);
-          console.log('🔍 [Matrix] 값들의 길이:', completionValues.map(v => v.toString().length));
-          console.log('🔍 [Matrix] 값들의 문자 코드:', completionValues.map(v => v.toString().split('').map(c => c.charCodeAt(0))));
-          
-          if (completedItems.length > 0) {
-            console.log('✅ [Matrix] 이수 완료된 항목 샘플:', completedItems.slice(0, 3));
-          }
-          
-          setMatrixData(json.data);
-          setOriginalMatrixData(JSON.parse(JSON.stringify(json.data))); // 원본 데이터 저장 (깊은 복사)
-          setOpenAcc({});
-        } else {
-          console.error("❌ [Matrix] 매트릭스 데이터 로드 실패:", json.message);
-          alert(json.message);
-          setMatrixData([]);
-          setOriginalMatrixData([]);
-        }
-      } catch (error) {
-        console.error("❌ [Matrix] 데이터 조회 실패:", error);
-        alert("서버와 통신 중 오류가 발생했습니다.");
-      }
-      finally
-      {
-        setIsFilter(false);
-      }
-      
-      try {
-        console.log("🔍 [Matrix] getTierScores API 호출 시작");
-        const data = await googleSheetsService.getTierScores(userId);
-        console.log("🔍 [Matrix] getTierScores 응답:", data);
-        
-        const emptyScores = { 유한인성역량: '', 기초학습역량: '', 직업기초역량: '', 직무수행역량: '', 취창업기초역량: '' };
+      // 매트릭스 데이터와 티어 점수 동시에 요청 (Promise.all)
+      const [matrixResult, tierResult] = await Promise.all([
+        googleSheetsService.loadMatrix(userId, year, semester),
+        googleSheetsService.getTierScores(userId),
+      ]);
 
-        if (data.success) {
-          console.log("✅ [Matrix] 티어 점수 조회 성공:", data.scores);
-          setTierScores(data.scores || emptyScores);
-          setTotalTierScore(data.totalScore || 0);
-        } else {
-          console.log("⚠️ [Matrix] 티어 점수 조회 실패, 기본값 사용");
-          setTierScores(emptyScores);
-          setTotalTierScore(0);
-        }
-      } catch (error) {
-        console.error("❌ [Matrix] Tier 점수 조회 중 오류:", error);
-      } 
-    };
+      // 티어 점수
+      if (tierResult.success) {
+        console.log("✅ [Matrix] 티어 점수 조회 성공:", tierResult.scores);
+        setTierScores(tierResult.scores || {});
+        setTotalTierScore(tierResult.totalScore || 0);
+      } else {
+        console.warn("⚠️ [Matrix] 티어 점수 조회 실패");
+        setTierScores({
+          유한인성역량: '', 기초학습역량: '', 직업기초역량: '', 직무수행역량: '', 취창업기초역량: ''
+        });
+        setTotalTierScore(0);
+      }
+
+      // 매트릭스 데이터
+      if (matrixResult.success) {
+        console.log("✅ [Matrix] 매트릭스 데이터 로드 성공:", matrixResult.data?.length);
+        setMatrixData(matrixResult.data);
+        setOriginalMatrixData(JSON.parse(JSON.stringify(matrixResult.data)));
+        setOpenAcc({});
+      } else {
+        console.error("❌ [Matrix] 매트릭스 데이터 로드 실패:", matrixResult.message);
+        alert(matrixResult.message);
+        setMatrixData([]);
+        setOriginalMatrixData([]);
+      }
+    } catch (error) {
+      console.error("❌ [Matrix] handleSearch 중 오류:", error);
+      alert("데이터를 불러오는 중 오류가 발생했습니다.");
+    } finally {
+      setIsFilter(false);
+    }
+  };
 
     // 변경된 데이터만 감지하는 함수
     const getChangedData = () => {
@@ -590,17 +553,7 @@
           {/* 매트릭스 점수 입력 및 테이블 출력(조회 버튼 클릭 시) */}
           {matrixData.length > 0 ? (
             <div className={styles.matrixContent}>
-              {/* 필터링된 역량 정보 표시 */}
-              {filteredCompetency && (
-                <div className={styles.filteredInfo}>
-                  <div className={styles.filteredTitle}>
-                    📋 {filteredCompetency} 역량 항목들
-                  </div>
-                  <div className={styles.filteredCount}>
-                    총 {filteredData.length}개 항목
-                  </div>
-                </div>
-              )}
+             
               {renderTable()}
             </div>
           ) : (
