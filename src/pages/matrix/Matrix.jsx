@@ -174,12 +174,11 @@
     console.log("🔍 [Matrix] 조회 파라미터 - userId:", userId, "year:", year, "semester:", semester);
     
     if (!userId) {
-      console.error("❌ [Matrix] userId가 없습니다.");
       alert("사용자 정보가 없습니다.");
       return;
     }
 
-    setIsFilter(true); // 조회 시작
+    setIsFilter(true); // 로딩 시작
 
     try {
       const urlValidation = await googleSheetsService.validateMatrixUrl(userId);
@@ -189,44 +188,41 @@
         return;
       }
 
-      // 매트릭스 데이터와 티어 점수 동시에 요청 (Promise.all)
-      const [matrixResult, tierResult] = await Promise.all([
-        googleSheetsService.loadMatrix(userId, year, semester),
-        googleSheetsService.getTierScores(userId),
-      ]);
-
-      // 티어 점수
+      // Trust 인증 총점 로드
+      const tierResult = await googleSheetsService.getTierScores(userId);
       if (tierResult.success) {
-        console.log("✅ [Matrix] 티어 점수 조회 성공:", tierResult.scores);
+        console.log("✅ [Matrix] TRUST 점수 조회 성공:", tierResult.scores);
         setTierScores(tierResult.scores || {});
         setTotalTierScore(tierResult.totalScore || 0);
       } else {
-        console.warn("⚠️ [Matrix] 티어 점수 조회 실패");
-        setTierScores({
-          유한인성역량: '', 기초학습역량: '', 직업기초역량: '', 직무수행역량: '', 취창업기초역량: ''
-        });
-        setTotalTierScore(0);
+        console.warn("⚠️ [Matrix] TRUST 점수 조회 실패");
       }
 
-      // 매트릭스 데이터
-      if (matrixResult.success) {
-        console.log("✅ [Matrix] 매트릭스 데이터 로드 성공:", matrixResult.data?.length);
-        setMatrixData(matrixResult.data);
-        setOriginalMatrixData(JSON.parse(JSON.stringify(matrixResult.data)));
-        setOpenAcc({});
-      } else {
-        console.error("❌ [Matrix] 매트릭스 데이터 로드 실패:", matrixResult.message);
-        alert(matrixResult.message);
-        setMatrixData([]);
-        setOriginalMatrixData([]);
-      }
+      // 매트릭스 로드
+      googleSheetsService.loadMatrix(userId, year, semester)
+        .then(matrixResult => {
+          if (matrixResult.success) {
+            console.log("✅ [Matrix] 매트릭스 데이터 로드 성공:", matrixResult.data?.length);
+            setMatrixData(matrixResult.data);
+            setOriginalMatrixData(JSON.parse(JSON.stringify(matrixResult.data)));
+            setOpenAcc({});
+          } else {
+            console.error("❌ [Matrix] 매트릭스 데이터 로드 실패:", matrixResult.message);
+            alert(matrixResult.message);
+          }
+        })
+        .catch(error => {
+          console.error("❌ [Matrix] 매트릭스 데이터 로드 오류:", error);
+        })
+        .finally(() => setIsFilter(false));
+
     } catch (error) {
       console.error("❌ [Matrix] handleSearch 중 오류:", error);
       alert("데이터를 불러오는 중 오류가 발생했습니다.");
-    } finally {
       setIsFilter(false);
     }
   };
+
 
     // 변경된 데이터만 감지하는 함수
     const getChangedData = () => {
