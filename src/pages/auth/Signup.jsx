@@ -51,7 +51,7 @@ function Signup({ onRegister }) {
     }
 
     if (!pwRegex.test(password)) {
-      alert('비밀번호는 8자 이상이며, 대소문자 영문 + 숫자 + 특수문자(!,?,/,@,#,$,%,^)를 포함해야 합니다.');
+      alert('비밀번호는 8~20자 영문, 숫자, 특수문자(!?/@#$%^)를 포함해야 합니다.');
       pwRef.current.focus();
       return false;
     }

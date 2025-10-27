@@ -393,5 +393,96 @@ export const googleSheetsService = {
       console.error('전체 티어 재계산 오류:', error);
       return { success: false, message: '재계산 중 서버 오류가 발생했습니다.' };
     }
+  },
+
+   /**
+   * 아이디 찾기를 위한 인증번호 발송 요청
+   * @param {string} name - 사용자 이름
+   * @param {string} studentID - 학번
+   * @param {string} email - 이메일
+   * @returns {Promise<{success: boolean, message: string}>}
+   */
+  async sendVerificationCode({name, studentID, email}) {
+    console.log(`✉️ [sendVerificationCode] 호출:`, { name, studentID, email });
+    try {
+      const result = await callAppsScriptAPI('sendVerificationCode', { name, studentID, email });
+      console.log(`✉️ [sendVerificationCode] 결과:`, result);
+      return result;
+    } catch (error) {
+      console.error('❌ [sendVerificationCode] 인증번호 발송 오류:', error);
+      return { success: false, message: '서버 통신 중 오류가 발생했습니다.' };
+    }
+  },
+
+  /**
+   * 이메일 인증번호 확인 후 아이디 찾기
+   * @param {string} email - 사용자 이메일
+   * @param {string} code - 사용자가 입력한 인증번호
+   * @returns {Promise<{success: boolean, id?: string, message: string}>}
+   */
+  async findIdWithVerification(email, code) {
+    console.log(`🔑 [findIdWithVerification] 호출:`, { email, code });
+    try {
+      const result = await callAppsScriptAPI('findIdWithVerification', { email, code });
+      console.log(`🔑 [findIdWithVerification] 결과:`, result);
+      return result;
+    } catch (error) {
+      console.error('❌ [findIdWithVerification] 아이디 찾기(인증) 오류:', error);
+      return { success: false, message: '서버 통신 중 오류가 발생했습니다.' };
+    }
+  },
+
+  /**
+   * 비밀번호 찾기를 위한 인증번호 발송
+   * @param {string} name - 사용자 이름
+   * @param {string} id - 아이디
+   * @param {string} email - 이메일
+   * @returns {Promise<{success: boolean, message: string}>}
+   */
+  async sendVerificationCodeForPassword({ name, id, email }) {
+    console.log(`🔑 [sendVerificationCodeForPassword] 호출:`, { name, id, email });
+    try {
+      const result = await callAppsScriptAPI('sendVerificationCodeForPassword', { name, id, email });
+      console.log(`🔑 [sendVerificationCodeForPassword] 결과:`, result);
+      return result;
+    } catch (error) {
+      console.error('❌ [sendVerificationCodeForPassword] 오류:', error);
+      return { success: false, message: '서버 통신 중 오류가 발생했습니다.' };
+    }
+  },
+
+  /**
+   * 비밀번호 찾기 인증번호 확인 (사용자 지정 호출명)
+   * @param {string} email
+   * @param {string} code
+   * @returns {Promise<{success: boolean, message: string}>}
+   */
+  async findPasswordWithVerification(email, code) {
+    console.log(`✅ [findPasswordWithVerification] 호출:`, { email, code });
+    try {
+      const result = await callAppsScriptAPI('findPasswordWithVerification', { email, code });
+      console.log(`✅ [findPasswordWithVerification] 결과:`, result);
+      return result;
+    } catch (error) {
+      console.error('❌ [findPasswordWithVerification] 오류:', error);
+      return { success: false, message: '서버 통신 중 오류가 발생했습니다.' };
+    }
+  },
+
+  /**
+   * 새 비밀번호로 업데이트 (ID 기준)
+   * @param {Object} data - { id, newPassword }
+   * @returns {Promise<{success: boolean, message: string}>}
+   */
+  async updatePassword({ id, newPassword }) {
+    console.log(`🔄 [updatePassword] 호출:`, { id });
+    try {
+      const result = await callAppsScriptAPI('updatePassword', { id, newPassword });
+      console.log(`🔄 [updatePassword] 결과:`, result);
+      return result;
+    } catch (error) {
+      console.error('❌ [updatePassword] 오류:', error);
+      return { success: false, message: '서버 통신 중 오류가 발생했습니다.' };
+    }
   }
 };

@@ -18,6 +18,7 @@ function Header({ user, onLogout }){
         <p><span onClick={() => navigate('/')}>HOME</span></p>
         <p><span onClick={() => navigate('/detail')}>YUHAN TRUST란?</span></p>
         <p><span onClick={() => navigate('/guide')}>이용가이드</span></p>
+        <p><span onClick={() => navigate('/matrix')}>매트릭스</span></p>
         {/* 로그인 여부에 따른 버튼 변화 */}
         {user ? (
           // 로그인 상태
