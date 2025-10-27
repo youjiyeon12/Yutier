@@ -122,6 +122,9 @@
     const department = user?.department || "학과명";
     const name = user?.name || "이름";
     const userId = user?.id;
+   // 도움말 버튼 상태 추가
+   const [showHelp, setShowHelp] = useState(false);
+
 
     console.log("🔍 [Matrix] 현재 상태:");
     console.log("🔍 [Matrix] year:", year, "semester:", semester);
@@ -471,6 +474,8 @@
           </div>
           <button className={styles.registerBtn} onClick={handleRegisterScores}>등록</button>
         </div>
+
+        
       );
     }
 
@@ -559,12 +564,29 @@
     }
 
     return (
+      
       <div className={styles.pageWrap}>
         <Header user={user} onLogout={onLogout} />
          <div className={styles.topContentContainer}>
+
+          {/* 도움말 */}
+          <div className={styles.titleWithHelp}>
+            <button
+              onClick={() => setShowHelp(true)}
+              className={styles.helpButtonInline} >
+              <img
+                src="question.png"
+                alt="도움말 버튼"
+                className={styles.helpIcon} 
+              />
+            </button>
+          </div>
+
           <h1 className={styles.mainTitle}>매트릭스 점수</h1>
           {renderScoreInput()}
         </div>
+
+ 
        
         <div className={styles.filterBar}>
           <div className={styles.filterLeft}>
@@ -598,6 +620,8 @@
             </button>
           </div>
         </div>
+
+        
         
         {/* 필터링 상태 표시 */}
         {matrixData.length > 0 && filteredCompetency && (
@@ -635,6 +659,33 @@
             <h2 className={styles.placeholderText}>조회 버튼을 눌러 매트릭스를 불러오세요.</h2>
           )}
         </div>
+        
+        {showHelp && (
+          <div className={styles.modalOverlay} onClick={() => setShowHelp(false)}>
+            <div className={styles.helpWindow} onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={() => setShowHelp(false)}
+                className={styles.closeButton}
+              >
+                &times;
+              </button>
+              
+
+              <h3>도움말 제목</h3>
+              <p>내용내용내용</p>
+              <p>내용내용내용</p>
+              <p>내용내용내용</p>
+              <p>내용내용내용</p> 
+
+             
+
+
+
+
+            </div>
+          </div>
+        )}
+        
         <Footer />
       </div>
     );
