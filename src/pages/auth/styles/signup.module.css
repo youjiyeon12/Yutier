@@ -67,7 +67,7 @@
 .button {
   margin-bottom: 8px;
   padding: 10px 15px;
-  background-color: #000;
+  background-color: #393F59;
   color: white;
   border: none;
   border-radius: 6px;
@@ -82,7 +82,7 @@
 }
 
 .submit {
-  background-color: #000;
+  background-color: #393F59;
   color: white;
   padding: 10px 30px;
   border-radius: 6px;

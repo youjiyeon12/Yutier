@@ -578,7 +578,7 @@
               {renderTable()}
             </div>
           ) : (
-            <h2 className={styles.placeholderText}>조회 버튼을 눌러 매트릭스를 불러오세요.</h2>
+            <h2 className={styles.placeholderText}>매트릭스를 불러오는 중입니다...</h2>
           )}
         </div>
 

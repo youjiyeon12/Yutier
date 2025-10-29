@@ -65,7 +65,7 @@
 }
 
 .rowButton button[type="submit"] {
-  background-color: #1f2c59;
+  background-color: #393F59;
   color: white;
 }
 
@@ -103,7 +103,7 @@
 .infoButton {
   width: 100%;
   padding: 10px;
-  background-color: #1f2c59;
+  background-color: #393F59;
   color: white;
   border: none;
   border-radius: 5px;

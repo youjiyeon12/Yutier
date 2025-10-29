@@ -3,6 +3,7 @@
   display: flex;
   flex-direction: column;
   background: #fff;
+  margin-top: -60px;
 }
 
 .filterBar {
@@ -533,7 +534,7 @@ footer {
   
   position: relative; /*버튼 이동*/
   left: 650px; 
-  top: 130px; 
+  top: 105px; 
 }
 
 .helpIcon {
@@ -544,8 +545,8 @@ footer {
 
 .modalOverlay { 
   position: fixed;
-  top: 120px;
-  left: 260px;
+  top: 35px;
+  left: 365px;
   width: 100vw;
   height: 100vh;
   
@@ -561,7 +562,7 @@ footer {
 .helpWindow {
   margin-top: 100px;  /*위치*/
   margin-right: 550px;
-  width: 90%; 
+  width: 100%; 
   height: 600px;
   background-color: white;
   padding: 30px;
