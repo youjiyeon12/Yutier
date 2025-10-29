@@ -19,7 +19,7 @@ function FindPassword(){
     const[isVerified, setIsVerified] = useState(false); // 인증 완료 여부
     const[timer, setTimer] = useState(0); // 타이머
     const timerRef = useRef(null);
-    const navigate = useNavigate;
+    const navigate = useNavigate();
 
     // 타이머 효과
     useEffect(() => {

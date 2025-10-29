@@ -6,24 +6,25 @@
 }
 
 .filterBar {
+  width: 85%;               
   display: flex;
   align-items: center;
-  /*justify-content: space-between;*/
-  gap: 28px;
+  gap: 28px;                  
   padding: 18px 16px 12px 16px;
-  border-bottom: 1.5px solid #e5e7eb;
+  border-bottom: 1.5px solid #e5e7eb; /*매트릭스 필터 밑에 선*/
   background: #fff;
   font-size: 16px;
-  margin-bottom: 8px;
   min-height: 50px;
+  margin: 0 auto 5px auto;   
 }
-
 /* 핵심역량 필터링 스타일 */
 .competencyFilter {
+  width: 85%;
   padding: 12px 16px;
   background: #f8fafc;
   border-bottom: 1px solid #e5e7eb;
   margin-bottom: 8px;
+  margin: 0 auto 5px auto; 
 }
 
 .filterTitle {
@@ -108,19 +109,63 @@
 /* 클릭 가능한 역량 텍스트 스타일 */
 .clickableCompetency {
   cursor: pointer;
-  color: #3b82f6;
   font-weight: 600;
   text-decoration: underline;
   text-decoration-color: transparent;
   transition: all 0.2s ease;
-  padding: 2px 4px;
-  border-radius: 4px;
+  padding: 2px 4px; 
+  border-bottom: 1px solid #b8bfcd;
 }
 
 .clickableCompetency:hover {
-  background: #eff6ff;
-  text-decoration-color: #3b82f6;
+  text-decoration-color: inherit;
   transform: translateY(-1px);
+}
+
+/* 역량별 clickable 스타일 */
+.clickableC0 {
+  background-color: #eff6ff; 
+  color: #1d4ed8;
+  border-bottom: 1px solid #bfdbfe;
+}
+.clickableC0:hover {
+  background-color: #dbeafe;
+}
+
+.clickableC1 {
+  background-color: #f0fdf4;
+  color: #166534; 
+  border-bottom: 1px solid #bbf7d0;
+}
+.clickableC1:hover {
+  background-color: #dcfce7;
+}
+
+.clickableC2 {
+  background-color: #fefce8;
+  color: #854d0e;
+  border-bottom: 1px solid #fef08a;
+}
+.clickableC2:hover {
+  background-color: #fef9c3;
+}
+
+.clickableC3 {
+  background-color: #fef2f2;
+  color: #991b1b;
+  border-bottom: 1px solid #fecaca;
+}
+.clickableC3:hover {
+  background-color: #fee2e2;
+}
+
+.clickableC4 {
+  background-color: #fdf2f8; 
+  color: #9d174d;
+  border-bottom: 1px solid #fbcfe8;
+}
+.clickableC4:hover {
+  background-color: #fce7f3;
 }
 
 /* 필터 초기화 버튼 */
@@ -187,13 +232,13 @@
 }
 
 .searchBtn {
-  padding: 7px 24px;
-  background: #223a7d;
+  padding: 7px 22px;
+  background: #393F59;
   color: #fff;
   border: none;
-  border-radius: 8px;
-  font-weight: 600;
+  border-radius: 6px;
   font-size: 16px;
+  font-weight: 300;
   cursor: pointer;
   box-shadow: 0 1px 4px #e3e6ed;
   transition: background 0.12s;
@@ -203,9 +248,27 @@
   background: #14225a;
 }
 
+.saveBtn {
+  padding: 7px 22px;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 300;
+  cursor: pointer;
+  box-shadow: 0 1px 4px #e3e6ed;
+  transition: background 0.12s;
+
+  background: #6c757d;
+}
+
+.saveBtn:hover {
+  background: #5a6268;
+}
+
 .container_wrap {
   flex: 1 0 auto;
-  margin-bottom: 24px;
+  margin-bottom: 60px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -222,7 +285,7 @@ footer {
 }
 
 .matrixTable {
-  width: 100%;
+  width: 87%;
   border-collapse: collapse;
   background: #fff;
   font-size: 15px;
@@ -253,28 +316,10 @@ footer {
 .scoreInput {
   width: 60px;
   padding: 4px;
-  border: 1px solid #b4b8bb;
+  border: 1px solid #0d3553;
   border-radius: 5px;
   font-size: 15px;
   text-align: right;
-}
-
-.saveBtn {
-  padding: 7px 24px;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 16px;
-  cursor: pointer;
-  box-shadow: 0 1px 4px #e3e6ed;
-  transition: background 0.12s;
-
-  background: #6c757d;
-}
-
-.saveBtn:hover {
-  background: #5a6268;
 }
 
 .buttonGroup {
@@ -327,17 +372,18 @@ footer {
 }
 
 .scoreInputContainer {
-  width: 90%;
-  max-width: 1300px;
+  width: 100%;
+  max-width: 1400px; 
+  margin: 0 auto; 
   border: 1.5px solid #d1dbe7;
   border-radius: 16px;
-  padding: 24px;
-  align-items: center;
+  padding: 32px; 
+  background: #fdfdff;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px; 
-  background: #fdfdff;
+  justify-content: center; 
+  gap: 32px;
 }
 
 .scoreTitle {
@@ -350,39 +396,44 @@ footer {
 
 .scoreInputs {
   display: flex;
-  gap: 20px;
-  justify-content: center;
+  flex-wrap: wrap; 
+  justify-content: center; 
+  align-items: center;
+  gap: 32px; 
+  width: 100%; 
 }
 
 .scoreItem {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 16px;
+  font-size: 16px;  
 }
 
 .scoreItem span {
   font-weight: 500;
-  color: #555;
+  color: #555555;
   white-space: nowrap; 
+  box-shadow: 1px 1px 1px 1px rgb(188, 188, 188);
+  border-radius: 5px;
 }
 
 .scoreItem input {
-  width: 80px;
+  width: 85px;
   padding: 6px;
   border: 1.5px solid #ccc;
   border-radius: 5px;
   text-align: right;
   font-size: 16px;
-}
+} 
 
 .registerBtn {
   padding: 8px 32px;
-  background: #223a7d;
+  background: #393F59;
   color: #fff;
   border: none;
   border-radius: 8px;
-  font-weight: 600;
+  font-weight: 300;
   font-size: 16px;
   cursor: pointer;
   transition: background 0.12s;
@@ -405,6 +456,6 @@ footer {
 
 .totalScore {
   font-size: 20px;
-  color: #223a7d;
+  color: #22317d;
 }
 
