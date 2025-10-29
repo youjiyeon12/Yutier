@@ -128,6 +128,10 @@
     const department = user?.department || "학과명";
     const name = user?.name || "이름";
     const userId = user?.id;
+   // 도움말 버튼 상태 추가
+   const [showHelp, setShowHelp] = useState(false);
+   const [currentSlide, setCurrentSlide] = useState(0);
+
 
     console.log("🔍 [Matrix] year:", year, "semester:", semester);
 
@@ -174,12 +178,11 @@
     console.log("🔍 [Matrix] 조회 파라미터 - userId:", userId, "year:", year, "semester:", semester);
     
     if (!userId) {
-      console.error("❌ [Matrix] userId가 없습니다.");
       alert("사용자 정보가 없습니다.");
       return;
     }
 
-    setIsFilter(true); // 조회 시작
+    setIsFilter(true); // 로딩 시작
 
     try {
       const urlValidation = await googleSheetsService.validateMatrixUrl(userId);
@@ -189,44 +192,41 @@
         return;
       }
 
-      // 매트릭스 데이터와 티어 점수 동시에 요청 (Promise.all)
-      const [matrixResult, tierResult] = await Promise.all([
-        googleSheetsService.loadMatrix(userId, year, semester),
-        googleSheetsService.getTierScores(userId),
-      ]);
-
-      // 티어 점수
+      // Trust 인증 총점 로드
+      const tierResult = await googleSheetsService.getTierScores(userId);
       if (tierResult.success) {
-        console.log("✅ [Matrix] 티어 점수 조회 성공:", tierResult.scores);
+        console.log("✅ [Matrix] TRUST 점수 조회 성공:", tierResult.scores);
         setTierScores(tierResult.scores || {});
         setTotalTierScore(tierResult.totalScore || 0);
       } else {
-        console.warn("⚠️ [Matrix] 티어 점수 조회 실패");
-        setTierScores({
-          유한인성역량: '', 기초학습역량: '', 직업기초역량: '', 직무수행역량: '', 취창업기초역량: ''
-        });
-        setTotalTierScore(0);
+        console.warn("⚠️ [Matrix] TRUST 점수 조회 실패");
       }
 
-      // 매트릭스 데이터
-      if (matrixResult.success) {
-        console.log("✅ [Matrix] 매트릭스 데이터 로드 성공:", matrixResult.data?.length);
-        setMatrixData(matrixResult.data);
-        setOriginalMatrixData(JSON.parse(JSON.stringify(matrixResult.data)));
-        setOpenAcc({});
-      } else {
-        console.error("❌ [Matrix] 매트릭스 데이터 로드 실패:", matrixResult.message);
-        alert(matrixResult.message);
-        setMatrixData([]);
-        setOriginalMatrixData([]);
-      }
+      // 매트릭스 로드
+      googleSheetsService.loadMatrix(userId, year, semester)
+        .then(matrixResult => {
+          if (matrixResult.success) {
+            console.log("✅ [Matrix] 매트릭스 데이터 로드 성공:", matrixResult.data?.length);
+            setMatrixData(matrixResult.data);
+            setOriginalMatrixData(JSON.parse(JSON.stringify(matrixResult.data)));
+            setOpenAcc({});
+          } else {
+            console.error("❌ [Matrix] 매트릭스 데이터 로드 실패:", matrixResult.message);
+            alert(matrixResult.message);
+          }
+        })
+        .catch(error => {
+          console.error("❌ [Matrix] 매트릭스 데이터 로드 오류:", error);
+        })
+        .finally(() => setIsFilter(false));
+
     } catch (error) {
       console.error("❌ [Matrix] handleSearch 중 오류:", error);
       alert("데이터를 불러오는 중 오류가 발생했습니다.");
-    } finally {
       setIsFilter(false);
     }
   };
+
 
     // 변경된 데이터만 감지하는 함수
     const getChangedData = () => {
@@ -406,6 +406,8 @@
           </div>
           <button className={styles.registerBtn} onClick={handleRegisterScores}>등록</button>
         </div>
+
+        
       );
     }
 
@@ -494,12 +496,29 @@
     }
 
     return (
+      
       <div className={styles.pageWrap}>
         <Header user={user} onLogout={onLogout} />
          <div className={styles.topContentContainer}>
+
+          {/* 도움말 */}
+          <div className={styles.titleWithHelp}>
+            <button
+              onClick={() => setShowHelp(true)}
+              className={styles.helpButtonInline} >
+              <img
+                src="question.png"
+                alt="도움말 버튼"
+                className={styles.helpIcon} 
+              />
+            </button>
+          </div>
+
           <h1 className={styles.mainTitle}>매트릭스 점수</h1>
           {renderScoreInput()}
         </div>
+
+ 
        
         <div className={styles.filterBar}>
           <div className={styles.filterLeft}>
@@ -533,6 +552,8 @@
             </button>
           </div>
         </div>
+
+        
         
         {/* 필터링 상태 표시 */}
         {matrixData.length > 0 && filteredCompetency && (
@@ -560,6 +581,143 @@
             <h2 className={styles.placeholderText}>조회 버튼을 눌러 매트릭스를 불러오세요.</h2>
           )}
         </div>
+
+{/*-----도움말 버튼---------------------*/}
+        
+{showHelp && (
+        <div 
+          className={styles.modalOverlay} 
+          onClick={() => { setShowHelp(false); setCurrentSlide(0); }}
+        >
+          <div 
+            className={styles.helpWindow} 
+            onClick={(e) => e.stopPropagation()}
+          >
+
+            {(() => {
+              //  실제 도움말 내용
+              const slideContents = [
+                { 
+                    id: 1, 
+                       text: (
+                         <>
+                          <h3 className={styles.title}>Yutier 매트릭스 등록</h3>
+                          <p className={styles.tbody}>
+                          1. 매트릭스 점수 입력하는 페이지가 나오면 유한대학교 포털(<a href='https://portal.yuhan.ac.kr/' target='_blank'>https://portal.yuhan.ac.kr/</a>)로 이동합니다. 
+                          <br/>
+                          2. 로그인 후 [학생이력]으로 들어가줍니다.
+                          <br/>
+                          3. '나의 TRUST인증 현황' 아래에 각각의 자신의 점수를 Yutier 웹 페이지로 돌아와 입력해줍니다.
+                          </p>
+                          <img src="/sc3.png" height="300px" style={{ marginTop: '30px' , marginRight: '20px'}}></img>
+                          <img src="/sc4.png" height="300px" style={{ marginTop: '30px' }}></img>
+                        
+                      </>
+                    ) 
+                  },
+                { 
+                  id: 2, 
+                  text: (
+                    <>
+                      <h3 className={styles.title}>Yutier 매트릭스 등록</h3>
+                      <p className={styles.tbody}>
+                        4. 나의 인증현황 가운데를 누른 후 [개인역량 매트릭스]에 들어갑니다.
+                        <br/>
+                        5. 들어간 후엔 학년, 학기, 교과를 선택하고 [조회]를 누릅니다.
+                        <br/>
+                        6. 조회를 누르면 아래처럼 점수가 나오는 것을 볼 수 있습니다.
+                      </p>
+                      <img src="/sc6.png" height="250px" style={{marginTop: '-30px',marginRight: '20px'}}></img>
+                      <img src="/sc7.png" height="250px" style={{marginTop: '-300px'}}></img>
+                      <img src="/sc8.png" height="290px" style={{ marginTop: '30px' , marginLeft: '20px'}}></img>
+                    </>
+                  )
+                },
+                { 
+                  id: 3, 
+                  text: (
+                    <>
+                      <h3 className={styles.title}>Yutier 매트릭스 등록</h3>
+                      <p className={styles.tbody}>
+                        9. 나온 점수를 토대로 Yutier 사이트에 입력합니다.
+                        <br/>
+                        10. 각 버튼 마다 필터링 기능이 있어 항목별로 각각 볼 수 있습니다
+                        <br/>
+                        11. 또한 화살표를 눌러 상세항목 보기가 가능합니다.
+                      </p>
+                      <img src="/sc9.png" height="270px" style={{marginTop: '30px',marginRight: '20px'}}></img>
+                      <img src="/sc10.png" height="270px" style={{marginTop: '30px'}}></img>
+                    </>
+                  )
+                },
+                { 
+                  id: 4, 
+                  text: (
+                    <>
+                      <h3 className={styles.title}>Yutier 매트릭스 등록</h3>
+                      <p className={styles.tbody}>
+                        12. 다 입력을 하였다면 [홈]이나 마이페이지의 회원정보에서 티어와 추천 프로그램 리스트를 확인할 수 있습니다.
+                      </p>
+                      <img src="/sc11.png" height="280px" style={{marginTop: '60px',marginRight: '20px'}}></img>
+                      <img src="/sc12.png" height="280px" style={{marginTop: '60px'}}></img>
+                    </>
+                  )
+                },
+                   
+              ];
+
+              return (
+                <>
+                  {/* 닫기 버튼 */}
+                  <button
+                    onClick={() => { setShowHelp(false); setCurrentSlide(0); }}
+                    className={styles.closeButton} 
+                  >
+                    &times;
+                  </button>
+
+                  {/* 슬라이드 내용 영역 */}
+                  <div className={styles.slideContentArea}>
+                    {slideContents[currentSlide].text}
+                  </div>
+
+                  {/* 슬라이드 제어 버튼 (왼쪽 하단 고정) */}
+                  <div className={styles.slideControlsBottomLeft}>
+                    <button
+                      onClick={() => setCurrentSlide(prev => Math.max(0, prev - 1))}
+                      disabled={currentSlide === 0} 
+                      className={styles.slideNavButton}
+                    >
+                      <img 
+                        src="/arrow-left.png" 
+                        alt="이전" 
+                        className={styles.slideNavIcon}
+                      />
+                    </button>
+                    
+                    <span className={styles.slidePageIndicator}>
+                      {currentSlide + 1} / {slideContents.length}
+                    </span>
+
+                    <button
+                      onClick={() => setCurrentSlide(prev => Math.min(slideContents.length - 1, prev + 1))}
+                      disabled={currentSlide === slideContents.length - 1} 
+                      className={styles.slideNavButton}
+                    >
+                      <img 
+                        src="/arrow-right.png" 
+                        alt="다음" 
+                        className={styles.slideNavIcon}
+                      />
+                    </button>
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+        
         <Footer />
       </div>
     );

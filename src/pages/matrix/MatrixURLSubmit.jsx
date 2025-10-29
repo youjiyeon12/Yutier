@@ -1,10 +1,11 @@
 // URL 제출 화면
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import style from './styles/matrixURLSubmit.module.css';
 import { useNavigate } from 'react-router-dom'
 import { googleSheetsService } from '../../services/googleSheetsService';
+
 
 // 조회 버튼 클릭 시 실행
 function MatrixURLSubmit({ user, onLogout }) {
@@ -16,6 +17,10 @@ function MatrixURLSubmit({ user, onLogout }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
+  //도움말 버튼
+  const [showHelp, setShowHelp] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  
 
   const handleSubmit = async () => {
     console.log("🔍 [MatrixURLSubmit] handleSubmit 시작");
@@ -65,7 +70,21 @@ return (
     <div className={style.container}>
       <main className={style.mainContent}>
         <div className={style.content}>
-          <h2>🗂️ 유한 TRUST 매트릭스 제출</h2>
+
+        
+        {/* 도움말 버튼 ----------------------------------------- */}
+          <button
+            onClick={() => setShowHelp(true)}
+            className={style['help-button-corner']} 
+            >
+            <img
+            src="question.png"
+            alt="도움말 버튼"
+            className={style['help-icon']} 
+            />
+          </button>
+
+        <h2>🗂️ 유한 TRUST 매트릭스 제출</h2>
           <ol>
             <li>
               🔗 아래 템플릿 링크를 클릭해 사본을 만들고 점수를 입력하세요:
@@ -96,6 +115,103 @@ return (
 
           {error && <p style={{ color: 'red' }}>{error}</p>}
           {success && <p style={{ color: 'green' }}>✅ 저장되었습니다.</p>}
+
+         {/* 도움말 버튼: className="help-button" 사용 */}
+     
+         {showHelp && (
+          // 모달 오버레이
+          <div 
+          className={style['modal-overlay']} 
+          // 💡 모달이 닫힐 때 슬라이드를 1페이지로 리셋합니다.
+          onClick={() => { setShowHelp(false); setCurrentSlide(0); }}
+          >
+
+            {/* 도움말 창 본체 */}
+            <div 
+            className={style['help-window']} 
+            onClick={(e) => e.stopPropagation()}>
+
+
+  {(() => {
+ const slideContents = [
+  { 
+    id: 1, 
+    text: (
+      <>
+        <h3 className={style.title}>Yutier 매트릭스 등록</h3>
+        <p className={style.tbody}>
+        1. [로그인] - [마이페이지] - [매트릭스 관리]
+        <br/>
+        2. '매트릭스 사본 만들기' 클릭
+        <br/>
+        3. 시트 URL 복사 후 '공유' 버튼 클릭
+        </p>
+       <img src="/sc1.png" height="350px"
+      className={style.guideImage}/>
+    </>
+    ) 
+  },
+ { 
+      id: 2, 
+      text: (
+          <>
+          <h3 className={style.title}>Yutier 매트릭스 등록</h3>
+          <p className={style.tbody}>
+          4. 복사한 URL을 사본 공유에 붙여넣기
+          <br/>
+          5. YUTER 웹페이지로 돌아와 URL 붙여넣고 '조회'
+        </p>
+        <img src="/sc2.png" height="350px" style={{ marginTop: '30px' }}></img>
+      </>
+    )
+  }
+ ];
+
+      return (
+      <>
+          {/* 닫기 버튼 */}
+          <button
+            onClick={() => { setShowHelp(false); setCurrentSlide(0); }}
+            className={style['close-button']} 
+            >
+          &times;
+          </button>
+
+          {/* 슬라이드 내용 영역 */}
+          <div className={style.slideContentArea}>
+             {slideContents[currentSlide].text}
+          </div>
+
+          {/* 슬라이드 제어 버튼 */}
+          <div className={style.slideControlsBottomLeft}>
+          <button
+          onClick={() => setCurrentSlide(prev => Math.max(0, prev - 1))}
+          disabled={currentSlide === 0} 
+          className={style.slideNavButton}
+          >
+      <img 
+      src="/arrow-left.png" 
+      alt="이전" 
+      className={style.slideNavIcon}/>
+
+      </button>
+        <span className={style.slidePageIndicator}>
+        {currentSlide + 1} / {slideContents.length}
+        </span>
+          <button
+            onClick={() => setCurrentSlide(prev => Math.min(slideContents.length - 1, prev + 1))}
+            disabled={currentSlide === slideContents.length - 1} 
+            className={style.slideNavButton}>
+          <img src="/arrow-right.png" alt="다음" className={style.slideNavIcon}/>
+              </button>
+            </div>
+          </>
+          );
+       })()}
+  </div>
+</div>
+ )}
+
         </div>
       </main>
     </div>

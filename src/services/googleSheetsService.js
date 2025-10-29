@@ -434,7 +434,7 @@ export const googleSheetsService = {
 
   /**
    * 비밀번호 찾기를 위한 인증번호 발송
-    * @param {string} name - 사용자 이름
+   * @param {string} name - 사용자 이름
    * @param {string} id - 아이디
    * @param {string} email - 이메일
    * @returns {Promise<{success: boolean, message: string}>}
