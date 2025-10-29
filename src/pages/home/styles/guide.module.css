@@ -1,82 +1,136 @@
+/*메뉴바*/
+.menuContent {
+  display: flex;
+  padding: 10px 30px; 
+  justify-content: center;
+  align-items: center; 
+  border-radius: 15px;
+  background: #FFF;   
+  box-shadow: 0px 0px 5px 0px rgba(159, 159, 159, 0.25); 
+  width: fit-content;
+  margin: 40px auto 0 auto; 
+}
+
+.menuTitleText {
+  font-size: 20px; 
+  font-weight: 700;
+  color:#393F59; 
+  margin-right: 50px; 
+  white-space: nowrap; 
+}
+
+/* 기본 버튼 (텍스트만) */
+.menuContent button {
+  padding: 12px 25px;
+  font-size: 16px;
+  font-weight: 500;
+  border: none;
+  background-color: transparent; 
+  color: #393F59; 
+  cursor: pointer;
+  border-radius: 8px; 
+  transition: all 0.2s ease;
+  margin: 0 5px; 
+}
+
+.menuContent .activeCategory {
+  background-color:#393F59; 
+  color: white; 
+}
+
+.menuContent button:hover:not(.activeCategory) {
+  background-color: #f3f4f6; 
+}
+
+
+/*슬라이드///////////////////////////////*/
 .sliderContainer {
-    display: flex;
-    justify-content: center; 
-    align-items: center; 
-    
-    margin: 40px auto; 
+  display: flex;
+  justify-content: center; 
+  align-items: center; 
+  /* 메뉴 박스와 20px 간격 */
+  margin: 20px auto 40px auto; 
+  margin-top: 30px;
+  margin-bottom: 50px;
 }
 
 .body {
-    background-color: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.07);
-    padding: 20px 60px; 
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start; 
-    gap: 24px;
-    width: 1100px;
-    height: 600px; 
-    border: 1px solid #eef0f4;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.07);
+  padding: 20px 60px; 
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; 
+  gap: 24px;
+  width: 1100px;
+  height: 600px; 
+  border: 1px solid #eef0f4;
+  position: relative; 
 }
 
 .title{
-    font-size: 30px;
+  font-size: 30px;
 }
- 
+
+.title2{
+  font-size: 25px;
+}
+
+
+.tbody{
+  font-size: 20px;
+}
+
 /* 화살표 버튼 공통 스타일 */
 .arrowButton {
-    background: none;
-    border: none;
-    padding: 0; 
-    cursor: pointer;
-    transition: opacity 0.3s ease, transform 0.2s ease; 
+  background: none;
+  border: none;
+  padding: 0; 
+  cursor: pointer;
+  transition: opacity 0.3s ease, transform 0.2s ease; 
 }
 
 .arrowButton:first-child { 
-    margin-right: 20px; 
+  margin-right: 20px; 
 }
 
 .nextButtonMargin {
-    margin-left: 20px;
+  margin-left: 20px;
 }
 
 .arrowButton:hover:not(:disabled) {
-    transform: scale(1.05);
+  transform: scale(1.05);
 }
 
 .arrowImage {
-    width: 40px; 
-    height: 60px;
-    display: block;
+  width: 60px; 
+  height: 70px;
+  display: block;
 }
 
 .guideImage {
-    display: block; 
-    margin: 20px auto; 
-    width: 700px; 
-    height: auto;
-     margin-left: 0;
-     margin-right: auto;
+  display: block; 
+  margin: 0px; 
+  width: 700px; 
+  height: auto;
+  margin-left: 0;
+  margin-right: auto;
 }
-
-.slideCounter {
-    position: absolute;
-    right: 20px; 
-    bottom: 20px; 
-    text-align: initial; 
-    font-size: 14px; 
-    color: #888; 
-    margin: 0; 
-    width: auto; 
-}
-
-/*현재 몇 페이지인지 오른쪽 하단 고정*/
-.body { 
-  position: relative; /* 이 속성은 유지. */
- }
 
 .largeImage {
-    width: 400px; 
-    height: auto;
+  width: 400px; 
+  height: auto;
+}
+
+/*페이지 번호*/
+.slideCounter {
+  position: absolute;
+  right: 20px; 
+  bottom: 20px; 
+  text-align: initial; 
+  font-size: 20px; 
+  color: #888; 
+  margin: 0; 
+  width: auto; 
 }

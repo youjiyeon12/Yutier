@@ -3,105 +3,181 @@ import Header from '../../components/common/Header';
 import Footer from "../../components/common/Footer";
 import dmc from "./styles/guide.module.css"; 
 
-const slideContents = [
-  { 
-    id: 1, 
-    text: (
-      <>
-        <h1 className={dmc.title}>Yutier 매트릭스 등록하는 방법</h1>
-        <p style={{ fontSize: "18px"}}>
-          1. [로그인] - [마이페이지] - [매트릭스 관리]으로 들어갑니다
-          <br/>
-          2. [매트릭스 관리]으로 들어가서 '매트릭스 사본 만들기'를 클릭합니다.
-          <br/>
-          3. 매트릭스로 들어왔다면 화면 맨 위의 본인의 시트 URL을 복사한  후 '공유' 버튼을 누릅니다
-          <img src="/sc6.png" 
-            className={dmc.guideImage}/>
-        </p>
-      </>
-    ) 
-  },
-  { 
-    id: 2, 
-    text: (
-      <>
-      <h1 className={dmc.title}>Yutier 매트릭스 등록하는 방법</h1>
-        <p>
-          4. 복사한 URL을 사본 공유에 붙여 넣은 후 완료를 누릅니다. 
-          <br/>
-          5. YUTER 웹페이지로 돌아온 후 아래 사본 시트 URL을 넣고 조회를 누르세요.
-          <img src="/sc8.png" 
-           className={dmc.guideImage}/>
-        </p>
-      </>
-    )
-  },
-   { 
-    id: 3, 
-    text: (
-      <>
-        <h1 className={dmc.title}>Yutier 매트릭스 등록하는 방법</h1>
-        <p>
-          6. 매트릭스 점수 입력하는 페이지가 나오면 유한대학교 포털(<a href='https://portal.yuhan.ac.kr/'n target='_blank'>https://portal.yuhan.ac.kr/</a>)로 이동합니다. 
-          <br/>
-          7. 로그인 후 [학생이력]으로 들어가줍니다.
-          <br/>
-          8. '나의 TRUST인증 현황' 아래에 각각의 자신의 점수를 Yutier 웹페이지로 돌아와 입력해줍니다.
-              <img src="/sc9.png"
-            className={`${dmc.guideImage} ${dmc.largeImage}`} />
-        </p>
-      </>
-    ) 
-  },
-   { 
-    id: 4,    
-    text: (
-      <>
-         <h1 className={dmc.title}>Yutier 매트릭스 등록하는 방법</h1>
-        <p>
-          
-        </p>
-      </>
-    ) 
-  },
-   { 
-    id: 5, 
-    text: (
-      <>
-         <h1 className={dmc.title}>Yutier 매트릭스 등록하는 방법</h1>
-        <p>
-          
-        </p>
-      </>
-    ) 
-  },
-  // 필요한 만큼 슬라이드를 추가
-];
+const allGuides = {
+  '백엔드 설정': [
+    { id: 1, text: (<><h1 className={dmc.title}>백엔드 설정</h1>
+    <p className={dmc.title2}>1. 프로젝트용 Google Sheets 생성</p>
+    <p className={dmc.tbody}>
+      Yutier 프로젝트는 두 종류의 Google Sheets를 사용합니다. 아래 링크를 클릭하여 각각의 사본을 본인의 Google Drive에 생성해주세요.
+      <br/>
+      ① 데이터베이스 템플릿 (서버용)
+       <br/>
+      <img src="/gui0.jpg" height="300px" style={{marginleft: '-100px'}}></img>
+      <br/>
+      모든 사용자의 정보(ID, 티어 등)가 저장되는 중앙 데이터베이스입니다.
+      ▶ 데이터베이스 시트 사본 만들기 (<a href='https://docs.google.com/spreadsheets/d/1pZEerJseEaWSAbWqdZeWqg93kwY7IBdYZwLhBJTrCGc/copy' 
+      target='_blank'>https://docs.google.com</a>)
+      </p></>) },
 
+    { id: 2, text: (<><h1 className={dmc.title}>백엔드 설정</h1>
+    <p className={dmc.title2}>1. 프로젝트용 Google Sheets 생성</p>
+    <p className={dmc.tbody}>② 매트릭스 템플릿 (사용자용)
+      각 사용자가 개인의 역량 점수를 입력하기 위해 복사해가는 양식입니다.
+      <img src="/gui1.jpg" height="300px" style={{marginleft: '-100px'}}></img>
+      <br/>
+      ▶ 매트릭스 시트 사본 만들기 (<a href='https://docs.google.com/spreadsheets/u/2/d/12ymRONolKRri2KKSiVT6SCHxJarmTsS9ZqZ-_0LYt6s/copy' 
+      target='_blank'>https://docs.google.com</a>)
+      </p></>) },
+
+    { id: 3, text: (<><h1 className={dmc.title}>백엔드 설정</h1>
+    <p className={dmc.title2}>2. Apps Script 프로젝트 설정</p>
+    <p className={dmc.tbody}>② 매트릭스 템플릿 (사용자용)
+      Google Apps Script로 이동하여 새 프로젝트를 생성합니다
+      <br/>
+      apps_script/backend.gs 파일의 모든 코드를 복사하여 Apps Script 편집기에 붙여넣습니다.
+      <img src="/gui2.jpg" height="300px" style={{marginRight: '50px'}}></img>
+      <img src="/gui3.jpg" height="300px" style={{marginleft: '50px'}}></img>
+      <br/>
+      ▶ 매트릭스 시트 사본 만들기 (<a href='https://docs.google.com/spreadsheets/u/2/d/12ymRONolKRri2KKSiVT6SCHxJarmTsS9ZqZ-_0LYt6s/copy' 
+      target='_blank'>https://docs.google.com</a>)
+      </p></>) },
+    { id: 4, text: (<><h1 className={dmc.title}>백엔드 설정</h1>
+    <p className={dmc.title2}>2. Apps Script 프로젝트 설정</p>
+    <p className={dmc.tbody}>코드 상단의 SPREADSHEET_ID 상수를 ①번에서 생성한 데이터베이스 시트의 ID로 교체합니다.
+     <img src="/gui4.jpg" height="250px" style={{marginRight: '10px'}}></img>
+     <br/>
+     <img src="/gui5.jpg" height="100px" style={{marginleft: '50px'}}></img>
+      </p></>) },
+
+      { id: 5, text: (<><h1 className={dmc.title}>백엔드 설정</h1>
+    <p className={dmc.title2}>3. 웹 앱 배포</p>
+    <p className={dmc.tbody}>Apps Script 편집기 우측 상단의 배포 &gt; **새 배포**를 클릭합니다.
+      <br/>
+      유형 선택: 웹 앱
+      <br/>
+      <img src="/gui6.jpg" height="200px" style={{marginleftt: '10px'}}></img>
+      <img src="/gui7.jpg" height="250px" style={{marginleftt: '50px'}}></img>
+      </p></>) },
+
+      { id: 6, text: (<><h1 className={dmc.title}>백엔드 설정</h1>
+    <p className={dmc.title2}>3. 웹 앱 배포</p>
+    <p className={dmc.tbody}>설정:다음 사용자로 실행: 나 (내 이메일 주소)액세스 권한이 있는 사용자: 모든 사용자
+      배포 버튼을 클릭하고 권한을 승인합니다.
+      <br/>
+      <img src="/gui8.jpg" height="300px" style={{marginRight: '50px'}}></img>
+      <img src="/gui9.jpg" height="300px" style={{marginleftt: '50px'}}></img>
+      
+      <br/>
+      </p></>) },
+
+      { id: 7, text: (<><h1 className={dmc.title}>백엔드 설정</h1>
+    <p className={dmc.title2}>3. 웹 앱 배포</p>
+    <p className={dmc.tbody}>설정:다음 사용자로 실행: 나 (내 이메일 주소)액세스 권한이 있는 사용자: 모든 사용자
+      배포 버튼을 클릭하고 권한을 승인합니다.
+      <br/>
+      <img src="/gui10.jpg" height="300px" style={{marginRight: '50px'}}></img>
+      <img src="/gui11.jpg" height="300px" style={{marginleftt: '50px'}}></img>
+      <br/>
+      </p></>) },
+
+      { id: 8, text: (<><h1 className={dmc.title}>백엔드 설정</h1>
+    <p className={dmc.title2}>3. 웹 앱 배포</p>
+    <p className={dmc.tbody}>설정:다음 사용자로 실행: 나 (내 이메일 주소)액세스 권한이 있는 사용자: 모든 사용자
+      배포 버튼을 클릭하고 권한을 승인합니다.
+      <br/>
+      <br/>
+      <img src="/gui11.jpg" height="300px" style={{marginRight: '50px'}}></img>
+      <img src="/gui12.jpg" height="300px" style={{marginleftt: '50px'}}></img>
+      <img src="/gui13.jpg" height="300px" style={{marginleftt: '50px'}}></img>
+
+      <br/>
+      </p></>) },
+      
+      
+  ],
+  '프론트엔드 설정': [
+    { id: 1, text: (<><h1 className={dmc.title}>프론트엔드 설정</h1>
+    <p className={dmc.title2}>1. 프로젝트 클론</p>
+      <p className={dmc.tbody}>
+      git clone [https://github.com/youjiyeon12/Yutier.git](https://github.com/youjiyeon12/Yutier.git)
+      <br/>
+      <br/>cd Yutier</p>
+      <br/>
+       <p className={dmc.title2}>2. 필요한 라이브러리 설치</p>
+       <p className={dmc.tbody}> npm install</p>  
+    </>) },
+
+    { id: 2, text: (<><h1 className={dmc.title}>프론트엔드 설정</h1>
+    <p className={dmc.title2}>3. 환경 변수 설정</p>
+    <p className={dmc.tbody}>
+    프로젝트 루트 디렉토리에 있는 .env 파일을 엽니다.
+    <br/>"YOUR_WEB_APP_URL" 부분에 위에서 복사한 웹 앱 URL을 붙여넣습니다.
+    <br/>
+    <br/>VITE_APPS_SCRIPT_URL="YOUR_WEB_APP_URL"
+    </p>
+    <br/>
+    <p className={dmc.title2}>4 .프론트엔드 서버 실행</p>
+    <p className={dmc.tbody}>
+    npm run dev
+    <br/>
+    <br/>
+    개발 서버가 http://localhost:5173과 같은 주소에서 실행됩니다.
+    </p>
+    </>) },
+  ]
+};
+
+const categories = Object.keys(allGuides); 
 
 function Guide({ user, onLogout }) {
+  
+  const [currentCategory, setCurrentCategory] = useState(categories[0]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const totalSlides = slideContents.length;
+
+  const currentSlideData = allGuides[currentCategory];
+  const totalSlides = currentSlideData.length;
 
   const goToNext = () => {
     if (currentSlideIndex < totalSlides - 1) {
-        setCurrentSlideIndex(currentSlideIndex + 1);
+      setCurrentSlideIndex(currentSlideIndex + 1);
     }
   };
 
+  
   const goToPrev = () => {
     if (currentSlideIndex > 0) {
-        setCurrentSlideIndex(currentSlideIndex - 1);
+      setCurrentSlideIndex(currentSlideIndex - 1);
     }
   };
 
-  const currentContent = slideContents[currentSlideIndex].text;
+  const handleCategoryChange = (category) => {
+    setCurrentCategory(category);
+    setCurrentSlideIndex(0);
+  };
+
+  const currentContent = currentSlideData[currentSlideIndex].text;
 
   return (
     <div>
       <Header user={user} onLogout={onLogout} />
+    
+      <div className={dmc.menuContent}>
+        <span className={dmc.menuTitleText}>
+          시작하기
+        </span>
+        
+        {categories.map((category) => (
+          <button
+            key={category}
+            onClick={() => handleCategoryChange(category)}
+            className={currentCategory === category ? dmc.activeCategory : ''}
+          >
+            {category}
+          </button>
+        ))}
+      </div>
       
-      {/* 💡 슬라이더 전체 컨테이너에 dmc.sliderContainer 클래스 적용 */}
+      
       <div className={dmc.sliderContainer}>
         
         {/* 이전 버튼 */}
@@ -109,42 +185,35 @@ function Guide({ user, onLogout }) {
           onClick={goToPrev} 
           disabled={currentSlideIndex === 0}
           className={dmc.arrowButton} 
-          style={{ 
-            // opacity만 인라인으로 유지
-            opacity: currentSlideIndex === 0 ? 0.4 : 1 
-          }} 
+          style={{ opacity: currentSlideIndex === 0 ? 0.4 : 1 }} 
         >
           <img 
             src="/arrow-1.png" 
             alt="이전 슬라이드" 
-            className={dmc.arrowImage} // 이미지 크기 클래스
+            className={dmc.arrowImage}
           />
         </button>
 
-        
-        <div className={dmc.body} key={currentSlideIndex}>
+        {/* 슬라이드 내용 */}
+        <div className={dmc.body} key={currentCategory}>
           {currentContent}
-          
-          {/* 현재가 몇 번째 페이지인지 */}
-            <p className={dmc.slideCounter}> 
-              {currentSlideIndex + 1} / {totalSlides}
-            </p>
+          {/* 페이지 번호 (position: absolute) */}
+          <p className={dmc.slideCounter}> 
+            {currentSlideIndex + 1} / {totalSlides}
+          </p>
         </div>
 
+        {/* 다음 버튼 */}
         <button 
           onClick={goToNext} 
           disabled={currentSlideIndex === totalSlides - 1}
-          // 공통 버튼 클래스와 추가 마진 클래스 모두 적용
           className={`${dmc.arrowButton} ${dmc.nextButtonMargin}`} 
-          style={{ 
-            // opacity만 인라인
-            opacity: currentSlideIndex === totalSlides - 1 ? 0.4 : 1
-          }}
+          style={{ opacity: currentSlideIndex === totalSlides - 1 ? 0.4 : 1 }}
         >
           <img 
             src="/arrow-2.png" 
             alt="다음 슬라이드" 
-            className={dmc.arrowImage} // 이미지 크기 클래스
+            className={dmc.arrowImage}
           />
         </button>
       </div>

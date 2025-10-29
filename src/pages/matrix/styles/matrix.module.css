@@ -436,7 +436,7 @@ footer {
   font-weight: 300;
   font-size: 16px;
   cursor: pointer;
-  transition: background 0.12s;
+
 }
 
 .registerBtn:hover {
@@ -461,7 +461,7 @@ footer {
 
 /* 도움말 창 본체 */
 .help-window {
-    width: 50%; 
+    width: 100%; 
     max-height: 50vh; 
     
     background-color: white;
@@ -514,130 +514,151 @@ footer {
     /* 모바일에서 모달 크기 조정 */
     .help-window {
         width: 80%;
-        max-height: 70vh;
+        max-height: 1000vh;
     }
 }
 
-/*------도움말 버튼------*/
+/* ------ 도움말 버튼 및 모달 (통합본) ------ */
 .titleWithHelp {
-    display: flex;
-    align-items: center; 
-    gap: 10px;
-    margin-bottom: 20px;
+  display: flex;
+  gap: 10px; 
+  margin-bottom: 20px;
 }
 
 .helpButtonInline {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  
+  position: relative; /*버튼 이동*/
+  left: 650px; 
+  top: 130px; 
 }
 
 .helpIcon {
-    width: 50px; 
-    height: 50px;
-   
+  width: 30px; 
+  height: 30px;
+  display: block;
 }
 
-.modalOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: transparent; 
-    display: flex;
-    justify-content: center;
-    align-items: flex-start; 
-    z-index: 2000;
-}
-
-.helpWindow {
-    margin-top: 100px; /*원하는 높이, 크기*/
-    width: 100; 
-    background-color: white;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-    position: relative; 
-    overflow-y: auto; 
-}
-
-.closeButton {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    border: none;
-    background: transparent;
-    font-size: 24px;
-    font-weight: bold;
-    cursor: pointer;
-    color: #333;
-}
-
-.titleWithHelp {
-    display: flex;
-    gap: 10px; 
-    margin-bottom: 20px;
-}
-
-.helpButtonInline {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    
-    position: relative; /*바튼 이동*/
-    left: 650px; 
-    top: 130px; 
-}
-
-.helpIcon {
-    width: 30px; 
-    height: 30px;
-    display: block;
-}
-
-.modalOverlay { /*창 위치 설정*/
-    position: fixed;
-    top: 120px;
-    left: 260px;
-    width: 100vw;
-    height: 100vh;
-    
-    background-color: transparent; /* 배경 투명 */
-    
-    display: flex;
-    justify-content: center;
-    /* 💡 모달을 상단에 붙이도록 정렬 */
-    align-items: flex-start; 
-    
-    z-index: 2000;
+.modalOverlay { 
+  position: fixed;
+  top: 120px;
+  left: 260px;
+  width: 100vw;
+  height: 100vh;
+  
+  background-color: transparent; /* 배경 투명 */
+  
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* 모달을 상단에 붙이도록 정렬 */
+  
+  z-index: 2000;
 }
 
 .helpWindow {
-    /* 💡 모달의 세로 위치 조정. 이 값(100px)을 원하는 높이로 변경하세요. */
-    margin-top: 100px; 
-    margin-right: 440px;
-    width: 1200px; 
-    height: 500px;
-    
-    background-color: white;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-    position: relative; 
-    overflow-y: auto; 
+  margin-top: 100px;  /*위치*/
+  margin-right: 550px;
+  width: 90%; 
+  height: 600px;
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  position: relative; 
+  overflow-y: auto; 
 }
 
 .closeButton {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    border: none;
-    background: transparent;
-    font-size: 24px;
-    font-weight: bold;
-    cursor: pointer;
-    color: #333;
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  border: none;
+  background: transparent;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #333;
+}
+
+/* -------------------- 슬라이드 내용 영역 -------------------- */
+.slideContentArea {
+  height: calc(100% - 60px); 
+  overflow-y: auto; 
+  padding-right: 15px; 
+  padding-left: 50px; /* 👈 (수정) 내용 오른쪽으로 밀기 */
+}
+
+/* 슬라이드 제어 버튼 그룹 (왼쪽 하단 고정) -------------------- */
+.slideControlsBottomLeft {
+  position: absolute; 
+  bottom: 20px;     
+  left: 20px;     
+  display: flex;
+  align-items: center; 
+  gap: 15px;       
+  background-color: white; 
+  padding: 5px 10px; 
+  padding-left: 50px     
+}
+
+/*슬라이드 내비게이션 버튼 (이미지 버튼) -------------------- */
+.slideNavButton {
+  background: none;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  line-height: 0; 
+}
+
+.slideNavButton:hover:not(:disabled) {
+  opacity: 0.7;
+}
+
+.slideNavButton:disabled {
+  opacity: 0.3; 
+  cursor: default;
+  filter: none; 
+}
+
+/* 슬라이드 버튼 이미지 크기 -------------------- */
+.slideNavIcon {
+  width: 27px; 
+  height: 27px;
+  display: block;
+}
+
+/* 페이지 번호 표시 -------------------- */
+.slidePageIndicator {
+  font-weight: bold;
+  color: #333;
+  font-size: 17px;
+  min-width: 40px; 
+  text-align: center;
+}
+
+/* -------------------- 슬라이드 내부 이미지 스타일 (기존 guideImage) -------------------- */
+.guideImage {
+  max-width: 100%;
+  height: auto;
+  margin-top: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  display: block; 
+}
+
+/* -------------------- 슬라이드 내부 텍스트 스타일 -------------------- */
+.title {
+  font-size: 27px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15px; 
+  padding-bottom: 10px;
+}
+
+.tbody{
+  font-size: 20px;
 }

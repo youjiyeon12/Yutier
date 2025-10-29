@@ -130,6 +130,7 @@
     const userId = user?.id;
    // 도움말 버튼 상태 추가
    const [showHelp, setShowHelp] = useState(false);
+   const [currentSlide, setCurrentSlide] = useState(0);
 
 
     console.log("🔍 [Matrix] year:", year, "semester:", semester);
@@ -580,32 +581,142 @@
             <h2 className={styles.placeholderText}>조회 버튼을 눌러 매트릭스를 불러오세요.</h2>
           )}
         </div>
+
+{/*-----도움말 버튼---------------------*/}
         
-        {showHelp && (
-          <div className={styles.modalOverlay} onClick={() => setShowHelp(false)}>
-            <div className={styles.helpWindow} onClick={(e) => e.stopPropagation()}>
-              <button
-                onClick={() => setShowHelp(false)}
-                className={styles.closeButton}
-              >
-                &times;
-              </button>
-              
+{showHelp && (
+        <div 
+          className={styles.modalOverlay} 
+          onClick={() => { setShowHelp(false); setCurrentSlide(0); }}
+        >
+          <div 
+            className={styles.helpWindow} 
+            onClick={(e) => e.stopPropagation()}
+          >
 
-              <h3>도움말 제목</h3>
-              <p>내용내용내용</p>
-              <p>내용내용내용</p>
-              <p>내용내용내용</p>
-              <p>내용내용내용</p> 
+            {(() => {
+              //  실제 도움말 내용
+              const slideContents = [
+                { 
+                    id: 1, 
+                       text: (
+                         <>
+                          <h3 className={styles.title}>Yutier 매트릭스 등록</h3>
+                          <p className={styles.tbody}>
+                          1. 매트릭스 점수 입력하는 페이지가 나오면 유한대학교 포털(<a href='https://portal.yuhan.ac.kr/' target='_blank'>https://portal.yuhan.ac.kr/</a>)로 이동합니다. 
+                          <br/>
+                          2. 로그인 후 [학생이력]으로 들어가줍니다.
+                          <br/>
+                          3. '나의 TRUST인증 현황' 아래에 각각의 자신의 점수를 Yutier 웹 페이지로 돌아와 입력해줍니다.
+                          </p>
+                          <img src="/sc3.png" height="300px" style={{ marginTop: '30px' , marginRight: '20px'}}></img>
+                          <img src="/sc4.png" height="300px" style={{ marginTop: '30px' }}></img>
+                        
+                      </>
+                    ) 
+                  },
+                { 
+                  id: 2, 
+                  text: (
+                    <>
+                      <h3 className={styles.title}>Yutier 매트릭스 등록</h3>
+                      <p className={styles.tbody}>
+                        4. 나의 인증현황 가운데를 누른 후 [개인역량 매트릭스]에 들어갑니다.
+                        <br/>
+                        5. 들어간 후엔 학년, 학기, 교과를 선택하고 [조회]를 누릅니다.
+                        <br/>
+                        6. 조회를 누르면 아래처럼 점수가 나오는 것을 볼 수 있습니다.
+                      </p>
+                      <img src="/sc6.png" height="250px" style={{marginTop: '-30px',marginRight: '20px'}}></img>
+                      <img src="/sc7.png" height="250px" style={{marginTop: '-300px'}}></img>
+                      <img src="/sc8.png" height="290px" style={{ marginTop: '30px' , marginLeft: '20px'}}></img>
+                    </>
+                  )
+                },
+                { 
+                  id: 3, 
+                  text: (
+                    <>
+                      <h3 className={styles.title}>Yutier 매트릭스 등록</h3>
+                      <p className={styles.tbody}>
+                        9. 나온 점수를 토대로 Yutier 사이트에 입력합니다.
+                        <br/>
+                        10. 각 버튼 마다 필터링 기능이 있어 항목별로 각각 볼 수 있습니다
+                        <br/>
+                        11. 또한 화살표를 눌러 상세항목 보기가 가능합니다.
+                      </p>
+                      <img src="/sc9.png" height="270px" style={{marginTop: '30px',marginRight: '20px'}}></img>
+                      <img src="/sc10.png" height="270px" style={{marginTop: '30px'}}></img>
+                    </>
+                  )
+                },
+                { 
+                  id: 4, 
+                  text: (
+                    <>
+                      <h3 className={styles.title}>Yutier 매트릭스 등록</h3>
+                      <p className={styles.tbody}>
+                        12. 다 입력을 하였다면 [홈]이나 마이페이지의 회원정보에서 티어와 추천 프로그램 리스트를 확인할 수 있습니다.
+                      </p>
+                      <img src="/sc11.png" height="280px" style={{marginTop: '60px',marginRight: '20px'}}></img>
+                      <img src="/sc12.png" height="280px" style={{marginTop: '60px'}}></img>
+                    </>
+                  )
+                },
+                   
+              ];
 
-             
+              return (
+                <>
+                  {/* 닫기 버튼 */}
+                  <button
+                    onClick={() => { setShowHelp(false); setCurrentSlide(0); }}
+                    className={styles.closeButton} 
+                  >
+                    &times;
+                  </button>
 
+                  {/* 슬라이드 내용 영역 */}
+                  <div className={styles.slideContentArea}>
+                    {slideContents[currentSlide].text}
+                  </div>
 
+                  {/* 슬라이드 제어 버튼 (왼쪽 하단 고정) */}
+                  <div className={styles.slideControlsBottomLeft}>
+                    <button
+                      onClick={() => setCurrentSlide(prev => Math.max(0, prev - 1))}
+                      disabled={currentSlide === 0} 
+                      className={styles.slideNavButton}
+                    >
+                      <img 
+                        src="/arrow-left.png" 
+                        alt="이전" 
+                        className={styles.slideNavIcon}
+                      />
+                    </button>
+                    
+                    <span className={styles.slidePageIndicator}>
+                      {currentSlide + 1} / {slideContents.length}
+                    </span>
 
-
-            </div>
+                    <button
+                      onClick={() => setCurrentSlide(prev => Math.min(slideContents.length - 1, prev + 1))}
+                      disabled={currentSlide === slideContents.length - 1} 
+                      className={styles.slideNavButton}
+                    >
+                      <img 
+                        src="/arrow-right.png" 
+                        alt="다음" 
+                        className={styles.slideNavIcon}
+                      />
+                    </button>
+                  </div>
+                </>
+              );
+            })()}
           </div>
-        )}
+        </div>
+      )}
         
         <Footer />
       </div>

@@ -131,23 +131,23 @@ return (
             className={style['help-window']} 
             onClick={(e) => e.stopPropagation()}>
 
-{/*[2단계] 슬라이드 콘텐츠를 모달 안에 직접 정의합니다. */}
+
   {(() => {
  const slideContents = [
   { 
     id: 1, 
     text: (
       <>
-        <h3 className={style.title}>Yutier 매트릭스 등록 (1/2)</h3>
-        <p style={{ fontSize: "16px"}}>
+        <h3 className={style.title}>Yutier 매트릭스 등록</h3>
+        <p className={style.tbody}>
         1. [로그인] - [마이페이지] - [매트릭스 관리]
         <br/>
         2. '매트릭스 사본 만들기' 클릭
         <br/>
         3. 시트 URL 복사 후 '공유' 버튼 클릭
-        <img src="/sc6.png" height="410"
-          className={style.guideImage}/>
-      </p> 
+        </p>
+       <img src="/sc1.png" height="350px"
+      className={style.guideImage}/>
     </>
     ) 
   },
@@ -155,13 +155,13 @@ return (
       id: 2, 
       text: (
           <>
-          <h3 className={style.title}>Yutier 매트릭스 등록 (2/2)</h3>
-          <p>
+          <h3 className={style.title}>Yutier 매트릭스 등록</h3>
+          <p className={style.tbody}>
           4. 복사한 URL을 사본 공유에 붙여넣기
           <br/>
           5. YUTER 웹페이지로 돌아와 URL 붙여넣고 '조회'
-          <img src="/sc8.png" className={style.guideImage}/>
-          </p>
+        </p>
+        <img src="/sc2.png" height="350px" style={{ marginTop: '30px' }}></img>
       </>
     )
   }

@@ -238,8 +238,8 @@ p {
 
 .help-button-corner {
     position: absolute; 
-    top: 50px; 
-    right: 50px; 
+    top: 0px;  /*물음표 도움말 버튼 위아래 조정*/
+    right: 10px; 
     background: none;
     border: none;
     cursor: pointer;
@@ -273,8 +273,8 @@ p {
 
 /* 도움말 창 본체 */
 .help-window {
-    width: 78%;  /*--------------------------크기 ------------------------*/
-    height: 600px;
+    width: 70%;  /*--------------------------크기 ------------------------*/
+    height: 645px;
     max-height: 100vh; 
     
     background-color: white;
@@ -315,13 +315,11 @@ p {
         padding: 10px 14px;
     }
     
-    /* 모바일에서 버튼 위치 조정 */
     .help-button-corner {
-        top: 10px;
+        top: 30px;
         right: 10px;
     }
     
-    /* 모바일에서 모달 크기 조정 */
     .help-window {
         width: 80%;
         max-height: 70vh;
@@ -331,8 +329,7 @@ p {
 .guideImage {
     display: block; 
     margin: 20px auto; 
-    width: 700px; 
-    height: auto;
+
     margin-left: 0;
     margin-right: auto;
 }
@@ -349,8 +346,8 @@ p {
 /* -------------------- 슬라이드 제어 버튼 그룹 (왼쪽 하단 고정) -------------------- */
 .slideControlsBottomLeft {
     position: absolute; 
-    bottom: 20px;       /* 💡 하단 위치 (조절 가능) */
-    left: 20px;         /* 💡 왼쪽 위치 (조절 가능) */
+    bottom: 20px;       
+    left: 20px;        
     display: flex;
     align-items: center; 
     gap: 15px;          
@@ -374,7 +371,6 @@ p {
     
 }
 
-
 .slideNavButton:disabled {
     opacity: 0.3; 
     cursor: default;
@@ -383,8 +379,8 @@ p {
 
 /* -------------------- 슬라이드 버튼 이미지 크기 -------------------- */
 .slideNavIcon {
-    width: 20px; /* 💡 이미지 크기 (조절 가능) */
-    height: 20px;
+    width: 30px; /* 💡 이미지 크기 (조절 가능) */
+    height: 30px;
     display: block;
 }
 
@@ -392,26 +388,18 @@ p {
 .slidePageIndicator {
     font-weight: bold;
     color: #333;
-    font-size: 14px;
+    font-size: 17px;
     min-width: 40px; 
     text-align: center;
-    
-
-}
-
-/* -------------------- 슬라이드 내부 이미지 스타일 (기존 guideImage) -------------------- */
-.guideImage {
-    max-width: 200%;
-    height: auto;
-    margin-top: 15px;
-    border-radius: 5px;
-    display: block; 
 }
 
 .title {
-    font-size: 20px;
+    font-size: 27px;
     font-weight: bold;
     color: #333;
     margin-bottom: 15px; padding-bottom: 10px;
 
+}
+.tbody{
+    font-size: 20px;
 }
