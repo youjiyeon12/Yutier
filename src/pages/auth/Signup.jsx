@@ -117,9 +117,8 @@ function Signup({ onRegister }) {
       });
 
       if (data.success) {
-        //alert('회원가입 성공!');
-        onRegister({ id, name });
-        navigate('/Login'); // 회원가입 후 로그인으로 이동
+        alert('회원가입 성공!');
+        navigate('/login');
       } else {
         alert('회원가입 실패!');
       }

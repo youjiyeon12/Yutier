@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import styles from './styles/findpassword.module.css';
 import { googleSheetsService } from '../../services/googleSheetsService';
 
@@ -20,6 +20,14 @@ function FindPassword(){
     const[timer, setTimer] = useState(0); // 타이머
     const timerRef = useRef(null);
     const navigate = useNavigate();
+    const location = useLocation();
+    
+    // Login에서 전달받은 id 자동 채우기
+    useEffect(() => {
+        if (location.state?.id) {
+        setId(location.state.id);
+        }
+     }, [location.state]);
 
     // 타이머 효과
     useEffect(() => {

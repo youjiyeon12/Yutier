@@ -21,7 +21,22 @@ function doGet(e) {
     console.log('전체 파라미터:', e.parameter);
     console.log('현재 시간:', new Date().toISOString());
     
-    return routeRequest(action, data);
+  // IMPORTANT: 프론트엔드에서 직렬화된 'data' 파라미터를 파싱
+    let parsedData = { ...data }; // data 객체의 속성을 복사하여 초기화
+    
+    // 프론트엔드에서 직렬화된 'data' 키가 있는지 확인하고 파싱
+    if (data.data && typeof data.data === 'string') {
+        try {
+            // JSON 문자열을 파싱한 객체로 parsedData를 업데이트 (덮어쓰기)
+            parsedData = JSON.parse(data.data);
+            console.log('파싱된 데이터:', parsedData);
+        } catch (jsonError) {
+            console.error('데이터 파싱 오류:', jsonError);
+            return json(400, { success: false, message: 'Invalid JSON data format' });
+        }
+    }
+    // routeRequest에 파싱된 데이터를 전달
+    return routeRequest(action, parsedData); 
   } catch (err) {
     return json(500, { success: false, message: 'Server error', detail: String(err) });
   }
@@ -64,8 +79,12 @@ function routeRequest(action, data) {
       return handleSignup(data);
     case 'checkId':
       return handleCheckId(data);
+    case 'checkIdDuplicate': 
+      return handleCheckIdDuplicate(data);
     case 'checkStudentID':
       return handleCheckStudentID(data);
+    case 'checkStudentIdDuplicate': 
+      return handleCheckStudentIdDuplicate(data);
     case 'getMajorList':
       return handleGetMajorList();
     case 'updateUser':
@@ -109,30 +128,106 @@ function routeRequest(action, data) {
   }
 }
 
+const USER_COLUMNS = {
+  ID: 0,         // A 열: 아이디
+  PASSWORD: 1,   // B 열: 비밀번호 
+  NAME: 2,       // C 열: 이름
+  EMAIL: 3,      // D 열: 이메일
+  STUDENT_ID: 4, // E 열: 학번
+  DEPT: 5,       // F 열: 학부
+  MAJOR: 6,      // G 열: 전공
+  MATRIX_URL: 7, // H 열: url
+  SALT: 8        // I 열: 솔트
+};
+
+/**
+ * SHA-256 해시를 HEX 문자열로 반환
+ */
+function sha256Hex(str) {
+  const raw = Utilities.computeDigest(
+    Utilities.DigestAlgorithm.SHA_256,
+    str,
+    Utilities.Charset.UTF_8
+  );
+  return raw.map(b => ('00' + (b & 0xff).toString(16)).slice(-2)).join('');
+}
+
+/**
+ * 비밀번호 검증 함수
+ */
+function verifyPasswordHash(inputPassword, salt, storedHash) {
+  try {
+    if (!inputPassword || !salt || !storedHash) return false;
+
+    const computedHash = sha256Hex(salt + inputPassword);
+    return computedHash === storedHash;
+  } catch (e) {
+    console.error("verifyPasswordHash error:", e);
+    return false;
+  }
+}
+
+function generateSalt(length = 16) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let salt = '';
+  for (let i = 0; i < length; i++) {
+    salt += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return salt;
+}
+
 // 로그인 처리
 // 입력: id, password
 // 처리: users 시트 조회 후 일치 시 사용자 요약 정보 반환
 function handleLogin(data) {
   const { id, password } = data;
-  if (!id || !password) {
-    return json(400, { success: false, message: 'ID와 비밀번호가 필요합니다.' });
+
+  if (!id || !password) 
+    return json(400, { success: false, message: '아이디와 비밀번호를 모두 입력해주세요.' });
+
+  const userRow = findUserById(id);
+
+  if (!userRow) {
+    console.log(`로그인 실패: 사용자 ID ${id}를 찾을 수 없음`);
+    return json(401, { success: false, message: '아이디 또는 비밀번호가 올바르지 않습니다.' });
+  }
+
+  const storedHash = userRow.password;
+  const salt = userRow.salt;
+
+  // 레거시 계정 체크 (Salt가 없는 경우)
+  if (!salt) {
+    if (storedHash === password) {
+      console.log(`로그인 성공 (레거시): ${id}`);
+      return json(401, { 
+        success: false, 
+        code: 'LEGACY_ACCOUNT', 
+        message: '계정 보안 기준 미달로 인해 비밀번호 재설정 페이지로 이동합니다.' 
+      });
+    } else {
+      console.log(`로그인 실패 (레거시 비밀번호 불일치): ${id}`);
+      return json(401, { success: false, message: '아이디 또는 비밀번호가 올바르지 않습니다.' });
+    }
   }
   
-  const user = findUserById(id);
-  if (user && user.password === password) {
-    return json(200, {
-      success: true,
-      user: {
-        id: user.id,
-        name: user.name,
-        studentId: user.studentID,
-        department: `${user.department} ${user.major}`,
-        matrixUrl: user.url || null  // url 속성 사용
-      }
-    });
+  // 비밀번호 검증 (Salt + Hash 사용)
+  if (verifyPasswordHash(password, salt, storedHash)) {
+    console.log(`로그인 성공 (최신): ${id}`);
+
+    const user = {
+      id: userRow.id,
+      name: userRow.name,
+      email: userRow.email,
+      studentId: userRow.studentID,
+      department: userRow.department, 
+      major: userRow.major, 
+      matrixUrl: userRow.matrixUrl || null 
+    };
+    return json(200, { success: true, message: '로그인 성공', user: user });
+  } else {
+    console.log(`로그인 실패 (비밀번호 불일치): ${id}`);
+    return json(401, { success: false, message: '아이디 또는 비밀번호가 올바르지 않습니다.' });
   }
-  
-  return json(200, { success: false, message: '로그인 실패' });
 }
 
 // 회원가입 처리
@@ -154,10 +249,14 @@ function handleSignup(data) {
   if (findUserByStudentID(studentID)) {
     return json(200, { success: false, message: '이미 존재하는 학번입니다.' });
   }
-  
+
+  // 비밀번호 해싱
+  const salt = generateSalt();                   
+  const hash = sha256Hex(salt + password.trim()); 
+
   // 사용자 추가
   const sheet = getSheet(SHEET_NAMES.USERS);
-  sheet.appendRow([id, password, name, email, studentID, department, major, '']);
+  sheet.appendRow([id, hash, name, email, studentID, department, major, '', salt]);
   
   return json(200, { success: true, message: '회원가입이 완료되었습니다.' });
 }
@@ -546,37 +645,50 @@ function handleUpdateUser(data) {
   console.log('파싱된 updateData:', parsedUpdateData);
   
   const user = findUserById(id);
+  const sheet = getSheet(SHEET_NAMES.USERS);
+  const values = sheet.getDataRange().getValues();
+  const idIndex = 0, pwIndex = 1, saltIndex = 8;
   
   if (!user) {
     return json(200, { success: false, message: '사용자를 찾을 수 없습니다.' });
   }
+
+  for (let i = 1; i < values.length; i++) {
+    const row = values[i];
+    if (row[idIndex] === id) {
+      const storedHash = row[pwIndex];
+      const salt = row[saltIndex];
   
-  // 비밀번호 검증
-  if (parsedUpdateData.newPassword && user.password !== parsedUpdateData.currentPassword) {
+  // 현재 비밀번호 확인
+      if (parsedUpdateData.currentPassword) {
+  const currentInputHash = salt ? sha256Hex(salt + parsedUpdateData.currentPassword) : parsedUpdateData.currentPassword;
+  if (storedHash !== currentInputHash) {
     return json(200, { success: false, message: '현재 비밀번호가 일치하지 않습니다.' });
   }
+}
   
   // 정보 수정
-  const sheet = getSheet(SHEET_NAMES.USERS);
   const sheetData = sheet.getDataRange().getValues();
   
-  for (let i = 1; i < sheetData.length; i++) {
-    if (sheetData[i][0] === id) {
-      if (parsedUpdateData.department) {
-        sheet.getRange(i + 1, 6).setValue(parsedUpdateData.department);
-        console.log('학부 업데이트:', parsedUpdateData.department);
-      }
-      if (parsedUpdateData.major) {
-        sheet.getRange(i + 1, 7).setValue(parsedUpdateData.major);
-        console.log('전공 업데이트:', parsedUpdateData.major);
-      }
-      if (parsedUpdateData.newPassword) {
-        sheet.getRange(i + 1, 2).setValue(parsedUpdateData.newPassword);
-        console.log('비밀번호 업데이트됨');
-      }
-      break;
+  if (parsedUpdateData.department) {
+      sheet.getRange(i + 1, 6).setValue(parsedUpdateData.department);
+      console.log('학부 업데이트:', parsedUpdateData.department);
     }
+    if (parsedUpdateData.major) {
+      sheet.getRange(i + 1, 7).setValue(parsedUpdateData.major);
+      console.log('전공 업데이트:', parsedUpdateData.major);
+    }
+    if (parsedUpdateData.newPassword) {
+      const newSalt = generateSalt();
+      const newHash = sha256Hex(newSalt + parsedUpdateData.newPassword);
+      sheet.getRange(i + 1, 2).setValue(newHash);
+      sheet.getRange(i + 1, 9).setValue(newSalt);
+      console.log('비밀번호 업데이트');
+    }
+
+    return json(200, { success: true, message: '정보가 수정되었습니다.' });
   }
+}
   
   return json(200, { success: true, message: '정보가 수정되었습니다.' });
 }
@@ -585,43 +697,53 @@ function handleUpdateUser(data) {
 function handleVerifyPassword(data) {
   const { id, password } = data;
   const user = findUserById(id);
+  const sheet = getSheet(SHEET_NAMES.USERS);
+  const values = sheet.getDataRange().getValues();
+  const idIndex = 0, pwIndex = 1, saltIndex = 8;
+
+  for (let i = 1; i < values.length; i++) {
+    const row = values[i];
+    if (row[idIndex] === id) {
+      const storedHash = row[pwIndex];
+      const salt = row[saltIndex];
   
-  if (!user) {
-    return json(200, { message: '사용자를 찾을 수 없습니다.' });
+  const inputHash = salt ? sha256Hex(salt + password) : password;
+      if (storedHash === inputHash) {
+        return json(200, { success: true, message: '비밀번호가 확인되었습니다.' });
+      } else {
+        return json(200, { success: false, message: '비밀번호가 일치하지 않습니다.' });
+      }
+    }
   }
-  
-  if (user.password !== password) {
-    return json(200, { message: '비밀번호가 일치하지 않습니다.' });
-  }
-  
-  return json(200, { success: true, message: '비밀번호가 확인되었습니다.' });
+
+  return json(200, { success: false, message: '사용자를 찾을 수 없습니다.' });
 }
 
 // 회원 탈퇴
 function handleDeleteAccount(data) {
   const { id, password } = data;
   const user = findUserById(id);
-  
-  if (!user) {
-    return json(200, { message: '사용자를 찾을 수 없습니다.' });
-  }
-  
-  if (user.password !== password) {
-    return json(200, { message: '비밀번호가 일치하지 않습니다.' });
-  }
-  
-  // 사용자 데이터 삭제
   const sheet = getSheet(SHEET_NAMES.USERS);
-  const sheetData = sheet.getDataRange().getValues();
+  const values = sheet.getDataRange().getValues();
+  const idIndex = 0, pwIndex = 1, saltIndex = 8;
   
-  for (let i = 1; i < sheetData.length; i++) {
-    if (sheetData[i][0] === id) {
+  for (let i = 1; i < values.length; i++) {
+    const row = values[i];
+    if (row[idIndex] === id) {
+      const storedHash = row[pwIndex];
+      const salt = row[saltIndex];
+      const inputHash = salt ? sha256Hex(salt + password) : password;
+
+      if (storedHash !== inputHash) {
+        return json(200, { success: false, message: '비밀번호가 일치하지 않습니다.' });
+      }
+
       sheet.deleteRow(i + 1);
-      break;
+      return json(200, { success: true, message: '회원 탈퇴가 성공적으로 처리되었습니다.' });
     }
   }
-  
-  return json(200, { message: '회원 탈퇴가 성공적으로 처리되었습니다.' });
+
+  return json(200, { success: false, message: '사용자를 찾을 수 없습니다.' });
 }
 
 // 사용자의 매트릭스 URL 조회
@@ -1198,7 +1320,8 @@ function findUserById(id) {
         studentID: sheetData[i][4],
         department: sheetData[i][5],
         major: sheetData[i][6],
-        url: sheetData[i][7]  // matrixUrl 대신 url로 변경
+        url: sheetData[i][7],  // matrixUrl 대신 url로 변경
+        salt: sheetData[i][8]
       };
     }
   }
@@ -1211,8 +1334,8 @@ function findUserByStudentID(studentID) {
   const sheetData = sheet.getDataRange().getValues();
   
   for (let i = 1; i < sheetData.length; i++) {
-    if (sheetData[i][4] === studentID) {
-      return sheetData[i];
+    if (String(sheetData[i][4]) === studentID) { 
+      return sheetData[i];
     }
   }
   return null;
@@ -1592,9 +1715,12 @@ function handleUpdatePassword(data) {
   
   for (let i = 1; i < allData.length; i++) {
     if (allData[i][0] == id) { // A열(아이디)
-      const hashedPassword = newPassword;
-      sheet.getRange(i + 1, 2).setValue(hashedPassword); // B열(비밀번호)
-      
+      const newSalt = generateSalt();
+      const newHash = sha256Hex(newSalt + newPassword);
+
+      sheet.getRange(i + 1, 2).setValue(newHash); // B열(비밀번호)
+      sheet.getRange(i + 1, 9).setValue(newSalt);  // I열(salt)
+
       const userEmail = allData[i][3]; // D열(이메일)
       CacheService.getScriptCache().remove(userEmail);
       
@@ -1610,3 +1736,4 @@ function json(status, obj) {
   return ContentService.createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
 }
+

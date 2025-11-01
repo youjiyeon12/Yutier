@@ -7,6 +7,7 @@ function Login({ onLogin }) {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const [message, setMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,19 +18,30 @@ function Login({ onLogin }) {
     }
 
     try {
-      const data = await googleSheetsService.login(id, password);
+      const result = await googleSheetsService.login(id, password);
 
-      if (data.success) {
-        onLogin(data.user);
-        navigate('/'); // 로그인 성공 후 홈으로 이동
+      if (result.success) {
+        console.log("✅ 로그인 성공:", result.user);
+        // 로그인 상태 갱신 (App.jsx의 setUser 호출)
+        if (onLogin) onLogin(result.user);
+
+        // 홈 화면으로 이동
+        navigate('/');
       } else {
-        alert('아이디 또는 비밀번호가 틀렸습니다.');
+      if (result.code === 'LEGACY_ACCOUNT') {
+        // 안내창 확인 비밀번호 재설정 페이지로 이동
+        alert('이 계정은 보안 기준 이전에 생성되었습니다.\n비밀번호를 재설정해주세요.');
+        navigate('/findpassword', { state: { id } });
+        return;
+      } else {
+        alert(result.message || '아이디 또는 비밀번호가 올바르지 않습니다.');
       }
+    }
     } catch (err) {
       console.error(err);
-      alert('로그인 중 오류가 발생했습니다.');
+      setMessage('로그인 중 오류가 발생했습니다.');
     }
-  };
+  }
 
   return (
     <div className={styles.loginPage}>
@@ -56,9 +68,9 @@ function Login({ onLogin }) {
             <button type="button" onClick={() => navigate('/signup')}>회원가입</button>
           </div>
 
-            <div className={styles.findLinks}>
-              <span onClick={() => navigate('/findid')}>아이디 찾기</span>
-              <span className={styles.separator}>|</span>
+          <div className={styles.findLinks}>
+            <span onClick={() => navigate('/findid')}>아이디 찾기</span>
+            <span className={styles.separator}>|</span>
             <span onClick={() => navigate('/findpassword')}>비밀번호 찾기</span>
           </div>
         </form>
