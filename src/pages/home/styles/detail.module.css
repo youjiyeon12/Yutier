@@ -5,26 +5,74 @@ p {
 }
 
 .menuContent {
+  
   display: flex;
-  padding: 14px 100px;
+  padding: 10px 30px; 
   justify-content: center;
-  align-items: center;
-  gap: 50px;
+  align-items: center; 
   border-radius: 15px;
-  background: #FFF;
-  box-shadow: 0px 0px 5px 0px rgba(159, 159, 159, 0.25);
+  background: #FFF;   
+  box-shadow: 0px 0px 5px 0px rgba(159, 159, 159, 0.25); 
+  width: fit-content;
+  margin: -25px auto 25px; 
 }
 
+
 .menuTitle {
-  padding: 10px 20px;
-  color: #393F59;
-  text-align: center;
-  font-family: 'Pretendard-ExtraBold', sans-serif;
-  font-size: 24px;
-  font-weight: 800;
-  line-height: 28px;
-  letter-spacing: 2px;
+  font-size: 20px; 
+  font-weight: 700;
+  color: #393F59; 
+  margin-right: 50px; 
+  white-space: nowrap; 
+  padding: 0;
+  margin-bottom: 0; 
+}
+
+.menuBar {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 10px; /* 버튼 사이 간격 (margin: 0 5px 대신) */
+}
+
+.menuBar p {
   margin: 0;
+}
+
+.menuNoBtn {
+  font-family: 'Pretendard-SemiBold', sans-serif;
+  cursor: pointer;
+  display: flex;
+  padding: 12px 25px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px; 
+  background: transparent; 
+  letter-spacing: 0.5px;
+  line-height: 20px;
+  color: #393F59; 
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.menuClickBtn {
+  font-family: 'Pretendard-SemiBold', sans-serif; 
+  cursor: pointer;
+  display: flex;
+  padding: 12px 25px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+  background: #393F59; 
+  color: #FDFDFD; 
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: 0.5px;
+}
+
+
+.menuNoBtn:hover {
+  background-color: #f3f4f6;
 }
 
 .menuBar {
@@ -75,8 +123,8 @@ p {
   justify-content: center;
   align-items: center;
   border-radius: 10px;
-  background: #393F59;
-  color: #FDFDFD;
+  background: #f3f4f6; 
+  color: #393F59;
   font-size: 16px;
   line-height: 20px;
   letter-spacing: 0.5px;
@@ -92,6 +140,7 @@ p {
   border-radius: 10px;
   background: #FFF;
   box-shadow: 0px 0px 5px 0px rgba(159, 159, 159, 0.25);
+  margin-top: -50px;
 }
 
 .container {

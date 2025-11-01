@@ -259,7 +259,6 @@
   cursor: pointer;
   box-shadow: 0 1px 4px #e3e6ed;
   transition: background 0.12s;
-
   background: #6c757d;
 }
 
@@ -519,7 +518,7 @@ footer {
     }
 }
 
-/* ------ 도움말 버튼 및 모달 (통합본) ------ */
+/* ------ 도움말 버튼 */
 .titleWithHelp {
   display: flex;
   gap: 10px; 
@@ -533,8 +532,8 @@ footer {
   padding: 0;
   
   position: relative; /*버튼 이동*/
-  left: 650px; 
-  top: 105px; 
+  left: 700px; 
+  top: 130px; 
 }
 
 .helpIcon {
@@ -544,32 +543,38 @@ footer {
 }
 
 .modalOverlay { 
-  position: fixed;
-  top: 35px;
-  left: 365px;
-  width: 100vw;
-  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;  /* 화면 전체 너비 */
+  height: 100vh; /* 화면 전체 높이 */
   
-  background-color: transparent; /* 배경 투명 */
-  
-  display: flex;
+  /* (선택) 반투명한 검은색 배경 추가 (권장) */
+  background-color:transparent;
+   display: flex;
   justify-content: center;
-  align-items: flex-start; /* 모달을 상단에 붙이도록 정렬 */
-  
-  z-index: 2000;
+  align-items: center;
+  margin-top: 35px;
+  z-index: 2000; /*앞으로*/
 }
 
 .helpWindow {
-  margin-top: 100px;  /*위치*/
-  margin-right: 550px;
-  width: 100%; 
-  height: 600px;
+  margin: 0;
+  width: 1300px;
+  max-width: 90vw; 
+  
+  height: 700px; 
+  max-height: 90vh; 
+
   background-color: white;
   padding: 30px;
   border-radius: 10px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
   position: relative; 
   overflow-y: auto; 
+  
+  /* 전체적 확대 */
+  transform: scale(0.95);
 }
 
 .closeButton {
@@ -589,7 +594,7 @@ footer {
   height: calc(100% - 60px); 
   overflow-y: auto; 
   padding-right: 15px; 
-  padding-left: 50px; /* 👈 (수정) 내용 오른쪽으로 밀기 */
+  padding-left: 60px;
 }
 
 /* 슬라이드 제어 버튼 그룹 (왼쪽 하단 고정) -------------------- */
@@ -641,7 +646,7 @@ footer {
   text-align: center;
 }
 
-/* -------------------- 슬라이드 내부 이미지 스타일 (기존 guideImage) -------------------- */
+/* -------------------- 슬라이드 내부 이미지 스타일*/
 .guideImage {
   max-width: 100%;
   height: auto;

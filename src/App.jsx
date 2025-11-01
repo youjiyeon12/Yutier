@@ -27,6 +27,7 @@ function App() {
     if (user) localStorage.setItem('user', JSON.stringify(user));
     else localStorage.removeItem('user');
   }, [user]);
+  
 
   return (
     <Router>
@@ -115,4 +116,6 @@ function App() {
   );
 }
 
+
 export default App;
+
