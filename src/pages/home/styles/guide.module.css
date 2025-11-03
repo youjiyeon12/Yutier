@@ -12,6 +12,7 @@
 }
 
 .menuTitleText {
+  font-family: 'Pretendard-SemiBold', sans-serif;
   font-size: 20px; 
   font-weight: 700;
   color:#393F59; 
@@ -19,8 +20,8 @@
   white-space: nowrap; 
 }
 
-/* 기본 버튼 (텍스트만) */
 .menuContent button {
+  font-family: 'Pretendard-SemiBold', sans-serif;
   padding: 12px 25px;
   font-size: 16px;
   font-weight: 500;
@@ -50,8 +51,9 @@
   align-items: center; 
   /* 메뉴 박스와 20px 간격 */
   margin: 20px auto 40px auto; 
-  margin-top: 30px;
-  margin-bottom: 50px;
+  margin-top: 35px;
+  margin-bottom: 80px;
+  transform: scale(1.0);
 }
 
 .body {
@@ -76,7 +78,6 @@
 .title2{
   font-size: 25px;
 }
-
 
 .tbody{
   font-size: 20px;

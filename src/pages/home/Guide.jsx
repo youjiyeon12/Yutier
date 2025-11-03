@@ -101,10 +101,10 @@ const allGuides = {
       <p className={dmc.tbody}>
       git clone [https://github.com/youjiyeon12/Yutier.git](https://github.com/youjiyeon12/Yutier.git)
       <br/>
-      <br/>cd Yutier</p>
+      <br/><u> cd Yutier</u></p>
       <br/>
        <p className={dmc.title2}>2. 필요한 라이브러리 설치</p>
-       <p className={dmc.tbody}> npm install</p>  
+       <p className={dmc.tbody}> <u> npm install</u></p>  
     </>) },
 
     { id: 2, text: (<><h1 className={dmc.title}>프론트엔드 설정</h1>
@@ -113,12 +113,12 @@ const allGuides = {
     프로젝트 루트 디렉토리에 있는 .env 파일을 엽니다.
     <br/>"YOUR_WEB_APP_URL" 부분에 위에서 복사한 웹 앱 URL을 붙여넣습니다.
     <br/>
-    <br/>VITE_APPS_SCRIPT_URL="YOUR_WEB_APP_URL"
+    <br/> <i>VITE_APPS_SCRIPT_URL="YOUR_WEB_APP_URL"</i>
     </p>
     <br/>
     <p className={dmc.title2}>4 .프론트엔드 서버 실행</p>
     <p className={dmc.tbody}>
-    npm run dev
+    <u>npm run dev</u>
     <br/>
     <br/>
     개발 서버가 http://localhost:5173과 같은 주소에서 실행됩니다.

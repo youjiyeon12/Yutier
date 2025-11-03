@@ -535,8 +535,8 @@ function handleGetMatrix(data) {
 // 입력: updates 배열 [{ programName, myScore?, detailName?, isCompleted? }]
 function handleSaveMatrix(data) {
   const { id, updates, year, semester } = data;
-  
-  // updates가 JSON 문자열인 경우 파싱
+
+  // updates 파싱
   let parsedUpdates = updates;
   if (typeof updates === 'string') {
     try {
@@ -546,80 +546,80 @@ function handleSaveMatrix(data) {
       return json(200, { success: false, message: '데이터 파싱 오류가 발생했습니다.' });
     }
   }
-  
-  console.log('파싱된 updates:', parsedUpdates);
-  
+
   const user = findUserById(id);
-  if (!user || !user.url) {
+  if (!user || !user.url)
     return json(200, { success: false, message: '시트 URL 미등록' });
-  }
+
   const spreadsheetId = extractSpreadsheetIdFromUrl(user.url);
-  if (!spreadsheetId) {
-    return json(200, { success: false, message: 'URL에서 스프레드시트 ID를 추출할 수 없습니다.' });
-  }
-  if (!parsedUpdates || !parsedUpdates.length) {
-    return json(200, { success: false, message: '업데이트할 내용이 없습니다.' });
-  }
-  
-  if (!year || !semester) {
+  if (!spreadsheetId)
+    return json(200, { success: false, message: 'URL에서 스프레드시트 ID 추출 실패' });
+
+  if (!year || !semester)
     return json(200, { success: false, message: '연도와 학기 정보가 필요합니다.' });
-  }
 
   try {
     const ss = SpreadsheetApp.openById(spreadsheetId);
     const sheetName = `${year}-${semester}`;
     const sheet = ss.getSheetByName(sheetName);
-
-    if (!sheet) {
+    if (!sheet)
       return json(404, { success: false, message: `'${sheetName}' 시트를 찾을 수 없습니다.` });
-    }
-    
-    const dataRange = sheet.getDataRange();
-    const values = dataRange.getValues();
-    
-    if (values.length <= 1) {
-      return json(200, { success: false, message: '데이터가 없습니다.' });
-    }
-    
+
+    const values = sheet.getDataRange().getValues();
     const headers = values[0];
+
+    // 헤더 인덱스 선언
     const programNameCol = headers.indexOf('프로그램명');
-    const myScoreCol = headers.indexOf('내 점수');
     const detailCol = headers.indexOf('상세항목');
     const completedCol = headers.indexOf('이수/미이수');
-    
-    if (programNameCol === -1) {
+    const myScoreCol = headers.indexOf('내 점수');
+    const oneScoreCol = headers.indexOf('1회 점수');
+    const maxScoreCol = headers.indexOf('최대 점수');
+
+    if (programNameCol === -1)
       return json(200, { success: false, message: '프로그램명 컬럼을 찾을 수 없습니다.' });
-    }
-    
-    // 각 업데이트를 적용
+
+    // 문자열 비교 함수 (공백, undefined 방지)
+    const eq = (a, b) => (a ?? '').toString().trim() === (b ?? '').toString().trim();
+
+    // 각 업데이트 적용
     parsedUpdates.forEach(update => {
-      const { programName, myScore, detailName, isCompleted } = update;
-      
-      // 데이터 행에서 해당 프로그램 찾기
-      for (let i = 1; i < values.length; i++) {
-        const row = values[i];
-        if (row[programNameCol] === programName) {
-          // 내 점수 업데이트
-          if (myScore !== undefined && myScoreCol !== -1) {
-            sheet.getRange(i + 1, myScoreCol + 1).setValue(myScore);
+      const { programName, detailName, myScore, isCompleted, oneScore, maxScore } = update;
+
+      // 세부항목이 있는 경우 — 시트 전체 전역 탐색
+      if (detailName) {
+        for (let r = 1; r < values.length; r++) {
+          const row = values[r];
+          if (eq(row[programNameCol], programName) && eq(row[detailCol], detailName)) {
+            if (myScore !== undefined && myScoreCol !== -1)
+              sheet.getRange(r + 1, myScoreCol + 1).setValue(myScore);
+            if (isCompleted !== undefined && completedCol !== -1)
+              sheet.getRange(r + 1, completedCol + 1).setValue(isCompleted ? '이수' : '');
+            if (oneScore !== undefined && oneScoreCol !== -1)
+              sheet.getRange(r + 1, oneScoreCol + 1).setValue(oneScore);
+            if (maxScore !== undefined && maxScoreCol !== -1)
+              sheet.getRange(r + 1, maxScoreCol + 1).setValue(maxScore);
+            break; // 일치하는 상세항목 1건만 처리
           }
-          
-          // 상세항목 이수 여부 업데이트
-          if (detailName && isCompleted !== undefined && detailCol !== -1 && completedCol !== -1) {
-            // 상세항목이 일치하는 행 찾기
-            for (let j = i; j < values.length; j++) {
-              const detailRow = values[j];
-              if (detailRow[programNameCol] === programName && detailRow[detailCol] === detailName) {
-                sheet.getRange(j + 1, completedCol + 1).setValue(isCompleted ? '이수' : '');
-                break;
-              }
-            }
-          }
-          break;
+        }
+        return; // 이 update 끝
+      }
+
+      // 상세항목이 없는 경우 — 대표행 업데이트
+      for (let r = 1; r < values.length; r++) {
+        const row = values[r];
+        if (eq(row[programNameCol], programName) && !row[detailCol]) {
+          if (myScore !== undefined && myScoreCol !== -1)
+            sheet.getRange(r + 1, myScoreCol + 1).setValue(myScore);
+          if (oneScore !== undefined && oneScoreCol !== -1)
+            sheet.getRange(r + 1, oneScoreCol + 1).setValue(oneScore);
+          if (maxScore !== undefined && maxScoreCol !== -1)
+            sheet.getRange(r + 1, maxScoreCol + 1).setValue(maxScore);
+          break; // 대표행 1건만 처리
         }
       }
     });
-    
+
     return json(200, { success: true, message: '저장이 완료되었습니다.' });
   } catch (err) {
     return json(200, { success: false, message: '매트릭스 저장 실패: ' + String(err) });
