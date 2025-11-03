@@ -87,7 +87,7 @@ return (
         <h2>🗂️ 유한 TRUST 매트릭스 제출</h2>
           <ol>
             <li>
-              🔗 아래 템플릿 링크를 클릭해 사본을 만들고 점수를 입력하세요:
+              아래 템플릿 링크를 클릭해 사본을 만들어 주세요.
               <br />
               <a
                 href="https://docs.google.com/spreadsheets/d/1x_8ecj8ocy-dti7O9IzQLGiJ8uho9YCNhu1KCPttib8/copy"
@@ -98,9 +98,9 @@ return (
               </a>
             </li>
             <li>
-              👥 사본 시트는 Apps Script 웹앱이 접근 가능한 위치(스크립트 소유자 계정이 접근 가능한 드라이브)에 두세요.
+              사본 시트에서 <b>공유 &gt; 링크가 있는 모든 사용자 &gt; 편집자</b>로 변경하세요.
             </li>
-            <li>🔍 아래에 본인의 시트 URL을 붙여넣고 ‘조회’를 클릭하세요.</li>
+            <li>아래에 본인의 시트 URL을 붙여넣고 '<b>조회</b>'를 클릭하세요.</li>
           </ol>
 
           <label>📄 사본 시트 URL:</label>

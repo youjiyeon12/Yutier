@@ -695,13 +695,13 @@ function Matrix({ user, onLogout }) {
               id: 1, 
               text: (
                 <>
-                  <h3 className={styles.title}>Yutier 매트릭스 등록</h3>
+                  <h3 className={styles.title}>Yutier 매트릭스 점수 등록</h3>
                   <p className={styles.tbody}>
-                    1. 매트릭스 점수 입력하는 페이지가 나오면 유한대학교 포털(<a href='https://portal.yuhan.ac.kr/' target='_blank'>https://portal.yuhan.ac.kr/</a>)로 이동합니다. 
+                    1. 유한대학교 포털(<a href='https://portal.yuhan.ac.kr/' target='_blank'>https://portal.yuhan.ac.kr/</a>)로 이동합니다. 
                     <br/>
-                    2. 로그인 후 [학생이력]으로 들어가줍니다.
+                    2. 로그인 후 [학생이력]으로 이동합니다.
                     <br/>
-                    3. '나의 TRUST인증 현황' 아래에 각각의 자신의 점수를 Yutier 웹 페이지로 돌아와 입력해줍니다.
+                    3. [나의 TRUST인증 현황] 점수를 [TRUST 인증 점수 총점]에 입력합니다.
                   </p>
                  
                   <img src="/sc3.png" height="400px" style={{ marginTop: '30px' , marginRight: '20px'}} />
@@ -714,12 +714,10 @@ function Matrix({ user, onLogout }) {
               text: (
                 <>
                   <h3 className={styles.title}>Yutier 매트릭스 등록</h3>
-                  <p className={styles.tbody}>
-                    4. 나의 인증현황 가운데를 누른 후 [개인역량 매트릭스]에 들어갑니다.
+                  <p className={styles.tbody}>  
+                    4. [나의 TRUST인증 현황]을 클릭하거나, [TRUST 교육인증]을 클릭해 [개인역량 매트릭스]로 이동합니다.
                     <br/>
-                    5. 들어간 후엔 학년, 학기, 교과를 선택하고 [조회]를 누릅니다.
-                    <br/>
-                    6. 조회를 누르면 아래처럼 점수가 나오는 것을 볼 수 있습니다.
+                    5. 학년, 학기, 교과를 선택하고 [조회]를 누릅니다.
                   </p>
                  
                   <img src="/sc6.png" height="300px" style={{marginTop: '-30px',marginRight: '20px'}} />
@@ -734,11 +732,9 @@ function Matrix({ user, onLogout }) {
                 <>
                   <h3 className={styles.title}>Yutier 매트릭스 등록</h3>
                   <p className={styles.tbody}>
-                    9. 나온 점수를 토대로 Yutier 사이트에 입력합니다.
+                    9. 포털의 [개인역량 매트릭스] 점수를 [Yutier 매트릭스]에 입력합니다.
                     <br/>
-                    10. 버튼 마다 필터링 기능이 있어 항목별로 각각 볼 수 있습니다
-                    <br/>
-                    11. 또한 화살표를 눌러 상세항목 보기가 가능합니다.
+                    ★ [역량 필터링], [상세항목 펼쳐보기], [1회 점수와 최대점수 수정]이 가능합니다.
                   </p>
                   <br/>
                   <img src="/sc9.png" height="330px" style={{marginTop: '30px',marginRight: '20px'}} />
@@ -752,7 +748,7 @@ function Matrix({ user, onLogout }) {
                 <>
                   <h3 className={styles.title}>Yutier 매트릭스 등록</h3>
                   <p className={styles.tbody}>
-                    12. 다 입력을 하였다면 [홈]이나 마이페이지의 회원정보에서 티어와 추천 프로그램 리스트를 확인할 수 있습니다.
+                    10. [홈]과 [마이페이지의 회원정보]에서 티어와 추천 프로그램 리스트를 확인할 수 있습니다.
                   </p>
                   <br/>
                   <img src="/sc11.png" height="310px" style={{marginTop: '60px',marginRight: '20px'}} />

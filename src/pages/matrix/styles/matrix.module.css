@@ -276,11 +276,11 @@
   cursor: pointer;
   box-shadow: 0 1px 4px #e3e6ed;
   transition: background 0.12s;
-  background: #b98e5d;
+  background: #939ca5;
 }
 
 .EditBtn:hover {
-  background: rgb(146, 107, 70)
+  background: rgb(128, 135, 143);
 }
 
 .container_wrap {
