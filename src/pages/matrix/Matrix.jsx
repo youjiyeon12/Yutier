@@ -72,6 +72,7 @@ function processDataForRender(data, openStates) {
       const divisionName = prog.mainRow['구분'];
       if (!divisionRowSpanMap.has(divisionName)) {
         divisionRowSpanMap.set(divisionName, 0);
+
       }
       divisionRowSpanMap.set(divisionName, divisionRowSpanMap.get(divisionName) + rowCount);
     });
@@ -117,6 +118,7 @@ function Matrix({ user, onLogout }) {
   const [openAcc, setOpenAcc] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const [isFilter, setIsFilter] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [tierScores, setTierScores] = useState({
     유한인성역량: '',
     기초학습역량: '',
@@ -179,6 +181,18 @@ function Matrix({ user, onLogout }) {
     setMatrixData(updatedData);
   };
 
+    const handleMatrixFieldChange = (detailName, fieldName, newValue, programName) => {
+      const updated = matrixData.map(row => {
+        if (row['프로그램명'] === programName && row['상세항목'] === detailName) {
+          return { ...row, [fieldName]: newValue };
+        }
+        if (row['프로그램명'] === programName && !detailName && !row['상세항목']) {
+          return { ...row, [fieldName]: newValue };
+        }
+        return row;
+    });
+    setMatrixData(updated);
+  };
 
   // 조회
   const handleSearch = async () => {
@@ -234,7 +248,6 @@ function Matrix({ user, onLogout }) {
     }
   };
 
-
   // 변경된 데이터만 감지하는 함수
   const getChangedData = () => {
     const changes = [];
@@ -268,6 +281,27 @@ function Matrix({ user, onLogout }) {
             isCompleted: currentCompleted,
           });
         }
+      }
+
+      // 1회 점수 / 최대 점수 변경 확인 
+      const currentOneScore = currentRow['1회 점수'] || '';
+      const originalOneScore = originalRow['1회 점수'] || '';
+      const currentMaxScore = currentRow['최대 점수'] || '';
+      const originalMaxScore = originalRow['최대 점수'] || '';
+
+      if (currentOneScore !== originalOneScore || currentMaxScore !== originalMaxScore) {
+        const updateItem = {
+          programName: currentRow['프로그램명'],
+          oneScore: currentOneScore,
+          maxScore: currentMaxScore,
+        };
+
+        // 세부항목이면 detailName 포함
+        if (currentRow['상세항목']) {
+          updateItem.detailName = currentRow['상세항목'];
+        }
+
+        changes.push(updateItem);
       }
     });
     
@@ -458,8 +492,34 @@ function Matrix({ user, onLogout }) {
                       data['상세항목']
                     )}
                   </td>
-                  <td>{data['1회 점수']}</td>
-                  <td>{data['최대 점수']}</td>
+                  <td>
+                      {isEditing ? (
+                        <input
+                          className={styles.scoreInput}
+                          type="number"
+                          value={data['1회 점수']?.toString() || ''}
+                          onChange={(e) =>
+                            handleMatrixFieldChange(null, '1회 점수', e.target.value, data['프로그램명'])
+                          }
+                        />
+                      ) : (
+                        data['1회 점수']
+                      )}
+                    </td>
+                    <td>
+                      {isEditing ? (
+                        <input
+                          className={styles.scoreInput}
+                          type="number"
+                          value={data['최대 점수']?.toString() || ''}
+                          onChange={(e) =>
+                            handleMatrixFieldChange(null, '최대 점수', e.target.value, data['프로그램명'])
+                          }
+                        />
+                      ) : (
+                        data['최대 점수']
+                      )}
+                  </td>
                   <td>
                     <input
                       className={styles.scoreInput}
@@ -477,9 +537,32 @@ function Matrix({ user, onLogout }) {
                     <tr key={`detail-${index}-${dIdx}`} className={styles.detailRow}>
                       {/* 병합된 셀들은 렌더링하지 않음 */}
                       <td>{detail['상세항목']}</td>
-                      <td>{detail['1회 점수']}</td>
-                      <td>{detail['최대 점수']}</td>
                       <td>
+                          {isEditing ? (
+                            <input
+                              className={styles.scoreInput}
+                              type="number"
+                              value={detail['1회 점수'] || ''}
+                              onChange={(e) => handleMatrixFieldChange(detail['상세항목'], '1회 점수', e.target.value, data['프로그램명'])}
+                            />
+                          ) : (
+                            detail['1회 점수']
+                          )}
+                        </td>
+                        <td>
+                          {isEditing ? (
+                            <input
+                              className={styles.scoreInput}
+                              type="number"
+                              value={detail['최대 점수'] || ''}
+                              onChange={(e) => handleMatrixFieldChange(detail['상세항목'], '최대 점수', e.target.value, data['프로그램명'])}
+                            />
+                          ) : (
+                            detail['최대 점수']
+                          )}
+                      </td>
+                      <td>
+
                         <input
                           type="checkbox"
                           checked={detail['이수/미이수'] && detail['이수/미이수'].toString().trim() === '이수'} // 문자열 정리 후 비교
@@ -554,6 +637,12 @@ function Matrix({ user, onLogout }) {
           </button>
           <button className={styles.saveBtn} onClick={handlesave} disabled={isSaving}>
             {isSaving ? '저장 중...' : '저장'}
+          </button>
+          <button 
+              className={styles.EditBtn}
+              onClick={() => setIsEditing(!isEditing)}
+            >
+              {isEditing ? '수정 취소' : '수정'}
           </button>
         </div>
       </div>
