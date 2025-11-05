@@ -45,9 +45,9 @@ function Signup({ onRegister }) {
     const studentIDRegex = /^\d{9}$/;
 
     if (!idRegex.test(id)) {
-      alert('아이디는 영문과 숫자를 포함한 5자 이상 20자 이하로 입력해주세요.');
+      alert('아이디는 영문과 숫자만 사용하여 5자 이상 20자 이하로 입력해주세요.');
       idRef.current.focus();
-      return false;
+      return false; 
     }
 
     if (!pwRegex.test(password)) {
@@ -130,6 +130,13 @@ function Signup({ onRegister }) {
 
   // 아이디 확인
   const checkSignupId = async () => {
+    const idPattern = /^[a-zA-Z0-9]{5,20}$/;
+    if (!idPattern.test(id)) {
+      alert('아이디는 영문과 숫자만 사용하여 5자 이상 20자 이하로 입력해주세요.');
+      setIsIdChecked(false);
+      return; 
+    }
+
     try {
       const data = await googleSheetsService.checkId(id);
 
@@ -145,6 +152,7 @@ function Signup({ onRegister }) {
       console.error(err);
     }
   };
+
 
   // 학번 확인
   const checkStudentID = async () => {
