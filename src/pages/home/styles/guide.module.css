@@ -72,15 +72,17 @@
 }
 
 .title{
-  font-size: 30px;
+  font-size: 25px;
+  font-family: 'Pretendard-SemiBold', sans-serif;
 }
 
 .title2{
-  font-size: 25px;
+  font-size: 20px;
+  font-family: 'Pretendard-SemiBold', sans-serif;
 }
 
 .tbody{
-  font-size: 20px;
+  font-size: 18px;
 }
 
 /* 화살표 버튼 공통 스타일 */

@@ -81,14 +81,14 @@ const allGuides = {
       </p></>) },
 
       { id: 8, text: (<><h1 className={dmc.title}>백엔드 설정</h1>
-    <p className={dmc.title2}>3. 웹 앱 배포</p>
-    <p className={dmc.tbody}>설정:다음 사용자로 실행: 나 (내 이메일 주소)액세스 권한이 있는 사용자: 모든 사용자
+    <p className={dmc.title2}>3. 웹 앱 배포</p>설정:다음 사용자로 실행: 나 (내 이메일 주소)액세스 권한이 있는 사용자: 모든 사용자
       배포 버튼을 클릭하고 권한을 승인합니다.
+    <p className={dmc.tbody}>
       <br/>
       <br/>
-      <img src="/gui11.jpg" height="300px" style={{marginRight: '50px'}}></img>
-      <img src="/gui12.jpg" height="300px" style={{marginleftt: '50px'}}></img>
-      <img src="/gui13.jpg" height="300px" style={{marginleftt: '50px'}}></img>
+      <img src="/gui11.jpg" height="300px" style={{marginRight: '20px'}}></img>
+      <img src="/gui12.jpg" height="300px" style={{marginRight: '20px'}}></img>
+      <img src="/gui13.jpg" height="300px"></img>
 
       <br/>
       </p></>) },
@@ -99,31 +99,55 @@ const allGuides = {
     { id: 1, text: (<><h1 className={dmc.title}>프론트엔드 설정</h1>
     <p className={dmc.title2}>1. 프로젝트 클론</p>
       <p className={dmc.tbody}>
-      git clone [https://github.com/youjiyeon12/Yutier.git](https://github.com/youjiyeon12/Yutier.git)
+      - git을 열고 아래 주소를 클론합니다.
       <br/>
-      <br/><u> cd Yutier</u></p>
+      git clone <a href='https://github.com/youjiyeon12/Yutier.git'target='_blank'>https://github.com/youjiyeon12/Yutier.git</a>
       <br/>
-       <p className={dmc.title2}>2. 필요한 라이브러리 설치</p>
-       <p className={dmc.tbody}> <u> npm install</u></p>  
-    </>) },
+      <br/>
+      <img src="/gui111.png" height="300px" style={{marginRight: '50px'}}></img>
+      </p>
+      <br/>
+      </>) },
 
     { id: 2, text: (<><h1 className={dmc.title}>프론트엔드 설정</h1>
+    <p className={dmc.title2}>2. 필요한 라이브러리 설치</p>
+    <p className={dmc.tbody}> 
+      -Visual Studio Code에서 Yutier 폴더를 열고 터미널에서 아래 명령어를 입력합니다.
+      <br/>
+      <u> cd Yutier</u>
+      <br/>
+      <u> npm install</u>
+      <br/>
+      <br/>
+      <img src="/gui333.png" height="170px" style={{marginRight: '50px'}}></img>
+      <img src="/gui222.png" height="170px" style={{marginRight: '50px'}}></img>
+      </p>
+      
+    </>) },
+
+    { id: 3, text: (<><h1 className={dmc.title}>프론트엔드 설정</h1>
     <p className={dmc.title2}>3. 환경 변수 설정</p>
     <p className={dmc.tbody}>
     프로젝트 루트 디렉토리에 있는 .env 파일을 엽니다.
     <br/>"YOUR_WEB_APP_URL" 부분에 위에서 복사한 웹 앱 URL을 붙여넣습니다.
     <br/>
     <br/> <i>VITE_APPS_SCRIPT_URL="YOUR_WEB_APP_URL"</i>
-    </p>
     <br/>
+    <img src="/gui555.png" height="240px" style={{marginRight: '50px'}}></img>
+    </p>
+    </>) },
+
+    { id: 4, text: (<><h1 className={dmc.title}>프론트엔드 설정</h1>
     <p className={dmc.title2}>4 .프론트엔드 서버 실행</p>
     <p className={dmc.tbody}>
     <u>npm run dev</u>
     <br/>
+     <br/>
+    <img src="/gui444.png" height="300px" style={{marginRight: '50px'}}></img>
     <br/>
     개발 서버가 http://localhost:5173과 같은 주소에서 실행됩니다.
     </p>
-    </>) },
+    </>) }
   ]
 };
 
