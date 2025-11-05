@@ -42,7 +42,8 @@ function Detail({ user, onLogout }) {
           <div className={dmc.body}>
             <div className={dmc.textArea}>
               <p className={dmc.titleText}>YUHAN TRUST 교육 인증 제도</p>
-              <p>사회에 봉사하고 책임을 질 줄 아는 인간교육의 바탕 위에 지식사회에 필요한 전문 지식과 실무 역량으로 자립하고 사회에 기여하여 타의 모범이 되는 <span className={dmc.boldText}>‘성실’한 직업인</span>을 <span className={dmc.boldText}>양성</span>하기 위해
+              <p>사회에 봉사하고 책임을 질 줄 아는 인간교육의 바탕 위에 지식사회에 필요한 전문 지식과 실무 역량으로 자립하고 사회에 기여하여 타의 모범이 되는 <span className={dmc.boldText}>
+               <br/>‘성실’한 직업인</span>을 <span className={dmc.boldText}>양성</span>하기 위해
                 성실한(integrity)한 인재상인 <span className={dmc.boldText}>협업(Collaboration), 창의(Creativity), 신뢰(Confidence), 도전(Challenge)</span>을 반영한 우수학생 인증 제도</p>
             </div>
             <div className={dmc.textArea}>

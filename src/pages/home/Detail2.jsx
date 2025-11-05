@@ -196,7 +196,8 @@ function Detail2() {
 
       <div className={dmc.textArea}>
         <p className={dmc.titleText}>• 직무수행역량(Specialized)</p>
-        <p>학교 수업 및 역량 개발 활동을 통해 습득한 지식, 기술 등을 통하여 현장실무에서 적용 및 활용할 수 있는 역량을 말한다. 단, 직무수행 역량 중 IT 역량이란 컴퓨터로 처리할 수 있는 문제와 해결책을 표현하고 사고하는 컴퓨팅 사고 역량 증진을 위해 요구되는 역량</p>
+        <p>학교 수업 및 역량 개발 활동을 통해 습득한 지식, 기술 등을 통하여 현장실무에서 적용 및 활용할 수 있는 역량을 말한다. 
+        <br/>단, 직무수행 역량 중 IT 역량이란 컴퓨터로 처리할 수 있는 문제와 해결책을 표현하고 사고하는 컴퓨팅 사고 역량 증진을 위해 요구되는 역량</p>
       </div>
       <div className={dmc.textArea}>
         <p className={dmc.titleText}>• 취·창업기초역량(Tested)</p>

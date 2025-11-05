@@ -140,13 +140,13 @@ return (
       <>
         <h3 className={style.title}>Yutier 매트릭스 등록</h3>
         <p className={style.tbody}>
-        1. [로그인] - [마이페이지] - [매트릭스 관리]
+         1. [매트릭스 사본 만들기] 클릭합니다
         <br/>
-        2. '매트릭스 사본 만들기' 클릭
+         2. Google Sheet가 나왔다면 한 번 더 [사본 만들기] 클릭합니다
         <br/>
-        3. 시트 URL 복사 후 '공유' 버튼 클릭
+        
         </p>
-       <img src="/sc1.png" height="350px"
+       <img src="/url1.png" height="390px"
       className={style.guideImage}/>
     </>
     ) 
@@ -157,14 +157,43 @@ return (
           <>
           <h3 className={style.title}>Yutier 매트릭스 등록</h3>
           <p className={style.tbody}>
-          4. 복사한 URL을 사본 공유에 붙여넣기
+          3.[공유] 버튼을 눌러 사본 공유로 들어갑니다.
           <br/>
-          5. YUTER 웹페이지로 돌아와 URL 붙여넣고 '조회'
+          4. 엑세스에서 '제한됨'을 '링크가 있는 모든 사용자'로 바꿉니다.
         </p>
-        <img src="/sc2.png" height="350px" style={{ marginTop: '30px' }}></img>
+        <img src="/url3.png" height="390px" style={{ marginTop: '30px', marginRight: '40px' }}></img>
+        <img src="/url4.png" height="390px" style={{ marginTop: '30px' }}></img>
       </>
     )
-  }
+  },
+  { 
+      id: 3, 
+      text: (
+          <>
+          <h3 className={style.title}>Yutier 매트릭스 등록</h3>
+          <p className={style.tbody}>
+          5. '뷰어' 탭을 눌러 뷰어가 아닌 '편집자'로 바꿉니다.
+          <br/>
+          6. 후에는 링크를 복사하여 [완료]를 누릅니다.
+        </p>
+        <img src="/url5.png" height="390px" style={{ marginTop: '30px' , marginRight: '40px'}}></img>
+        <img src="/url6.png" height="390px" style={{ marginTop: '30px' }}></img>
+      </>
+    )
+  },
+  { 
+      id: 4, 
+      text: (
+          <>
+          <h3 className={style.title}>Yutier 매트릭스 등록</h3>
+          <p className={style.tbody}>
+          7. Yuier 사이트로 돌아와 붙여넣기 후 조회를 클릭합니다.
+        </p>
+        <img src="/url7.png" height="400px" style={{ marginTop: '30px' }}></img>
+      </>
+    )
+  },
+  
  ];
 
       return (
