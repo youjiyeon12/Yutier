@@ -128,7 +128,7 @@ function Matrix({ user, onLogout }) {
   });
   const [totalTierScore, setTotalTierScore] = useState(0);
   const [filteredCompetency, setFilteredCompetency] = useState(null); // 필터링된 핵심역량
-  const department = user?.department || "학과명";
+  const department = `${user.department} ${user.major}`  || "학과명";
   const name = user?.name || "이름";
   const userId = user?.id;
   // 도움말 버튼 상태 추가
