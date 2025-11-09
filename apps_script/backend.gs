@@ -691,9 +691,10 @@ function handleDeleteAccount(data) {
   const { id, password } = data;
   const user = findUserById(id);
   const sheet = getSheet(SHEET_NAMES.USERS);
+  const sheetT = getSheet(SHEET_NAMES.TIER);
   const values = sheet.getDataRange().getValues();
   const idIndex = 0, pwIndex = 1, saltIndex = 8;
-  
+
   for (let i = 1; i < values.length; i++) {
     const row = values[i];
     if (row[idIndex] === id) {
@@ -705,7 +706,18 @@ function handleDeleteAccount(data) {
         return json(200, { success: false, message: '비밀번호가 일치하지 않습니다.' });
       }
 
+      // User 시트 삭제
       sheet.deleteRow(i + 1);
+
+      const tierValues = sheetT.getDataRange().getValues();
+      for (let j = 1; j < tierValues.length; j++) {
+        if (tierValues[j][0] === id) {
+          // Tier 시트 삭제
+          sheetT.deleteRow(j + 1);
+          break;
+        }
+      }
+
       return json(200, { success: true, message: '회원 탈퇴가 성공적으로 처리되었습니다.' });
     }
   }
