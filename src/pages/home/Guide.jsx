@@ -183,7 +183,10 @@ function Guide({ user, onLogout }) {
 
   return (
     <div>
+
       <Header user={user} onLogout={onLogout} />
+
+      <div className={dmc.topSectionWrapper}>{/* pdf */}
     
       <div className={dmc.menuContent}>
         <span className={dmc.menuTitleText}>
@@ -200,6 +203,15 @@ function Guide({ user, onLogout }) {
           </button>
         ))}
       </div>
+
+      {/*  PDF 다운로드----------------------------------------------  */}
+        <a href="/유티어(Yutier) 프로젝트 상세 배포 가이드.hwpx" download className={dmc.pdfDownloadLink}>
+          <img src="/sheet.png" alt="PDF Download" className={dmc.pdfIconOnly} />
+          <span className={dmc.pdfIconLabel}>상세 가이드 PDF</span>
+        </a>
+
+      </div> 
+      
       
       
       <div className={dmc.sliderContainer}>

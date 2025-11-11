@@ -137,3 +137,55 @@
   margin: 0; 
   width: auto; 
 }
+
+/*pdf 버튼---------------------------------------------------------------*/
+.topSectionWrapper {
+  position: relative; 
+  width: 100%;
+  margin-top: 40px; 
+ 
+}
+
+.menuContent {
+  display: flex;
+  padding: 10px 30px; 
+  justify-content: center;
+  align-items: center; 
+  border-radius: 15px;
+  background: #FFF;   
+  box-shadow: 0px 0px 5px 0px rgba(159, 159, 159, 0.25); 
+  width: fit-content;
+  margin: 0 auto; 
+}
+
+/*  PDF 다운로드 링크*/
+.pdfDownloadLink {
+  position: absolute; 
+  top: 50%;
+  transform: translateY(-50%); 
+  right: 15%; 
+  /* (기존 스타일 유지) */
+  display: flex;
+  flex-direction: column; 
+  align-items: center;   
+  text-decoration: none; 
+  padding: 10px;
+  border-radius: 10px;
+  transition: background-color 0.2s ease;
+}
+
+.pdfDownloadLink:hover {
+  background-color: #f3f4f6; 
+}
+
+.pdfIconOnly {
+  width: 45px;
+  height: 45px;
+}
+
+.pdfIconLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: #393F59; 
+  margin-top: 5px; 
+}
