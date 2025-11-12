@@ -13,7 +13,7 @@ function Header({ user, onLogout }){
   
     return (
     <div className={styles.header}>
-      <img className={styles.symbol} alt="yutierSymbol2" src="/yutierSymbol2.svg" onClick={() => navigate('/')}/>
+      <img className={styles.symbol} alt="yutierSymbol2" src={`${import.meta.env.BASE_URL}yutierSymbol2.svg`} onClick={() => navigate('/')}/>
       <div className={styles.menu}>
         <p><span onClick={() => navigate('/')}>HOME</span></p>
         <p><span onClick={() => navigate('/detail')}>YUHAN TRUST란?</span></p>

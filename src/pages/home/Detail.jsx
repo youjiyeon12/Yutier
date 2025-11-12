@@ -60,25 +60,25 @@ function Detail({ user, onLogout }) {
                     <td className={dmc.headerCell}>등급</td>
                     <td className={dmc.contentCell}>
                       <div className={dmc.tierItem}>
-                        <img src="/tier1.png"/>
+                        <img src={`${import.meta.env.BASE_URL}tier1.png`}/>
                         <div>Bronz</div>
                       </div>
                     </td>
                     <td className={dmc.contentCell}>
                       <div className={dmc.tierItem}>
-                        <img src="/tier2.png"/>
+                        <img src={`${import.meta.env.BASE_URL}tier2.png`}/>
                         <div>Silver</div>
                       </div>
                     </td>
                     <td className={dmc.contentCell}>
                       <div className={dmc.tierItem}>
-                        <img src="/tier3.png"/>
+                        <img src={`${import.meta.env.BASE_URL}tier3.png`}/>
                         <div>Gold</div>
                       </div>
                     </td>
                     <td className={dmc.contentCell}>
                       <div className={dmc.tierItem}>
-                        <img src="/tier4.png"/>
+                        <img src={`${import.meta.env.BASE_URL}tier4.png`}/>
                         <div>Diamond</div>
                       </div>
                     </td>

@@ -78,8 +78,8 @@ return (
             className={style['help-button-corner']} 
             >
             <img
-            src="question.png"
-            alt="도움말 버튼"
+            src={`${import.meta.env.BASE_URL}question.png`}
+            alt={`${import.meta.env.BASE_URL}도움말 버튼`}
             className={style['help-icon']} 
             />
           </button>
@@ -146,7 +146,7 @@ return (
         <br/>
         
         </p>
-       <img src="/url1.png" height="390px"
+       <img src={`${import.meta.env.BASE_URL}url1.png`} height="390px"
       className={style.guideImage}/>
     </>
     ) 
@@ -161,8 +161,8 @@ return (
           <br/>
           4. 엑세스에서 '제한됨'을 '링크가 있는 모든 사용자'로 바꿉니다.
         </p>
-        <img src="/url3.png" height="390px" style={{ marginTop: '30px', marginRight: '40px' }}></img>
-        <img src="/url4.png" height="390px" style={{ marginTop: '30px' }}></img>
+        <img src={`${import.meta.env.BASE_URL}url3.png`} height="390px" style={{ marginTop: '30px', marginRight: '40px' }}></img>
+        <img src={`${import.meta.env.BASE_URL}url4.png`} height="390px" style={{ marginTop: '30px' }}></img>
       </>
     )
   },
@@ -176,8 +176,8 @@ return (
           <br/>
           6. 후에는 링크를 복사하여 [완료]를 누릅니다.
         </p>
-        <img src="/url5.png" height="390px" style={{ marginTop: '30px' , marginRight: '40px'}}></img>
-        <img src="/url6.png" height="390px" style={{ marginTop: '30px' }}></img>
+        <img src={`${import.meta.env.BASE_URL}url5.png`} height="390px" style={{ marginTop: '30px' , marginRight: '40px'}}></img>
+        <img src={`${import.meta.env.BASE_URL}url6.png`} height="390px" style={{ marginTop: '30px' }}></img>
       </>
     )
   },
@@ -189,7 +189,7 @@ return (
           <p className={style.tbody}>
           7. Yuier 사이트로 돌아와 붙여넣기 후 조회를 클릭합니다.
         </p>
-        <img src="/url7.png" height="400px" style={{ marginTop: '30px' }}></img>
+        <img src={`${import.meta.env.BASE_URL}url7.png`} height="400px" style={{ marginTop: '30px' }}></img>
       </>
     )
   },
@@ -219,7 +219,7 @@ return (
           className={style.slideNavButton}
           >
       <img 
-      src="/arrow-left.png" 
+      src={`${import.meta.env.BASE_URL}arrow-left.png`} 
       alt="이전" 
       className={style.slideNavIcon}/>
 
@@ -231,7 +231,7 @@ return (
             onClick={() => setCurrentSlide(prev => Math.min(slideContents.length - 1, prev + 1))}
             disabled={currentSlide === slideContents.length - 1} 
             className={style.slideNavButton}>
-          <img src="/arrow-right.png" alt="다음" className={style.slideNavIcon}/>
+          <img src={`${import.meta.env.BASE_URL}arrow-right.png`} alt="다음" className={style.slideNavIcon}/>
               </button>
             </div>
           </>

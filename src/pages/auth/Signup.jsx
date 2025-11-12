@@ -177,7 +177,7 @@ function Signup({ onRegister }) {
   return (
   <div className={styles.container}>
     <div className={styles.logoBox}>
-      <img src="/yutier.svg" alt="YUTIER 로고" className={styles.logoImage} />
+      <img src={`${import.meta.env.BASE_URL}yutier.svg`} alt="YUTIER 로고" className={styles.logoImage} />
     </div>
 
     <form onSubmit={handleSubmit} className={styles.form}>

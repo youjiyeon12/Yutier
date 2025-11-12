@@ -104,7 +104,7 @@ const allGuides = {
       git clone <a href='https://github.com/youjiyeon12/Yutier.git'target='_blank'>https://github.com/youjiyeon12/Yutier.git</a>
       <br/>
       <br/>
-      <img src="/gui111.png" height="300px" style={{marginRight: '50px'}}></img>
+      <img src={`${import.meta.env.BASE_URL}gui111.png`} height="300px" style={{marginRight: '50px'}}></img>
       </p>
       <br/>
       </>) },
@@ -119,8 +119,8 @@ const allGuides = {
       <u> npm install</u>
       <br/>
       <br/>
-      <img src="/gui333.png" height="170px" style={{marginRight: '50px'}}></img>
-      <img src="/gui222.png" height="170px" style={{marginRight: '50px'}}></img>
+      <img src={`${import.meta.env.BASE_URL}gui333.png`} height="170px" style={{marginRight: '50px'}}></img>
+      <img src={`${import.meta.env.BASE_URL}gui222.png`} height="170px" style={{marginRight: '50px'}}></img>
       </p>
       
     </>) },
@@ -133,7 +133,7 @@ const allGuides = {
     <br/>
     <br/> <i>VITE_APPS_SCRIPT_URL="YOUR_WEB_APP_URL"</i>
     <br/>
-    <img src="/gui555.png" height="240px" style={{marginRight: '50px'}}></img>
+    <img src={`${import.meta.env.BASE_URL}gui555.png`} height="240px" style={{marginRight: '50px'}}></img>
     </p>
     </>) },
 
@@ -143,7 +143,7 @@ const allGuides = {
     <u>npm run dev</u>
     <br/>
      <br/>
-    <img src="/gui444.png" height="300px" style={{marginRight: '50px'}}></img>
+    <img src={`${import.meta.env.BASE_URL}gui444.png`} height="300px" style={{marginRight: '50px'}}></img>
     <br/>
     개발 서버가 http://localhost:5173과 같은 주소에서 실행됩니다.
     </p>
@@ -206,7 +206,7 @@ function Guide({ user, onLogout }) {
 
       {/*  PDF 다운로드----------------------------------------------  */}
         <a /*href="/유티어(Yutier) 프로젝트 상세 배포 가이드.hwpx"*/ download className={dmc.pdfDownloadLink}>
-          <img src="/sheet.png" alt="PDF Download" className={dmc.pdfIconOnly} />
+          <img src={`${import.meta.env.BASE_URL}sheet.png`} alt="PDF Download" className={dmc.pdfIconOnly} />
           <span className={dmc.pdfIconLabel}>상세 가이드 PDF(미완성)</span>
         </a>
 
@@ -224,7 +224,7 @@ function Guide({ user, onLogout }) {
           style={{ opacity: currentSlideIndex === 0 ? 0.4 : 1 }} 
         >
           <img 
-            src="/arrow-1.png" 
+            src={`${import.meta.env.BASE_URL}arrow-1.png`} 
             alt="이전 슬라이드" 
             className={dmc.arrowImage}
           />
@@ -247,7 +247,7 @@ function Guide({ user, onLogout }) {
           style={{ opacity: currentSlideIndex === totalSlides - 1 ? 0.4 : 1 }}
         >
           <img 
-            src="/arrow-2.png" 
+            src={`${import.meta.env.BASE_URL}arrow-2.png`} 
             alt="다음 슬라이드" 
             className={dmc.arrowImage}
           />

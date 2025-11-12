@@ -14,12 +14,12 @@ function Home({ user, onLogout }) {
   const [loading, setLoading] = useState(false);
 
   const tierImageMap = {
-    Bronze: '/tier1.png',
-    Silver: '/tier2.png',
-    Gold: '/tier3.png',
-    Diamond: '/tier4.png',
+    Bronze: `${import.meta.env.BASE_URL}tier1.png`,
+    Silver: `${import.meta.env.BASE_URL}tier2.png`,
+    Gold: `${import.meta.env.BASE_URL}tier3.png`,
+    Diamond: `${import.meta.env.BASE_URL}tier4.png`,
     // 기본값
-    Unranked: '/tier0.png'
+    Unranked: `${import.meta.env.BASE_URL}tier0.png`
   };
 
   // 컴포넌트가 로드될 때 사용자의 점수 상태를 확인
@@ -98,7 +98,7 @@ function Home({ user, onLogout }) {
       <Header user={user} onLogout={onLogout} />
       <div className={styles.container_wrap}>
         <div className={styles.bannerCard}>
-          <img src='/banner.png' alt='배너' ></img>
+          <img src={`${import.meta.env.BASE_URL}banner.png`} alt='배너' ></img>
         </div>
 
           <div className={styles.profileCard}>
@@ -169,13 +169,13 @@ function Home({ user, onLogout }) {
 
       <div className={styles.linkSection}>
         <div className={styles.linkCard}>
-          <a href="https://trust.yuhan.ac.kr/" target="_blank"><img src="/shortcut_banner/biba.png" alt ="비통시 바로가기"></img></a> 
+          <a href="https://trust.yuhan.ac.kr/" target="_blank"><img src={`${import.meta.env.BASE_URL}shortcut_banner/biba.png`} alt ="비통시 바로가기"></img></a> 
         </div>
         <div className={styles.linkCard}>
-          <a href="https://portal.yuhan.ac.kr/" target="_blank"><img src="/shortcut_banner/poba.png" alt="포털 바로가기"></img></a>
+          <a href="https://portal.yuhan.ac.kr/" target="_blank"><img src={`${import.meta.env.BASE_URL}shortcut_banner/poba.png`} alt="포털 바로가기"></img></a>
         </div>
         <div className={styles.linkCard}>
-           <a href="/[Yutier]YuhanTRUST_프로그램정리.zip" download><img src="/shortcut_banner/seda.png" alt="파일 다운로드"></img></a>
+           <a href="/[Yutier]YuhanTRUST_프로그램정리.zip" download><img src={`${import.meta.env.BASE_URL}shortcut_banner/seda.png`} alt="파일 다운로드"></img></a>
         </div>
       </div>
       <Footer />

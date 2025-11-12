@@ -46,7 +46,7 @@ function Login({ onLogin }) {
   return (
     <div className={styles.loginPage}>
       <div className={styles.logoBox}>
-        <img src="/yutier.svg" alt="YUTIER 로고" className={styles.logoImage} />
+        <img src={`${import.meta.env.BASE_URL}yutier.svg`} alt="YUTIER 로고" className={styles.logoImage} />
       </div>
 
       <div className={styles.contentArea}>

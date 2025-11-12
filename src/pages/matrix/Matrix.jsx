@@ -597,7 +597,7 @@ function Matrix({ user, onLogout }) {
             onClick={() => setShowHelp(true)}
             className={styles.helpButtonInline} >
             <img
-              src="question.png"
+              src={`${import.meta.env.BASE_URL}question.png`}
               alt="도움말 버튼"
               className={styles.helpIcon} 
             />
@@ -704,8 +704,8 @@ function Matrix({ user, onLogout }) {
                     3. [나의 TRUST인증 현황] 점수를 [TRUST 인증 점수 총점]에 입력합니다.
                   </p>
                  
-                  <img src="/sc3.png" height="400px" style={{ marginTop: '30px' , marginRight: '20px'}} />
-                  <img src="/sc4.png" height="400px" style={{ marginTop: '30px' }} />
+                  <img src={`${import.meta.env.BASE_URL}sc3.png`} height="400px" style={{ marginTop: '30px' , marginRight: '20px'}} />
+                  <img src={`${import.meta.env.BASE_URL}sc4.png`} height="400px" style={{ marginTop: '30px' }} />
                 </>
               ) 
             },
@@ -720,9 +720,9 @@ function Matrix({ user, onLogout }) {
                     5. 학년, 학기, 교과를 선택하고 [조회]를 누릅니다.
                   </p>
                  
-                  <img src="/sc6.png" height="300px" style={{marginTop: '-30px',marginRight: '20px'}} />
-                  <img src="/sc7.png" height="300px" style={{marginTop: '-300px'}} />
-                  <img src="/sc8.png" height="300px" style={{ marginTop: '30px' , marginLeft: '20px'}} />
+                  <img src={`${import.meta.env.BASE_URL}sc6.png`} height="300px" style={{marginTop: '-30px',marginRight: '20px'}} />
+                  <img src={`${import.meta.env.BASE_URL}sc7.png`} height="300px" style={{marginTop: '-300px'}} />
+                  <img src={`${import.meta.env.BASE_URL}sc8.png`} height="300px" style={{ marginTop: '30px' , marginLeft: '20px'}} />
                 </>
               )
             },
@@ -737,8 +737,8 @@ function Matrix({ user, onLogout }) {
                     ★ [역량 필터링], [상세항목 펼쳐보기], [1회 점수와 최대점수 수정]이 가능합니다.
                   </p>
                   <br/>
-                  <img src="/sc9.png" height="330px" style={{marginTop: '30px',marginRight: '20px'}} />
-                  <img src="/sc10.png" height="340px" style={{marginTop: '30px'}} />
+                  <img src={`${import.meta.env.BASE_URL}sc9.png`} height="330px" style={{marginTop: '30px',marginRight: '20px'}} />
+                  <img src={`${import.meta.env.BASE_URL}sc10.png`} height="340px" style={{marginTop: '30px'}} />
                 </>
               )
             },
@@ -751,8 +751,8 @@ function Matrix({ user, onLogout }) {
                     10. [홈]과 [마이페이지의 회원정보]에서 티어와 추천 프로그램 리스트를 확인할 수 있습니다.
                   </p>
                   <br/>
-                  <img src="/sc11.png" height="310px" style={{marginTop: '60px',marginRight: '20px'}} />
-                  <img src="/sc12.png" height="310px" style={{marginTop: '60px'}} />
+                  <img src={`${import.meta.env.BASE_URL}sc11.png`} height="310px" style={{marginTop: '60px',marginRight: '20px'}} />
+                  <img src={`${import.meta.env.BASE_URL}sc12.png`} height="310px" style={{marginTop: '60px'}} />
                 </>
               )
             },
@@ -781,7 +781,7 @@ function Matrix({ user, onLogout }) {
                   className={styles.slideNavButton}
                 >
                   <img 
-                    src="/arrow-left.png" 
+                    src={`${import.meta.env.BASE_URL}arrow-left.png`}
                     alt="이전" 
                     className={styles.slideNavIcon}
                   />
@@ -797,7 +797,7 @@ function Matrix({ user, onLogout }) {
                   className={styles.slideNavButton}
                 >
                   <img 
-                    src="/arrow-right.png" 
+                    src={`${import.meta.env.BASE_URL}arrow-right.png`}
                     alt="다음" 
                     className={styles.slideNavIcon}
                   />

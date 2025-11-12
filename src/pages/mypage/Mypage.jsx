@@ -253,12 +253,12 @@ function Mypage({ user, setUser, onLogout }) {
   console.log("🔍 [Mypage] selectedMenuKey:", selectedMenuKey);
 
   const tierImageMap = {
-    Bronze: '/tier1.png',
-    Silver: '/tier2.png',
-    Gold: '/tier3.png',
-    Diamond: '/tier4.png',
+    Bronze: `${import.meta.env.BASE_URL}tier1.png`,
+    Silver: `${import.meta.env.BASE_URL}tier2.png`,
+    Gold: `${import.meta.env.BASE_URL}tier3.png`,
+    Diamond: `${import.meta.env.BASE_URL}tier4.png`,
     // 기본값
-    Unranked: '/tier0.png'
+    Unranked: `${import.meta.env.BASE_URL}tier0.png`
   };
 
   return (
