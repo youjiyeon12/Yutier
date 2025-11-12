@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   //GitHub pages용 경로 설정
-  base: '/',
+  base: '/Yutier/',
   //개발 서버 설정(로컬에서만 사용됨)
   server: {
     proxy: {
