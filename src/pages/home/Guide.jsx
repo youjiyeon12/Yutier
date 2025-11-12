@@ -12,7 +12,7 @@ const allGuides = {
       <br/>
       ① 데이터베이스 템플릿 (서버용)
        <br/>
-      <img src="/gui0.jpg" height="300px" style={{marginleft: '-100px'}}></img>
+      <img src={`${import.meta.env.BASE_URL}gui0.jpg`} height="300px" style={{marginleft: '-100px'}}></img>
       <br/>
       모든 사용자의 정보(ID, 티어 등)가 저장되는 중앙 데이터베이스입니다.
       ▶ 데이터베이스 시트 사본 만들기 (<a href='https://docs.google.com/spreadsheets/d/1pZEerJseEaWSAbWqdZeWqg93kwY7IBdYZwLhBJTrCGc/copy' 
@@ -23,7 +23,7 @@ const allGuides = {
     <p className={dmc.title2}>1. 프로젝트용 Google Sheets 생성</p>
     <p className={dmc.tbody}>② 매트릭스 템플릿 (사용자용)
       각 사용자가 개인의 역량 점수를 입력하기 위해 복사해가는 양식입니다.
-      <img src="/gui1.jpg" height="300px" style={{marginleft: '-100px'}}></img>
+      <img src={`${import.meta.env.BASE_URL}gui1.jpg`} height="300px" style={{marginleft: '-100px'}}></img>
       <br/>
       ▶ 매트릭스 시트 사본 만들기 (<a href='https://docs.google.com/spreadsheets/u/2/d/12ymRONolKRri2KKSiVT6SCHxJarmTsS9ZqZ-_0LYt6s/copy' 
       target='_blank'>https://docs.google.com</a>)
@@ -35,8 +35,8 @@ const allGuides = {
       Google Apps Script로 이동하여 새 프로젝트를 생성합니다
       <br/>
       apps_script/backend.gs 파일의 모든 코드를 복사하여 Apps Script 편집기에 붙여넣습니다.
-      <img src="/gui2.jpg" height="300px" style={{marginRight: '50px'}}></img>
-      <img src="/gui3.jpg" height="300px" style={{marginleft: '50px'}}></img>
+      <img src={`${import.meta.env.BASE_URL}gui2.jpg`} height="300px" style={{marginRight: '50px'}}></img>
+      <img src={`${import.meta.env.BASE_URL}gui3.jpg`} height="300px" style={{marginleft: '50px'}}></img>
       <br/>
       ▶ 매트릭스 시트 사본 만들기 (<a href='https://docs.google.com/spreadsheets/u/2/d/12ymRONolKRri2KKSiVT6SCHxJarmTsS9ZqZ-_0LYt6s/copy' 
       target='_blank'>https://docs.google.com</a>)
@@ -44,9 +44,9 @@ const allGuides = {
     { id: 4, text: (<><h1 className={dmc.title}>백엔드 설정</h1>
     <p className={dmc.title2}>2. Apps Script 프로젝트 설정</p>
     <p className={dmc.tbody}>코드 상단의 SPREADSHEET_ID 상수를 ①번에서 생성한 데이터베이스 시트의 ID로 교체합니다.
-     <img src="/gui4.jpg" height="250px" style={{marginRight: '10px'}}></img>
+     <img src={`${import.meta.env.BASE_URL}gui4.jpg`} height="250px" style={{marginRight: '10px'}}></img>
      <br/>
-     <img src="/gui5.jpg" height="100px" style={{marginleft: '50px'}}></img>
+     <img src={`${import.meta.env.BASE_URL}gui5.jpg`} height="100px" style={{marginleft: '50px'}}></img>
       </p></>) },
 
       { id: 5, text: (<><h1 className={dmc.title}>백엔드 설정</h1>
@@ -55,8 +55,8 @@ const allGuides = {
       <br/>
       유형 선택: 웹 앱
       <br/>
-      <img src="/gui6.jpg" height="200px" style={{marginleftt: '10px'}}></img>
-      <img src="/gui7.jpg" height="250px" style={{marginleftt: '50px'}}></img>
+      <img src={`${import.meta.env.BASE_URL}gui6.jpg`} height="200px" style={{marginleftt: '10px'}}></img>
+      <img src={`${import.meta.env.BASE_URL}gui7.jpg`} height="250px" style={{marginleftt: '50px'}}></img>
       </p></>) },
 
       { id: 6, text: (<><h1 className={dmc.title}>백엔드 설정</h1>
@@ -64,8 +64,8 @@ const allGuides = {
     <p className={dmc.tbody}>설정:다음 사용자로 실행: 나 (내 이메일 주소)액세스 권한이 있는 사용자: 모든 사용자
       배포 버튼을 클릭하고 권한을 승인합니다.
       <br/>
-      <img src="/gui8.jpg" height="300px" style={{marginRight: '50px'}}></img>
-      <img src="/gui9.jpg" height="300px" style={{marginleftt: '50px'}}></img>
+      <img src={`${import.meta.env.BASE_URL}gui8.jpg`} height="300px" style={{marginRight: '50px'}}></img>
+      <img src={`${import.meta.env.BASE_URL}gui9.jpg" height="300px`} style={{marginleftt: '50px'}}></img>
       
       <br/>
       </p></>) },
@@ -75,8 +75,8 @@ const allGuides = {
     <p className={dmc.tbody}>설정:다음 사용자로 실행: 나 (내 이메일 주소)액세스 권한이 있는 사용자: 모든 사용자
       배포 버튼을 클릭하고 권한을 승인합니다.
       <br/>
-      <img src="/gui10.jpg" height="300px" style={{marginRight: '50px'}}></img>
-      <img src="/gui11.jpg" height="300px" style={{marginleftt: '50px'}}></img>
+      <img src={`${import.meta.env.BASE_URL}gui10.jpg`} height="300px" style={{marginRight: '50px'}}></img>
+      <img src={`${import.meta.env.BASE_URL}gui11.jpg`} height="300px" style={{marginleftt: '50px'}}></img>
       <br/>
       </p></>) },
 
@@ -86,9 +86,9 @@ const allGuides = {
     <p className={dmc.tbody}>
       <br/>
       <br/>
-      <img src="/gui11.jpg" height="300px" style={{marginRight: '20px'}}></img>
-      <img src="/gui12.jpg" height="300px" style={{marginRight: '20px'}}></img>
-      <img src="/gui13.jpg" height="300px"></img>
+      <img src={`${import.meta.env.BASE_URL}gui11.jpg`} height="300px" style={{marginRight: '20px'}}></img>
+      <img src={`${import.meta.env.BASE_URL}gui12.jpg`} height="300px" style={{marginRight: '20px'}}></img>
+      <img src={`${import.meta.env.BASE_URL}gui13.jpg`} height="300px"></img>
 
       <br/>
       </p></>) },
