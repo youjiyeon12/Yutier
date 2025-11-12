@@ -24,20 +24,20 @@ function Footer() {
           <div className={styles.social}>
             <div className={styles.social_div}>
               <span className={styles.social_text} onClick={() => window.open('https://www.youtube.com/@YuhanUniversity', '_blank')}>Yuhan Univ. Youtube</span>
-              <img className={styles.social_icon} alt="Yuhan Univ. Youtube" src="Youtube.svg" onClick={() => window.open('https://www.youtube.com/@YuhanUniversity', '_blank')} />
+              <img className={styles.social_icon} alt="Yuhan Univ. Youtube" src={`${import.meta.env.BASE_URL}Youtube.svg`} onClick={() => window.open('https://www.youtube.com/@YuhanUniversity', '_blank')} />
             </div>
             <div className={styles.social_div}>
               <span className={styles.social_text} onClick={() => window.open('https://www.instagram.com/yuhan_univ', '_blank')}>Yuhan Univ. Instargram</span>
-              <img className={styles.social_icon} alt="Yuhan Univ. Instargram" src="/Instagram.svg" onClick={() => window.open('https://www.instagram.com/yuhan_univ', '_blank')} />
+              <img className={styles.social_icon} alt="Yuhan Univ. Instargram" src={`${import.meta.env.BASE_URL}Instagram.svg`} onClick={() => window.open('https://www.instagram.com/yuhan_univ', '_blank')} />
             </div>
             <div className={styles.social_div}>
               <span className={styles.social_text} onClick={() => window.open('https://github.com/youjiyeon12/Yutier', '_blank')}>YUTIER GitHub</span>
-              <img className={styles.social_icon} alt="YUTIER GitHub" src="/Github.svg" onClick={() => window.open('https://github.com/youjiyeon12/Yutier', '_blank')} />
+              <img className={styles.social_icon} alt="YUTIER GitHub" src={`${import.meta.env.BASE_URL}Github.svg`} onClick={() => window.open('https://github.com/youjiyeon12/Yutier', '_blank')} />
             </div>
           </div>
         </div>
         <div className={styles.bottom_container}>
-          <img className={styles.symbol} alt="YUTIER logo white" src="/yutierSymbol2-white.svg" />
+          <img className={styles.symbol} alt="YUTIER logo white" src={`${import.meta.env.BASE_URL}yutierSymbol2-white.svg`} />
           <div className={styles.navbar}>
             <span onClick={() => navigate('/')}>HOME</span>
             <span onClick={() => navigate('/mypage')}>마이페이지</span>
