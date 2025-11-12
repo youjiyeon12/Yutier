@@ -7,7 +7,7 @@ import './global.css';
 // React 앱의 시작점
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <HashRouter>
+    <HashRouter basename="/">
       <App />
     </HashRouter>
   </StrictMode>
