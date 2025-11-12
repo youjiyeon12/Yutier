@@ -30,7 +30,6 @@ function App() {
   
 
   return (
-    <Router>
       <Routes>
         {/* 홈 화면: 로그인된 유저만 접근 가능 */}
         <Route
@@ -112,7 +111,6 @@ function App() {
         }
         />
       </Routes>
-    </Router>
   );
 }
 
