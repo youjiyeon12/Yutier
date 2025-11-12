@@ -24,7 +24,7 @@ function Footer() {
           <div className={styles.social}>
             <div className={styles.social_div}>
               <span className={styles.social_text} onClick={() => window.open('https://www.youtube.com/@YuhanUniversity', '_blank')}>Yuhan Univ. Youtube</span>
-              <img className={styles.social_icon} alt="Yuhan Univ. Youtube" src="/Youtube.svg" onClick={() => window.open('https://www.youtube.com/@YuhanUniversity', '_blank')} />
+              <img className={styles.social_icon} alt="Yuhan Univ. Youtube" src={`${import.meta.env.BASE_URL}Youtube.svg`} onClick={() => window.open('https://www.youtube.com/@YuhanUniversity', '_blank')} />
             </div>
             <div className={styles.social_div}>
               <span className={styles.social_text} onClick={() => window.open('https://www.instagram.com/yuhan_univ', '_blank')}>Yuhan Univ. Instargram</span>
