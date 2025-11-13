@@ -40,6 +40,11 @@ function doGet(e) {
   } catch (err) {
     return json(500, { success: false, message: 'Server error', detail: String(err) });
   }
+  return ContentService.createTextOutput(response.getContent())
+    .setMimeType(ContentService.MimeType.JSON)
+    .setHeader("Access-Control-Allow-Origin", "*")
+    .setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+    .setHeader("Access-Control-Allow-Headers", "Content-Type");
 }
 
 // POST 요청 처리: JSON 데이터를 받아서 처리합니다.
@@ -68,6 +73,11 @@ function doPost(e) {
     console.error('POST API 처리 중 오류:', error);
     return json(200, { success: false, message: '서버 오류: ' + String(error) });
   }
+  return ContentService.createTextOutput(response.getContent())
+    .setMimeType(ContentService.MimeType.JSON)
+    .setHeader("Access-Control-Allow-Origin", "*")
+    .setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+    .setHeader("Access-Control-Allow-Headers", "Content-Type");
 }
 
 // 공통 라우팅 함수
@@ -754,8 +764,26 @@ function handleGetUserMatrixUrl(data) {
  * @param {number} data.semester - 학기 (예: 2)
  * @returns {Object} JSON 응답 { success: boolean, data: Array, message: string }
  */
+// 현재 연도와 학기를 자동으로 계산
+function getCurrentYearSemester() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1; // 1~12월
+
+  // 1학기: 3~8월, 2학기: 9~2월
+  const semester = (month >= 3 && month <= 8) ? 1 : 2;
+
+  return { year, semester };
+}
+
 function handleGetRecommendedPrograms(data) {
-  const { id, year, semester } = data;
+  const { id } = data;
+  const { year, semester } = getCurrentYearSemester();
+
+  // 현재 학기 정보 콘솔 출력
+  console.log('📅 현재 자동 계산된 학기 정보:');
+  console.log(`👉 연도: ${year}, 학기: ${semester} (${semester === 1 ? '1학기 (3~8월)' : '2학기 (9~2월)'})`);
+
   console.log('=== 추천 프로그램 조회 시작 ===');
   console.log('요청 정보:', { 사용자ID: id, 연도: year, 학기: semester });
   
@@ -781,7 +809,7 @@ function handleGetRecommendedPrograms(data) {
     
     // 4. 추천 프로그램 로직 적용
     console.log('🎯 추천 프로그램 계산 중...');
-    const recommendations = getRecommendedPrograms(matrixData, year, semester);
+    const recommendations = getRecommendedPrograms(matrixData, year, semester, id);
     console.log('✅ 추천 프로그램 계산 완료, 추천 수:', recommendations.length);
     
     // 5. 결과 반환
@@ -823,42 +851,40 @@ function handleGetRecommendedPrograms(data) {
  * @param {number} semester - 학기
  * @returns {Array} 추천 프로그램 배열
  */
-function getRecommendedPrograms(matrixData, year, semester) {
+function getRecommendedPrograms(matrixData, year, semester, id) {
   try {
     console.log('🎯 추천 프로그램 로직 시작');
-    console.log('📊 처리할 데이터 수:', matrixData.length);
+    console.log('요청자 ID:', id);
     
     // 1. 핵심역량별 총합 계산 (전체 학기 기준)
-    const categoryTotals = calculateCategoryTotals(matrixData);
-    console.log('📈 핵심역량별 총합:', categoryTotals);
+    const trustScores = getTrustCategoryTotals(id);
+    console.log('📊 [TIER 시트] 사용자 역량 점수:', trustScores);
+
+    const categoryTotals = {};
+    for (const [key, value] of Object.entries(trustScores)) {
+    categoryTotals[key] = { total: value, count: 1, average: value };
+  }
+  console.log('📈 핵심역량별 총합(TIER 기반):', categoryTotals);
     
     // 2. 핵심역량을 총합 점수 오름차순으로 정렬 (낮은 점수 우선)
     const sortedCategories = Object.entries(categoryTotals)
       .sort(([,a], [,b]) => a.total - b.total);
     console.log('📋 정렬된 핵심역량 (낮은 순):', sortedCategories.map(([name, info]) => `${name}: ${info.total}점`));
     
-    // 3. 핵심역량이 없는 경우 처리 - 모든 프로그램을 1회 점수 순으로 정렬
+    // 3. 핵심역량이 없는 경우 처리
     if (sortedCategories.length === 0) {
-      console.log('⚠️ 핵심역량이 없음 - 모든 프로그램을 1회 점수 순으로 정렬');
+      console.log('⚠️ 핵심역량 없음 - 모든 프로그램을 1회 점수 순으로 정렬');
       const allPrograms = matrixData
-        .filter(row => {
-          // 내 점수가 비어있는 프로그램만 추천 대상
-          const myScore = row['내 점수'] || '';
-          const isMyScoreEmpty = !myScore || myScore === '' || myScore === 0 || myScore === '0';
-          return isMyScoreEmpty;
-        })
+        .filter(row => !row['내 점수'] || row['내 점수'] === '' || row['내 점수'] === '0')
         .map(row => ({
           category: row['핵심역량'] || '',
           programName: row['프로그램명'] || '',
           firstScore: parseFloat(row['1회 점수']) || 0,
           maxScore: parseFloat(row['최대 점수']) || 0,
-          hasDetails: (row['상세항목'] && row['상세항목'] !== '') ? true : false,
           details: row['상세항목'] || ''
         }))
-        .sort((a, b) => b.firstScore - a.firstScore) // 1회 점수 높은 순
-        .slice(0, 6); // 최대 6개
-      
-      console.log('📋 전체 프로그램 추천 (1회 점수 순):', allPrograms.length, '개');
+        .sort((a, b) => b.firstScore - a.firstScore)
+        .slice(0, 6);
       return allPrograms;
     }
     
@@ -868,43 +894,25 @@ function getRecommendedPrograms(matrixData, year, semester) {
     // 4. 각 핵심역량별로 프로그램 추천
     for (let i = 0; i < sortedCategories.length && recommendations.length < maxRecommendations; i++) {
       const [category, categoryInfo] = sortedCategories[i];
-      console.log(`🔍 핵심역량 "${category}" 처리 중 (총합: ${categoryInfo.total}점)`);
-      
-      // 5. 현재 학기 데이터에서 "내 점수"가 없는 프로그램만 필터링
       const availablePrograms = matrixData
-        .filter(row => {
-          const coreCompetency = row['핵심역량'] || '';
-          const myScore = row['내 점수'] || '';
-          const isMyScoreEmpty = !myScore || myScore === '' || myScore === 0 || myScore === '0';
-          
-          return coreCompetency === category && isMyScoreEmpty;
-        })
+        .filter(row => 
+          row['핵심역량'] === category &&
+          (!row['내 점수'] || row['내 점수'] === '' || row['내 점수'] === '0')
+        )
         .map(row => ({
           category: row['핵심역량'] || '',
           programName: row['프로그램명'] || '',
           firstScore: parseFloat(row['1회 점수']) || 0,
           maxScore: parseFloat(row['최대 점수']) || 0,
-          hasDetails: (row['상세항목'] && row['상세항목'] !== '') ? true : false,
           details: row['상세항목'] || ''
         }))
-        .sort((a, b) => b.firstScore - a.firstScore); // 1회 점수 높은 순
-      
-      console.log(`📊 핵심역량 "${category}"에서 사용 가능한 프로그램:`, availablePrograms.length, '개');
-      
-      // 6. 추천 개수 결정 (최하위 핵심역량: 2개, 나머지: 1개)
-      let recommendCount = (i === 0) ? 2 : 1;
-      
-      // 7. 추천 프로그램 추가
-      const selectedPrograms = availablePrograms.slice(0, recommendCount);
-      recommendations.push(...selectedPrograms);
-      
-      console.log(`✅ 핵심역량 "${category}"에서 ${selectedPrograms.length}개 프로그램 추천`);
+        .sort((a, b) => b.firstScore - a.firstScore);
+
+      const recommendCount = (i === 0) ? 2 : 1; // 가장 낮은 역량 2개, 나머지 1개씩
+      recommendations.push(...availablePrograms.slice(0, recommendCount));
     }
-    
-    console.log(`🎉 총 추천 프로그램: ${recommendations.length}개`);
-    console.log('📝 최종 추천 목록:', recommendations.map(p => `${p.category} - ${p.programName} (${p.firstScore}점)`));
+
     return recommendations;
-    
   } catch (error) {
     console.error('❌ 추천 프로그램 계산 오류:', error);
     return [];
@@ -965,6 +973,29 @@ function calculateCategoryTotals(matrixData) {
   
   console.log('🎯 최종 핵심역량별 총합:', categoryTotals);
   return categoryTotals;
+}
+
+/**
+ * TIER 시트에서 사용자 역량 점수를 불러옵니다.
+ * @param {string} id - 사용자 ID
+ * @returns {Object} { '유한인성역량': 80, '기초학습역량': 75, ... }
+ */
+function getTrustCategoryTotals(id) {
+  const sheet = getSheet(SHEET_NAMES.TIER);
+  const data = sheet.getDataRange().getValues();
+  
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] === id) {
+      return {
+        '유한인성역량': parseFloat(data[i][1]) || 0,
+        '기초학습역량': parseFloat(data[i][2]) || 0,
+        '직업기초역량': parseFloat(data[i][3]) || 0,
+        '직무수행역량': parseFloat(data[i][4]) || 0,
+        '취창업기초역량': parseFloat(data[i][5]) || 0,
+      };
+    }
+  }
+  return {};
 }
 
 // 매트릭스 시트에서 데이터 가져오기
@@ -1211,61 +1242,28 @@ function extractSpreadsheetId(url) {
 // 테스트용 함수 - 추천 프로그램 로직 테스트
 function testRecommendationLogic() {
   console.log('=== 추천 프로그램 로직 테스트 시작 ===');
-  
-  // 테스트용 매트릭스 데이터 생성
+
+  const id = 'test123'; // 테스트용 사용자 ID
+  const { year, semester } = getCurrentYearSemester();
+
+  console.log(`📅 현재 학기 기준: ${year}년 ${semester}학기`);
+
   const testMatrixData = [
-    {
-      '핵심역량': '유한인성역량',
-      '프로그램명': '사회봉사',
-      '1회 점수': 5,
-      '최대 점수': 10,
-      '내 점수': '', // 비어있음 - 추천 대상
-      '상세항목': ''
-    },
-    {
-      '핵심역량': '유한인성역량',
-      '프로그램명': '유한인성역량 교양 교과',
-      '1회 점수': 5,
-      '최대 점수': 20,
-      '내 점수': 10, // 점수 있음 - 추천 제외
-      '상세항목': '직장예절(e러닝)'
-    },
-    {
-      '핵심역량': '직무수행역량',
-      '프로그램명': '학습성과 경진대회',
-      '1회 점수': 10,
-      '최대 점수': 15,
-      '내 점수': '', // 비어있음 - 추천 대상
-      '상세항목': ''
-    },
-    {
-      '핵심역량': '직무수행역량',
-      '프로그램명': '전공관련 경진대회',
-      '1회 점수': 8,
-      '최대 점수': 12,
-      '내 점수': '', // 비어있음 - 추천 대상
-      '상세항목': '교외 참가'
-    }
+    { '핵심역량': '유한인성역량', '프로그램명': '사회봉사', '1회 점수': 5, '최대 점수': 10, '내 점수': '', '상세항목': '' },
+    { '핵심역량': '유한인성역량', '프로그램명': '교양 교과', '1회 점수': 5, '최대 점수': 20, '내 점수': 10, '상세항목': '직장예절' },
+    { '핵심역량': '직무수행역량', '프로그램명': '학습성과 경진대회', '1회 점수': 10, '최대 점수': 15, '내 점수': '', '상세항목': '' },
+    { '핵심역량': '직무수행역량', '프로그램명': '전공 경진대회', '1회 점수': 8, '최대 점수': 12, '내 점수': '', '상세항목': '교외 참가' },
   ];
-  
-  console.log('테스트 데이터:', testMatrixData);
-  
-  // 핵심역량별 총합 계산 테스트
-  const categoryTotals = calculateCategoryTotals(testMatrixData);
-  console.log('핵심역량별 총합 결과:', categoryTotals);
-  
-  // 추천 프로그램 계산 테스트
-  const recommendations = getRecommendedPrograms(testMatrixData, 2025, 2);
+
+  const trustScores = getTrustCategoryTotals(id);
+  console.log('📊 [TIER 시트] 사용자 역량 점수:', trustScores);
+
+  const recommendations = getRecommendedPrograms(testMatrixData, year, semester, id);
   console.log('추천 프로그램 결과:', recommendations);
   console.log('추천 프로그램 개수:', recommendations.length);
-  
+
   console.log('=== 테스트 완료 ===');
-  
-  return {
-    categoryTotals: categoryTotals,
-    recommendations: recommendations,
-    recommendationCount: recommendations.length
-  };
+  return { recommendations, count: recommendations.length };
 }
 
 // 헬퍼 함수들
