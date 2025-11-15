@@ -834,6 +834,13 @@ function handleGetRecommendedPrograms(data) {
   }
 }
 
+function isProgramCompleted(matrixData, programName) {
+  return matrixData
+    .filter(r => r['프로그램명'] === programName)
+    .some(r => r['내 점수'] && r['내 점수'] !== '' && r['내 점수'] !== '0');
+}
+
+
 /**
  * 추천 프로그램 로직 구현
  * 핵심역량별 총합을 계산하여 낮은 점수의 역량을 우선 추천
@@ -897,7 +904,7 @@ function getRecommendedPrograms(matrixData, year, semester, id) {
       const availablePrograms = matrixData
         .filter(row => 
           row['핵심역량'] === category &&
-          (!row['내 점수'] || row['내 점수'] === '' || row['내 점수'] === '0')
+          !isProgramCompleted(matrixData, row['프로그램명'])
         )
         .map(row => ({
           category: row['핵심역량'] || '',
@@ -918,6 +925,7 @@ function getRecommendedPrograms(matrixData, year, semester, id) {
     return [];
   }
 }
+
 
 /**
  * 핵심역량별 총합 계산
