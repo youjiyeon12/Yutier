@@ -81,10 +81,9 @@ const allGuides = {
       </p></>) },
 
       { id: 8, text: (<><h1 className={dmc.title}>백엔드 설정</h1>
-    <p className={dmc.title2}>3. 웹 앱 배포</p>설정:다음 사용자로 실행: 나 (내 이메일 주소)액세스 권한이 있는 사용자: 모든 사용자
+    <p className={dmc.title2}>3. 웹 앱 배포</p>
+    <p className={dmc.tbody}>설정:다음 사용자로 실행: 나 (내 이메일 주소)액세스 권한이 있는 사용자: 모든 사용자
       배포 버튼을 클릭하고 권한을 승인합니다.
-    <p className={dmc.tbody}>
-      <br/>
       <br/>
       <img src={`${import.meta.env.BASE_URL}gui11.jpg`} height="300px" style={{marginRight: '20px'}}></img>
       <img src={`${import.meta.env.BASE_URL}gui12.jpg`} height="300px" style={{marginRight: '20px'}}></img>
