@@ -206,13 +206,6 @@ function Matrix({ user, onLogout }) {
     setIsFilter(true); // 로딩 시작
 
     try {
-      const urlValidation = await googleSheetsService.validateMatrixUrl(userId);
-      if (!urlValidation.valid) {
-        alert("매트릭스 URL이 등록되지 않았거나 유효하지 않습니다.");
-        window.location.href = '/matrix-url';
-        return;
-      }
-
       // Trust 인증 총점 로드
       const tierResult = await googleSheetsService.getTierScores(userId);
       if (tierResult.success) {
@@ -813,6 +806,12 @@ function Matrix({ user, onLogout }) {
   )}
       
       <Footer />
+      {isFilter && (
+      <div className={styles.loadingOverlay}>
+        <div className={styles.loader}></div>
+        <p>TRUST 인증 점수 불러오는 중...</p>
+      </div>
+    )}
     </div>
   );
 }

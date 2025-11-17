@@ -45,6 +45,9 @@ function Mypage({ user, setUser, onLogout }) {
   // 추천 프로그램 로딩 상태 
   const [loading, setLoading] = useState(false);
 
+  // 매트릭드 이동 로딩 바
+  const [loading2, setLoading2] = useState(false);
+
   // 메뉴 클릭 시 localStorage에 저장
   const handleMenuClick = async (menuKey) => {
     setSelectedMenuKey(menuKey)
@@ -54,6 +57,7 @@ function Mypage({ user, setUser, onLogout }) {
 
     // 매트릭스 페이지로 이동
     if (menuKey === "매트릭스 관리") {
+      setLoading2(true);
       try {
         const data = await googleSheetsService.validateMatrixUrl(user.id);
 
@@ -67,6 +71,8 @@ function Mypage({ user, setUser, onLogout }) {
       catch (err) {
         console.error("URL확인 실패:", err);
         navigate('/matrix-url'); // 에러 시 기본값으로 이동
+      } finally {
+        setLoading2(false);
       }
     }
   }
@@ -262,6 +268,7 @@ function Mypage({ user, setUser, onLogout }) {
   };
 
   return (
+  <>
     <div className={styles.container}>
       <Header user={user} onLogout={onLogout} />
 
@@ -433,6 +440,14 @@ function Mypage({ user, setUser, onLogout }) {
 
       <Footer />
     </div>
+
+    {loading2 && (
+            <div className={styles.loadingOverlay}>
+              <div className={styles.loader}></div>
+              <p>매트릭스로 이동 중...</p>
+            </div>
+          )}
+    </>
   );
 }
 

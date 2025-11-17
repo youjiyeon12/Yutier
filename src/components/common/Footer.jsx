@@ -23,7 +23,7 @@ function Footer() {
           </div>
           <div className={styles.social}>
             <div className={styles.social_div}>
-              <span className={styles.social_text} onClick={() => window.open('https://www.youtube.com/@YuhanUniversity', '_blank')}>Yuhan Univ. Youtube</span>
+              <span className={styles.social_text} onClick={() => window.open('https://youtu.be/-GCPQgqLkXE', '_blank')}>Yutier. Youtube</span>
               <img className={styles.social_icon} alt="Yuhan Univ. Youtube" src={`${import.meta.env.BASE_URL}Youtube.svg`} onClick={() => window.open('https://www.youtube.com/@YuhanUniversity', '_blank')} />
             </div>
             <div className={styles.social_div}>
@@ -31,19 +31,13 @@ function Footer() {
               <img className={styles.social_icon} alt="Yuhan Univ. Instargram" src={`${import.meta.env.BASE_URL}Instagram.svg`} onClick={() => window.open('https://www.instagram.com/yuhan_univ', '_blank')} />
             </div>
             <div className={styles.social_div}>
-              <span className={styles.social_text} onClick={() => window.open('https://github.com/youjiyeon12/Yutier', '_blank')}>YUTIER GitHub</span>
+              <span className={styles.social_text} onClick={() => window.open('https://github.com/youjiyeon12/Yutier', '_blank')}>Yutier. GitHub</span>
               <img className={styles.social_icon} alt="YUTIER GitHub" src={`${import.meta.env.BASE_URL}Github.svg`} onClick={() => window.open('https://github.com/youjiyeon12/Yutier', '_blank')} />
             </div>
           </div>
         </div>
         <div className={styles.bottom_container}>
           <img className={styles.symbol} alt="YUTIER logo white" src={`${import.meta.env.BASE_URL}yutierSymbol2-white.svg`} />
-          <div className={styles.navbar}>
-            <span onClick={() => navigate('/')}>HOME</span>
-            <span onClick={() => navigate('/mypage')}>마이페이지</span>
-            <span onClick={() => navigate('/detail')}>YUHAN TRUST란?</span>
-            <span onClick={() => navigate('/guide')}>이용가이드</span>
-          </div>
           <div className={styles.coptlight}>
             <span>Yuhan University | Team Hambugi.</span>
             <span>ⓒ 2025 YUTIER Project. All rights reserved.</span>
