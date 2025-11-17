@@ -809,7 +809,6 @@ function Matrix({ user, onLogout }) {
       {isFilter && (
       <div className={styles.loadingOverlay}>
         <div className={styles.loader}></div>
-        <p>TRUST 인증 점수 불러오는 중...</p>
       </div>
     )}
     </div>
