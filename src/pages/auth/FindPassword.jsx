@@ -247,11 +247,11 @@ function FindPassword(){
                     </form>
 
                     <div className={styles.linksBox}>
-                        <a href="/login" className={styles.link}>로그인</a>
+                        <a onClick={() => navigate('/login')} className={styles.link}>로그인</a>
                         <span className={styles.separator}>|</span>
-                        <a href="/signup" className={styles.link}>회원가입</a>
+                        <a onClick={() => navigate('/signup')} className={styles.link}>회원가입</a>
                         <span className={styles.separator}>|</span>
-                        <a href="/findid" className={styles.link}>아이디 찾기</a>
+                        <a onClick={() => navigate('/findid')} className={styles.link}>아이디 찾기</a>
                     </div>
                 </div>
                 <footer className={styles.footer}>Copyright ⓒ hambugi</footer>

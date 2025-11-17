@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import styles from './styles/findid.module.css';
 import { googleSheetsService } from '../../services/googleSheetsService';
+import { useNavigate } from 'react-router-dom';
 
 function FindId(){
     // 입력 값 State
@@ -16,6 +17,7 @@ function FindId(){
     const[isVerified, setIsVerified] = useState(false); // 인증 완료 여부
     const[timer, setTimer] = useState(0); // 타이머
     const timerRef = useRef(null);
+    const navigate = useNavigate();
 
     // 타이머 효과
     useEffect(() => {
@@ -173,11 +175,11 @@ function FindId(){
                     </form>
 
                     <div className={styles.linksBox}>
-                        <a href="/login" className={styles.link}>로그인</a>
+                        <a onClick={() => navigate('/login')} className={styles.link}>로그인</a>
                         <span className={styles.separator}>|</span>
-                        <a href="/signup" className={styles.link}>회원가입</a>
+                        <a onClick={() => navigate('/signup')} className={styles.link}>회원가입</a>
                         <span className={styles.separator}>|</span>
-                        <a href="/findpassword" className={styles.link}>비밀번호 찾기</a>
+                        <a onClick={() => navigate('/findpassword')} className={styles.link}>비밀번호 찾기</a>
                     </div>
                 </div>
                 <footer className={styles.footer}>Copyright ⓒ hambugi</footer>
