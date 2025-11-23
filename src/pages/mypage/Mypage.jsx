@@ -20,7 +20,7 @@ import styles from "./styles/mypage.module.css";
 import MemInfoEdit from './MemInfoEdit';
 import DeleteAccount from './DeleteAccount'
 import { useNavigate } from 'react-router-dom';
-import List from "../../components/ui/List";
+import List from "../../components/ui/list";
 import { googleSheetsService } from '../../services/googleSheetsService';
 
 function Mypage({ user, setUser, onLogout }) {
