@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import styles from './styles/home.module.css';
-import List from '../../components/ui/List';
+import List from '../../components/ui/list';
 import { googleSheetsService } from '../../services/googleSheetsService';
 
 function Home({ user, onLogout }) {
