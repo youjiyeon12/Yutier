@@ -204,9 +204,9 @@ function Guide({ user, onLogout }) {
       </div>
 
       {/*  PDF 다운로드----------------------------------------------  */}
-        <a /*href="/유티어(Yutier) 프로젝트 상세 배포 가이드.pdf"*/ download className={dmc.pdfDownloadLink}>
+        <a href="/유티어(Yutier) 프로젝트 상세 배포 가이드.pdf" download className={dmc.pdfDownloadLink}>
           <img src={`${import.meta.env.BASE_URL}sheet.png`} alt="PDF Download" className={dmc.pdfIconOnly} />
-          <span className={dmc.pdfIconLabel}>상세 가이드 PDF(미완성)</span>
+          <span className={dmc.pdfIconLabel}>상세 배포 가이드 PDF</span>
         </a>
 
       </div> 
