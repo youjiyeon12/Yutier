@@ -61,7 +61,7 @@ function Detail({ user, onLogout }) {
                     <td className={dmc.contentCell}>
                       <div className={dmc.tierItem}>
                         <img src={`${import.meta.env.BASE_URL}tier1.png`}/>
-                        <div>Bronz</div>
+                        <div>Bronze</div>
                       </div>
                     </td>
                     <td className={dmc.contentCell}>
