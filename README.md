@@ -130,26 +130,56 @@ YuhanTRUST제도 설명 페이지
 <br>
 
 ## 팀원 정보
-
-| 역할 | 이름 |
-| --- | --- |
-| **팀장** | **김원정** |
-| **팀원** | 김려원 |
-| **팀원** | 김은비 |
-| **팀원** | 박한별 |
-| **팀원** | 윤나래 |
-
 <table>
   <tbody>
     <tr>
-      <td align="center"><a href="https://github.com/kikikim29"><img src="width="100px;" alt=""/><br /><sub><b>김려원</b></sub></a><br /></td>
-      <td align="center"><a href="https://github.com/svrain"><img src="" width="100px;" alt=""/><br /><sub><b>김은비</b></sub></a><br /></td>
-      <td align="center"><a href="https://github.com/youjiyeon12"><img src="" width="100px;" alt=""/><br /><sub><b>김원정(팀장)</b></sub></a><br /></td>
-      <td align="center"><a href="https://github.com/HBAKM"><img src="https://avatars.githubusercontent.com/u/188754203?v=4" width="100px;" alt=""/><br /><sub><b>박한별</b></sub></a><br /></td>
-      <td align="center"><a href="https://github.com/narae04"><img src="" width="100px;" alt=""/><br /><sub><b>윤나래</b></sub></a><br /></td>
+      <td align="center">
+        <a href="https://github.com/kikikim29">
+          <img src="https://avatars.githubusercontent.com/u/163376638?v=4" width="150px;" alt=""/>
+          <br />
+          <span style="font-size:18px;"><b>김려원</b></span>
+        </a>
+        <br />
+      </td>
+
+      <td align="center">
+        <a href="https://github.com/svrain">
+          <img src="https://avatars.githubusercontent.com/u/163376530?v=4" width="150px;" alt=""/>
+          <br />
+          <span style="font-size:18px;"><b>김은비</b></span>
+        </a>
+        <br />
+      </td>
+
+      <td align="center">
+        <a href="https://github.com/youjiyeon12">
+          <img src="https://avatars.githubusercontent.com/u/127164370?v=4" width="150px;" alt=""/>
+          <br />
+          <span style="font-size:18px;"><b>김원정(팀장)</b></span>
+        </a>
+        <br />
+      </td>
+
+      <td align="center">
+        <a href="https://github.com/HBAKM">
+          <img src="https://avatars.githubusercontent.com/u/188754203?v=4" width="150px;" alt=""/>
+          <br />
+          <span style="font-size:18px;"><b>박한별</b></span>
+        </a>
+        <br />
+      </td>
+
+      <td align="center">
+        <a href="https://github.com/narae04">
+          <img src="https://avatars.githubusercontent.com/u/183215573?v=4" width="150px;" alt=""/>
+          <br />
+          <span style="font-size:18px;"><b>윤나래</b></span>
+        </a>
+        <br />
+      </td>
+    </tr>
   </tbody>
 </table>
-
 <br>
 
 ## 도움을 주신 분들
