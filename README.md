@@ -4,11 +4,11 @@
 **Yutier**는 유한대학교 학생들의 핵심역량 점수를 체계적으로 관리하고, 성취도에 따라 티어(등급)를 부여하여 학생들의 성장을 시각적으로 보여주는 웹 서비스입니다. 자신의 역량 수준을 객관적으로 파악하고, 추천 프로그램을 통해 자기계발에 대한 동기를 부여받을 수 있습니다.
 
 <img width="15" height="15" alt="link" src="https://github.com/user-attachments/assets/8dac7ef4-9ba4-43ff-bf25-107629d010b6" />
-[유티어 바로가기](<https://youjiyeon12.github.io/Yutier/>)
+[유티어 바로가기](https://youjiyeon12.github.io/Yutier/)
 
 <br>
 <img width="15" height="15" alt="youtube" src="https://github.com/user-attachments/assets/3be9a037-cc0e-422c-9834-658cf7543efd" />
-[유티어 홍보영상](<https://www.youtube.com/watch?v=-GCPQgqLkXE>)
+[유티어 홍보영상](https://www.youtube.com/watch?v=-GCPQgqLkXE)
 <br>
 
 ## 주요 기능
@@ -33,7 +33,7 @@
 
 ## 시작하기
 <br>
-[유티어 프로젝트 상세 배포 가이드](<https://github.com/youjiyeon12/Yutier/blob/main/public/%EC%9C%A0%ED%8B%B0%EC%96%B4(Yutier)%20%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EC%83%81%EC%84%B8%20%EB%B0%B0%ED%8F%AC%20%EA%B0%80%EC%9D%B4%EB%93%9C.pdf>)
+[유티어 프로젝트 상세 배포 가이드](https://github.com/youjiyeon12/Yutier/blob/main/public/%EC%9C%A0%ED%8B%B0%EC%96%B4(Yutier)%20%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EC%83%81%EC%84%B8%20%EB%B0%B0%ED%8F%AC%20%EA%B0%80%EC%9D%B4%EB%93%9C.pdf)
 
 ### 1. 백엔드 설정 (Google Apps Script)
 
