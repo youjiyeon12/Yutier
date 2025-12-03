@@ -29,7 +29,8 @@
 <br>
 
 ## 시작하기
-[유티어 프로젝트 상세 배포 가이드 (PDF)](https://youjiyeon12.github.io/Yutier/유티어(Yutier)%20프로젝트%20상세%20배포%20가이드.pdf)
+[**<img width="512" height="512" alt="pdf" src="https://github.com/user-attachments/assets/3ffbb5f1-276a-4dde-82bd-796e9e4c0145" />유티어 프로젝트 상세 배포 가이드 (PDF)**](https://youjiyeon12.github.io/Yutier/유티어(Yutier)%20프로젝트%20상세%20배포%20가이드.pdf)
+
 
 ### 1. 백엔드 설정 (Google Apps Script)
 
