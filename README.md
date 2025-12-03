@@ -32,10 +32,6 @@
 <br>
 [유티어 프로젝트 상세 배포 가이드 (PDF)](https://youjiyeon12.github.io/Yutier/유티어(Yutier)%20프로젝트%20상세%20배포%20가이드.pdf)
 
-
-
-
-
 ### 1. 백엔드 설정 (Google Apps Script)
 
 1.  **프로젝트용 Google Sheets 생성**
