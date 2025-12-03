@@ -37,12 +37,15 @@
 <img width="2154" height="1880" alt="youjiyeon12 github io_Yutier_" src="https://github.com/user-attachments/assets/3bb9618a-8e12-43c1-8b5c-6049e22c6f77" />
 <br>
 메인페이지
+<br>
 <img width="2154" height="2391" alt="youjiyeon12 github io_mypage" src="https://github.com/user-attachments/assets/818ccf53-6935-4f93-9f9a-6d196e35912f" />
 <br>
 마이페이지
+<br>
 <img width="2157" height="4410" alt="youjiyeon12 github io_mypage (1)" src="https://github.com/user-attachments/assets/f06ebd20-8f73-41d5-9a0d-92ac0f3b420e" />
 <br>
 매트릭스
+<br>
 <img width="2154" height="1848" alt="youjiyeon12 github io_mypage (2)" src="https://github.com/user-attachments/assets/03c8396f-ac60-4c05-b0ec-2b62ba053377" />
 <br>
 YuhanTRUST제도 설명 페이지
@@ -135,6 +138,17 @@ YuhanTRUST제도 설명 페이지
 | **팀원** | 김은비 |
 | **팀원** | 박한별 |
 | **팀원** | 윤나래 |
+
+<table>
+  <tbody>
+    <tr>
+      <td align="center"><a href=""><img src="width="100px;" alt=""/><br /><sub><b>김려원</b></sub></a><br /></td>
+      <td align="center"><a href=""><img src="" width="100px;" alt=""/><br /><sub><b>김은비</b></sub></a><br /></td>
+      <td align="center"><a href="https://github.com/youjiyeon12"><img src="" width="100px;" alt=""/><br /><sub><b>김원정(팀장)</b></sub></a><br /></td>
+      <td align="center"><a href=""><img src="" width="100px;" alt=""/><br /><sub><b>박한별</b></sub></a><br /></td>
+      <td align="center"><a href=""><img src="" width="100px;" alt=""/><br /><sub><b>윤나래</b></sub></a><br /></td>
+  </tbody>
+</table>
 
 <br>
 
