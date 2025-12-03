@@ -8,6 +8,55 @@
 [<img src="https://github.com/user-attachments/assets/3be9a037-cc0e-422c-9834-658cf7543efd" width="15"/> **유티어 홍보영상**](https://www.youtube.com/watch?v=-GCPQgqLkXE)
 <br>
 
+## 팀 햄부기
+<table>
+  <tbody>
+    <tr>
+      <td align="center">
+        <a href="https://github.com/kikikim29">
+          <img src="https://avatars.githubusercontent.com/u/163376638?v=4" width="150px;" alt=""/>
+          <br />
+          <span style="font-size:18px;"><b>김려원</b></span>
+        </a>
+        <br />
+      </td>
+      <td align="center">
+        <a href="https://github.com/svrain">
+          <img src="https://avatars.githubusercontent.com/u/163376530?v=4" width="150px;" alt=""/>
+          <br />
+          <span style="font-size:18px;"><b>김은비</b></span>
+        </a>
+        <br />
+      </td>
+      <td align="center">
+        <a href="https://github.com/youjiyeon12">
+          <img src="https://avatars.githubusercontent.com/u/127164370?v=4" width="150px;" alt=""/>
+          <br />
+          <span style="font-size:18px;"><b>김원정(팀장)</b></span>
+        </a>
+        <br />
+      </td>
+      <td align="center">
+        <a href="https://github.com/HBAKM">
+          <img src="https://avatars.githubusercontent.com/u/188754203?v=4" width="150px;" alt=""/>
+          <br />
+          <span style="font-size:18px;"><b>박한별</b></span>
+        </a>
+        <br />
+      </td>
+      <td align="center">
+        <a href="https://github.com/narae04">
+          <img src="https://avatars.githubusercontent.com/u/183215573?v=4" width="150px;" alt=""/>
+          <br />
+          <span style="font-size:18px;"><b>윤나래</b></span>
+        </a>
+        <br />
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+
 ## 주요 기능
 
 -   **회원 관리**: 간편한 회원가입, 로그인, 아이디/비밀번호 찾기, 회원 정보 수정 및 탈퇴 기능을 제공합니다.
@@ -127,59 +176,6 @@ YuhanTRUST제도 설명 페이지
     ```
     *개발 서버가 `http://localhost:5173`과 같은 주소에서 실행됩니다.*
 
-<br>
-
-## 팀원 정보
-<table>
-  <tbody>
-    <tr>
-      <td align="center">
-        <a href="https://github.com/kikikim29">
-          <img src="https://avatars.githubusercontent.com/u/163376638?v=4" width="150px;" alt=""/>
-          <br />
-          <span style="font-size:18px;"><b>김려원</b></span>
-        </a>
-        <br />
-      </td>
-
-      <td align="center">
-        <a href="https://github.com/svrain">
-          <img src="https://avatars.githubusercontent.com/u/163376530?v=4" width="150px;" alt=""/>
-          <br />
-          <span style="font-size:18px;"><b>김은비</b></span>
-        </a>
-        <br />
-      </td>
-
-      <td align="center">
-        <a href="https://github.com/youjiyeon12">
-          <img src="https://avatars.githubusercontent.com/u/127164370?v=4" width="150px;" alt=""/>
-          <br />
-          <span style="font-size:18px;"><b>김원정(팀장)</b></span>
-        </a>
-        <br />
-      </td>
-
-      <td align="center">
-        <a href="https://github.com/HBAKM">
-          <img src="https://avatars.githubusercontent.com/u/188754203?v=4" width="150px;" alt=""/>
-          <br />
-          <span style="font-size:18px;"><b>박한별</b></span>
-        </a>
-        <br />
-      </td>
-
-      <td align="center">
-        <a href="https://github.com/narae04">
-          <img src="https://avatars.githubusercontent.com/u/183215573?v=4" width="150px;" alt=""/>
-          <br />
-          <span style="font-size:18px;"><b>윤나래</b></span>
-        </a>
-        <br />
-      </td>
-    </tr>
-  </tbody>
-</table>
 <br>
 
 ## 도움을 주신 분들
