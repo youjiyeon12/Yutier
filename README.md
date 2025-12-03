@@ -34,11 +34,7 @@
 <br>
 
 ## 대표 화면
-<img width="2154" height="1880" alt="youjiyeon12 github io_Yutier_" src="https://github.com/user-attachments/assets/3bb9618a-8e12-43c1-8b5c-6049e22c6f77" />
-<img width="2154" height="2391" alt="youjiyeon12 github io_mypage" src="https://github.com/user-attachments/assets/818ccf53-6935-4f93-9f9a-6d196e35912f" />
-<img width="2157" height="4410" alt="youjiyeon12 github io_mypage (1)" src="https://github.com/user-attachments/assets/f06ebd20-8f73-41d5-9a0d-92ac0f3b420e" />
-<img width="2154" height="1848" alt="youjiyeon12 github io_mypage (2)" src="https://github.com/user-attachments/assets/03c8396f-ac60-4c05-b0ec-2b62ba053377" />
-
+<img width="2154" height="1880" alt="youjiyeon12 github io_Yutier지
 
 ## 시작하기
 [<img src="https://github.com/user-attachments/assets/3ffbb5f1-276a-4dde-82bd-796e9e4c0145" width="15"/>**유티어 프로젝트 상세 배포 가이드 (PDF)**](https://youjiyeon12.github.io/Yutier/유티어(Yutier)%20프로젝트%20상세%20배포%20가이드.pdf)
