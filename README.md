@@ -9,7 +9,7 @@
 <img width="15" height="15" alt="youtube" src="https://github.com/user-attachments/assets/3be9a037-cc0e-422c-9834-658cf7543efd" />
 [유티어 홍보영상](https://www.youtube.com/watch?v=-GCPQgqLkXE)
 <br>
-[유티어 가이드](https://github.com/youjiyeon12/Yutier/blob/main/public/%EC%9C%A0%ED%8B%B0%EC%96%B4(Yutier)%20%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EC%83%81%EC%84%B8%20%EB%B0%B0%ED%8F%AC%20%EA%B0%80%EC%9D%B4%EB%93%9C.pdf)
+
 ## 주요 기능
 
 -   **회원 관리**: 간편한 회원가입, 로그인, 아이디/비밀번호 찾기, 회원 정보 수정 및 탈퇴 기능을 제공합니다.
@@ -31,6 +31,8 @@
 <br>
 
 ## 시작하기
+<br>
+[유티어 프로젝트 상세 배포 가이드](https://github.com/youjiyeon12/Yutier/blob/main/public/%EC%9C%A0%ED%8B%B0%EC%96%B4(Yutier)%20%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%EC%83%81%EC%84%B8%20%EB%B0%B0%ED%8F%AC%20%EA%B0%80%EC%9D%B4%EB%93%9C.pdf)
 
 ### 1. 백엔드 설정 (Google Apps Script)
 
