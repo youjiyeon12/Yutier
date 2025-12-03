@@ -20,12 +20,17 @@
 
 ## 개발 환경
  **Frontend** 
+<br>
 <img src="https://img.shields.io/badge/react-61DAFB?style=for-the-badge&logo=react&logoColor=black"> 
 ![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
+<br>
 **Backend**
-
+<br>
+<img alt="GAS" src ="https://img.shields.io/badge/googleappsscript.svg?&style=for-the-badge&logo=GoogleAppsScript&logoColor=white"/>
+<br>
 **Database**
-
+<br>
+![Google Sheets](https://img.shields.io/badge/Google%20Sheets-%2334A853?style=for-the-badge&logo=googlesheets&logoColor=white)
 <br>
 
 ## 대표 화면
