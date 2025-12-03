@@ -142,11 +142,11 @@ YuhanTRUST제도 설명 페이지
 <table>
   <tbody>
     <tr>
-      <td align="center"><a href=""><img src="width="100px;" alt=""/><br /><sub><b>김려원</b></sub></a><br /></td>
-      <td align="center"><a href=""><img src="" width="100px;" alt=""/><br /><sub><b>김은비</b></sub></a><br /></td>
+      <td align="center"><a href="https://github.com/kikikim29"><img src="width="100px;" alt=""/><br /><sub><b>김려원</b></sub></a><br /></td>
+      <td align="center"><a href="https://github.com/svrain"><img src="" width="100px;" alt=""/><br /><sub><b>김은비</b></sub></a><br /></td>
       <td align="center"><a href="https://github.com/youjiyeon12"><img src="" width="100px;" alt=""/><br /><sub><b>김원정(팀장)</b></sub></a><br /></td>
-      <td align="center"><a href=""><img src="" width="100px;" alt=""/><br /><sub><b>박한별</b></sub></a><br /></td>
-      <td align="center"><a href=""><img src="" width="100px;" alt=""/><br /><sub><b>윤나래</b></sub></a><br /></td>
+      <td align="center"><a href="https://github.com/HBAKM"><img src="https://avatars.githubusercontent.com/u/188754203?v=4" width="100px;" alt=""/><br /><sub><b>박한별</b></sub></a><br /></td>
+      <td align="center"><a href="https://github.com/narae04"><img src="" width="100px;" alt=""/><br /><sub><b>윤나래</b></sub></a><br /></td>
   </tbody>
 </table>
 
