@@ -26,7 +26,7 @@
 <br>
 **Backend**
 <br>
-<img alt="GAS" src ="https://img.shields.io/badge/Google Apps Script-#4285F4.svg?&style=for-the-badge&logo=googleappsscript&logoColor=white"/>
+<img alt="googleappsscript" src ="https://img.shields.io/badge/googleappsscript-4285F4?&style=for-the-badge&logo=googleappsscript&logoColor=white"/>
 <br>
 **Database**
 <br>
