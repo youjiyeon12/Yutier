@@ -9,7 +9,6 @@
 [<img src="https://github.com/user-attachments/assets/8dac7ef4-9ba4-43ff-bf25-107629d010b6" width="15"/> **유티어 바로가기**](https://youjiyeon12.github.io/Yutier/)
 <br>
 [<img src="https://github.com/user-attachments/assets/3be9a037-cc0e-422c-9834-658cf7543efd" width="15"/> **유티어 홍보영상**](https://www.youtube.com/watch?v=-GCPQgqLkXE)
-<br>
 
 ## 팀 햄부기
 <table>
