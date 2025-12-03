@@ -30,7 +30,7 @@
 
 ## 시작하기
 <br>
-[<img src="https://github.com/user-attachments/assets/6d957a98-4e58-4ae2-b597-8b53eeec2d37" width="18"/> **유티어 프로젝트 상세 배포 가이드 (PDF)**](https://youjiyeon12.github.io/Yutier/유티어(Yutier)%20프로젝트%20상세%20배포%20가이드.pdf)
+[**유티어 프로젝트 상세 배포 가이드 (PDF)**](https://youjiyeon12.github.io/Yutier/유티어(Yutier)%20프로젝트%20상세%20배포%20가이드.pdf)
 
 
 
