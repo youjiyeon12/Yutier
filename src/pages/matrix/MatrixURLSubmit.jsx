@@ -13,6 +13,7 @@ function MatrixURLSubmit({ user, onLogout }) {
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   //도움말 버튼
   const [showHelp, setShowHelp] = useState(false);
@@ -35,6 +36,7 @@ function MatrixURLSubmit({ user, onLogout }) {
     }
 
     // Apps Script 경유 서비스 호출
+    setLoading(true);
     try {
       const result = await googleSheetsService.verifyMatrixUrl(user.id, url);
 
@@ -51,6 +53,8 @@ function MatrixURLSubmit({ user, onLogout }) {
       console.error("❌ [MatrixURLSubmit] API 호출 오류:", err);
       setError('요청 실패');
       setSuccess(false);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -102,7 +106,7 @@ return (
             onChange={(e) => setUrl(e.target.value)}
             placeholder="URL을 입력하세요"
           />
-          <button onClick={handleSubmit} className={style.button}>조회</button>
+          <button onClick={handleSubmit} className={style.button} disabled={loading} aria-busy={loading}>{loading ? '확인 중...' : '조회'}</button>
 
           {error && <p style={{ color: 'red' }}>{error}</p>}
           {success && <p style={{ color: 'green' }}>✅ 저장되었습니다.</p>}

@@ -7,6 +7,7 @@ function Login({ onLogin }) {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,6 +17,7 @@ function Login({ onLogin }) {
       return;
     }
 
+    setLoading(true);
     try {
       const result = await googleSheetsService.login(id, password);
 
@@ -38,6 +40,8 @@ function Login({ onLogin }) {
     } catch (err) {
       console.error(err);
       alert('로그인 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -62,7 +66,7 @@ function Login({ onLogin }) {
             placeholder="비밀번호"
           />
           <div className={styles.rowButton}>
-            <button type="submit">로그인</button>
+            <button type="submit" disabled={loading} aria-busy={loading}>{loading ? '로그인 중...' : '로그인'}</button>
             <button type="button" onClick={() => navigate('/signup')}>회원가입</button>
           </div>
 

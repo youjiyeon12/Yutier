@@ -22,6 +22,7 @@ function MemInfoEdit({ user, setUser }) {
   const [newPassword, setNewPassword] = useState("");
   // 새 비밀번호 확인
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [saving, setSaving] = useState(false);
   // 비밀번호 유효성 
   const pwRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!?/@#$%^])[a-zA-Z\d!?/@#$%^]{8,20}$/;
 
@@ -54,6 +55,7 @@ function MemInfoEdit({ user, setUser }) {
     }
 
     // 사용자 정보 업데이트 요청
+    setSaving(true);
     try {
       const updateData = {
         department: selectedDept,
@@ -82,6 +84,8 @@ function MemInfoEdit({ user, setUser }) {
     } catch (err) {
       console.error("저장 실패:", err);
       alert("서버 오류가 발생했습니다.");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -217,7 +221,7 @@ function MemInfoEdit({ user, setUser }) {
       </div>
       {/* 확인 버튼 */}
       <div className={styles.buttonWrapper}>
-        <button className={styles.confirmButton} onClick={handleSave}>확인</button>
+        <button className={styles.confirmButton} onClick={handleSave} disabled={saving} aria-busy={saving}>{saving ? '저장 중...' : '확인'}</button>
       </div>
     </div>
   );

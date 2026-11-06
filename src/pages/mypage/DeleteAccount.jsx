@@ -5,7 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { googleSheetsService } from "../../services/googleSheetsService";
 
 function DeleteAccount({ user, onLogout }) {
-    const [password, setPassword] = useState(""); 
+    const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleDelete = async () => {
@@ -17,11 +18,12 @@ function DeleteAccount({ user, onLogout }) {
 
         // 사용자에게 재확인
         if(window.confirm("정말로 탈퇴하시겠습니까? 탈퇴 후에는 계정을 복구할 수 없습니다.")){
+            setLoading(true);
             try{
                 // googleSheetsService를 사용하여 회원 탈퇴 처리
                 const result = await googleSheetsService.deleteAccount(user.id, password);
                 
-                if(result.message && result.message.includes("성공")){
+                if(result.success){
                     alert("회원 탈퇴가 완료되었습니다.");
                     onLogout(); // 로그아웃 처리
                     navigate("/"); // 메인 페이지로 이동
@@ -33,6 +35,8 @@ function DeleteAccount({ user, onLogout }) {
                 console.error("Delete account error:", error);
                 alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
                 setPassword(""); // 비밀번호 입력 필드 초기화
+            } finally {
+                setLoading(false);
             }
         }
     }
@@ -63,14 +67,14 @@ function DeleteAccount({ user, onLogout }) {
                     placeholder="현재 비밀번호 입력"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleDelete()}
+                    onKeyDown={(e) => e.key === 'Enter' && !loading && handleDelete()}
                 />
                 </div>
             </div>
             
             {/* 탈퇴 버튼 */}
             <div className={styles.buttonWrapper}>
-                <button className={styles.deleteButton} onClick={handleDelete}>탈퇴</button>
+                <button className={styles.deleteButton} onClick={handleDelete} disabled={loading} aria-busy={loading}>{loading ? '처리 중...' : '탈퇴'}</button>
             </div>
         </div>
     );

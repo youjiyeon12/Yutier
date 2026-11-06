@@ -17,6 +17,9 @@ function Signup() {
   const [majorData, setMajorData] = useState({});
   const [selectedDept, setSelectedDept] = useState('');
   const [selectedMajor, setSelectedMajor] = useState('');
+  // 진행 중인 요청: 'submit' | 'checkId' | 'checkStudentID' | null
+  const [busy, setBusy] = useState(null);
+  const [majorLoading, setMajorLoading] = useState(true);
 
   const navigate = useNavigate();
 
@@ -30,8 +33,9 @@ function Signup() {
 
   useEffect(() => {
     googleSheetsService.getMajorList()
-      .then(data => setMajorData(data))
-      .catch(error => console.error('학부/전공 목록 로드 실패:', error));
+      .then(data => setMajorData(data && data.success !== false ? data : {}))
+      .catch(error => console.error('학부/전공 목록 로드 실패:', error))
+      .finally(() => setMajorLoading(false));
   }, []);
 
   const departments = Object.keys(majorData);
@@ -105,6 +109,7 @@ function Signup() {
 
     if (!validateForm()) return;
 
+    setBusy('submit');
     try {
       const data = await googleSheetsService.signup({
         id,
@@ -117,14 +122,16 @@ function Signup() {
       });
 
       if (data.success) {
-        alert('회원가입 성공!');
+        alert('회원가입이 완료되었습니다. 로그인해주세요.');
         navigate('/login');
       } else {
-        alert('회원가입 실패!');
+        alert(data.message || '회원가입에 실패했습니다. 잠시 후 다시 시도해주세요.');
       }
     } catch (err) {
-      alert('회원가입 중 오류 발생');
+      alert('회원가입 중 오류가 발생했습니다.');
       console.error(err);
+    } finally {
+      setBusy(null);
     }
   };
 
@@ -137,6 +144,7 @@ function Signup() {
       return; 
     }
 
+    setBusy('checkId');
     try {
       const data = await googleSheetsService.checkId(id);
 
@@ -148,14 +156,21 @@ function Signup() {
         setIsIdChecked(true);
       }
     } catch (err) {
-      alert('중복 확인 중 오류 발생');
+      alert('중복 확인 중 오류가 발생했습니다.');
       console.error(err);
+    } finally {
+      setBusy(null);
     }
   };
 
 
   // 학번 확인
   const checkStudentID = async () => {
+  if (!/^\d{9}$/.test(studentID)) {
+    alert('학번은 9자리 숫자여야 합니다.');
+    return;
+  }
+  setBusy('checkStudentID');
   try {
     const data = await googleSheetsService.checkStudentID(studentID);
 
@@ -167,8 +182,10 @@ function Signup() {
       setIsStudentIdChecked(true);
     }
   } catch (err) {
-    alert('학번 중복 확인 중 오류 발생');
+    alert('학번 중복 확인 중 오류가 발생했습니다.');
     console.error(err);
+  } finally {
+    setBusy(null);
   }
 };
 
@@ -195,7 +212,9 @@ function Signup() {
           }}
           placeholder="5~20자 이내, 영문(대/소문자 구분), 숫자"
         />
-        <button type="button" onClick={checkSignupId} className={styles.button}>중복 확인</button>
+        <button type="button" onClick={checkSignupId} className={styles.button} disabled={busy !== null} aria-busy={busy === 'checkId'}>
+          {busy === 'checkId' ? '확인 중...' : isIdChecked ? '확인 완료' : '중복 확인'}
+        </button>
       </div>
 
       <label className={styles.label}>비밀번호</label>
@@ -248,8 +267,8 @@ function Signup() {
           }}
           placeholder="ex) 202307000"
         />
-        <button type="button" onClick={checkStudentID} className={styles.button}>
-          중복 확인
+        <button type="button" onClick={checkStudentID} className={styles.button} disabled={busy !== null} aria-busy={busy === 'checkStudentID'}>
+          {busy === 'checkStudentID' ? '확인 중...' : isStudentIdChecked ? '확인 완료' : '중복 확인'}
         </button>
       </div>
 
@@ -263,7 +282,7 @@ function Signup() {
             setSelectedMajor('');
           }}
         >
-          <option value="">학부 선택</option>
+          <option value="">{majorLoading ? '학부 목록 불러오는 중...' : '학부 선택'}</option>
           {departments.map((dept) => (
             <option key={dept} value={dept}>{dept}</option>
           ))}
@@ -284,7 +303,9 @@ function Signup() {
 
       <div className={styles.buttonRow}>
         <button type="button" onClick={() => navigate('/login')} className={styles.cancel}>취소</button>
-        <button type="submit" className={styles.submit}>가입하기</button>
+        <button type="submit" className={styles.submit} disabled={busy !== null} aria-busy={busy === 'submit'}>
+          {busy === 'submit' ? '가입 처리 중...' : '가입하기'}
+        </button>
       </div>
     </form>
     <footer className={styles.footer}>Copyright ⓒ hambugi</footer>

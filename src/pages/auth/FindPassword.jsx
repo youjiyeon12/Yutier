@@ -222,8 +222,8 @@ function FindPassword(){
                                         onChange={(e) => setEmail(e.target.value)}
                                         disabled={isCodeSent}
                                     />
-                                    <button type="button" className={styles.emailButton} onClick={handleSendCode} disabled={isLoading || isCodeSent}>
-                                        {isCodeSent ? '전송완료' : '받기'}
+                                    <button type="button" className={styles.emailButton} onClick={handleSendCode} disabled={isLoading || isCodeSent} aria-busy={isLoading && !isCodeSent}>
+                                        {isCodeSent ? '전송완료' : isLoading ? '전송 중...' : '받기'}
                                     </button>
                                 </div>
                                 {isCodeSent && (
