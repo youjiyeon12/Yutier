@@ -168,7 +168,7 @@ function FindPassword(){
                             <>
                                 <div className={styles.inputRow}>
                                     <label className={styles.label}>새 비밀번호</label>
-                                    <input aria-label="새 비밀번호"
+                                    <input aria-label="새 비밀번호" autoComplete="new-password"
                                         type="password"
                                         className={styles.input}
                                         value={newPassword}
@@ -177,7 +177,7 @@ function FindPassword(){
                                 </div>
                                 <div className={styles.inputRow}>
                                     <label className={styles.label}>새 비밀번호 확인</label>
-                                    <input aria-label="새 비밀번호 확인"
+                                    <input aria-label="새 비밀번호 확인" autoComplete="new-password"
                                         type="password"
                                         className={styles.input}
                                         value={confirmPassword}

@@ -219,7 +219,7 @@ function Signup() {
       </div>
 
       <label className={styles.label}>비밀번호</label>
-      <input aria-label="비밀번호"
+      <input aria-label="비밀번호" autoComplete="new-password"
         ref={pwRef}
         type="password"
         className={styles.input}
@@ -229,7 +229,7 @@ function Signup() {
       />
 
       <label className={styles.label}>비밀번호 확인</label>
-      <input aria-label="비밀번호 확인"
+      <input aria-label="비밀번호 확인" autoComplete="new-password"
         ref={confirmPwRef}
         type="password"
         className={styles.input}

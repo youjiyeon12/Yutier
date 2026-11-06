@@ -191,7 +191,7 @@ function MemInfoEdit({ user, setUser }) {
         {/* 현재 비밀번호 */}
         <div className={styles.detailItem}>
           <span className={styles.detailLabel}>현재 비밀번호</span>
-          <input aria-label="현재 비밀번호"
+          <input aria-label="현재 비밀번호" autoComplete="current-password"
             className={styles.inputField}
             type="password"
             placeholder="현재 비밀번호 입력"
@@ -203,7 +203,7 @@ function MemInfoEdit({ user, setUser }) {
         {/* 새 비밀번호 */}
         <div className={styles.detailItem}>
           <span className={styles.detailLabel}>새 비밀번호</span>
-          <input aria-label="새 비밀번호"
+          <input aria-label="새 비밀번호" autoComplete="new-password"
             className={styles.inputField}
             type="password"
             placeholder="새 비밀번호 입력"
@@ -215,7 +215,7 @@ function MemInfoEdit({ user, setUser }) {
         {/* 새 비밀번호 확인 */}
         <div className={styles.detailItem}>
           <span className={styles.detailLabel}>새 비밀번호 확인</span>
-          <input aria-label="새 비밀번호 확인"
+          <input aria-label="새 비밀번호 확인" autoComplete="new-password"
             className={styles.inputField}
             type="password"
             placeholder="새 비밀번호 다시 입력"

@@ -63,7 +63,7 @@ function DeleteAccount({ user, onLogout }) {
                 {/* 현재 비밀번호 입력 */}
                 <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>현재 비밀번호</span>
-                <input aria-label="현재 비밀번호"
+                <input aria-label="현재 비밀번호" autoComplete="current-password"
                     className={styles.inputField}
                     type="password"
                     placeholder="현재 비밀번호 입력"
