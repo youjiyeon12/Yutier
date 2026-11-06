@@ -99,3 +99,31 @@
         padding: 10px 16px;
     }
 }
+
+@media (max-width: 900px) {
+    .header {
+        height: auto;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .menu {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 6px 14px;
+        font-size: 14px;
+    }
+    .menu p {
+        margin: 0;
+    }
+    .btn1, .btn2 {
+        font-size: 14px;
+        height: 34px;
+        padding: 6px 12px;
+    }
+}
+@media (max-width: 480px) {
+    .menu {
+        justify-content: center;
+        width: 100%;
+    }
+}

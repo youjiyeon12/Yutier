@@ -109,9 +109,15 @@ function processDataForRender(data, openStates) {
 function Matrix({ user, onLogout }) {
   
   // 상태 저장
-  const [year, setYear] = useState('2025');
-  const [semester, setSemester] = useState('1');
+  // 기본값은 현재 학기 (1학기: 3~8월, 2학기: 9~2월. 백엔드 getCurrentYearSemester와 같은 규칙)
+  const [year, setYear] = useState(() => String(new Date().getFullYear()));
+  const [semester, setSemester] = useState(() => {
+    const m = new Date().getMonth() + 1;
+    return m >= 3 && m <= 8 ? '1' : '2';
+  });
+  const yearOptions = Array.from({ length: new Date().getFullYear() - 2023 + 1 }, (_, i) => String(2023 + i));
   const [matrixData, setMatrixData] = useState([]);
+  const [loadError, setLoadError] = useState('');
   const [originalMatrixData, setOriginalMatrixData] = useState([]); // 원본 데이터 저장
   const [openAcc, setOpenAcc] = useState({});
   const [isSaving, setIsSaving] = useState(false);
@@ -213,6 +219,7 @@ function Matrix({ user, onLogout }) {
       }
 
       // 매트릭스 로드
+      setLoadError('');
       googleSheetsService.loadMatrix(userId, year, semester)
         .then(matrixResult => {
           if (matrixResult.success) {
@@ -221,11 +228,13 @@ function Matrix({ user, onLogout }) {
             setOpenAcc({});
           } else {
             console.error("❌ [Matrix] 매트릭스 데이터 로드 실패:", matrixResult.message);
-            alert(matrixResult.message);
+            setMatrixData([]);
+            setLoadError(matrixResult.message || '매트릭스를 불러오지 못했습니다.');
           }
         })
         .catch(error => {
           console.error("❌ [Matrix] 매트릭스 데이터 로드 오류:", error);
+          setLoadError('매트릭스를 불러오지 못했습니다.');
         })
         .finally(() => setIsFilter(false));
 
@@ -595,9 +604,7 @@ function Matrix({ user, onLogout }) {
             <label>
               년도
               <select value={year} onChange={e => setYear(e.target.value)} className={styles.styledSelect}>
-                <option value="2023">2023</option>
-                <option value="2024">2024</option>
-                <option value="2025">2025</option>
+                {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
               </select>
             </label>
             <label>
@@ -653,7 +660,9 @@ function Matrix({ user, onLogout }) {
             {renderTable()}
           </div>
         ) : (
-          <h2 className={styles.placeholderText}>매트릭스를 불러오는 중입니다...</h2>
+          <h2 className={styles.placeholderText}>
+            {isFilter ? '매트릭스를 불러오는 중입니다...' : loadError ? `${loadError} 년도·학기를 확인하고 다시 조회해주세요.` : '조회할 데이터가 없습니다.'}
+          </h2>
         )}
       </div>
 

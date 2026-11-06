@@ -310,3 +310,34 @@ p {
   padding: 15px 30px;
   width: fit-content;
 }
+@media (max-width: 1440px) {
+  .content, .content2 {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .body {
+    width: auto;
+    max-width: 1100px;
+    align-self: stretch;
+    box-sizing: border-box;
+    padding: 40px 24px;
+  }
+}
+@media (max-width: 768px) {
+  .menuContent {
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: calc(100% - 32px);
+    box-sizing: border-box;
+    padding: 10px;
+  }
+  .menuTitle {
+    margin-right: 0;
+    width: 100%;
+    text-align: center;
+  }
+  .menuNoBtn, .menuClickBtn {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+}

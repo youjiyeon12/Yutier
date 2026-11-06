@@ -139,3 +139,20 @@
         padding: 10px 16px;
     }
 }
+
+@media (max-width: 600px) {
+    .top_container,
+    .bottom_container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    .social,
+    .coptlight {
+        align-items: flex-start;
+    }
+    .coptlight span {
+        text-align: left;
+        white-space: normal;
+    }
+}

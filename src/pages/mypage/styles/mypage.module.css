@@ -502,3 +502,30 @@
     padding: 80px 24px;
   }
 }
+
+@media (max-width: 1200px) {
+  .mainContent {
+    min-width: 0;
+  }
+  .gradedetailCard,
+  .gradeInfoBox {
+    min-width: 0;
+  }
+  .gradedetailCard {
+    padding: 40px 24px;
+  }
+}
+@media (max-width: 768px) {
+  .contentWrapper {
+    padding: 24px 16px;
+  }
+  .sidebarCard {
+    box-sizing: border-box;
+    padding-bottom: 20px;
+  }
+  .gradeInfoBox {
+    flex-direction: column;
+    padding: 24px 16px;
+    gap: 20px;
+  }
+}

@@ -43,7 +43,8 @@ function List({ data }) {
       )}
       
       <table style={{
-        width: "900px",          
+        width: "100%",
+        maxWidth: "900px",
         tableLayout: "fixed",  
         borderCollapse: "collapse",
         textAlign: "center",
