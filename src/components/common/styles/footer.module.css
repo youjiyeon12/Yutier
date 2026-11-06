@@ -23,7 +23,7 @@
     position: relative;
     width: 100%;
     box-sizing: border-box;
-    max-width: 1200px;
+    max-width: 1400px; /* 1200px + 좌우 padding */
 }
 
 .top_container {

@@ -391,7 +391,7 @@ footer {
 .scoreInputContainer {
   width: 100%;
   box-sizing: border-box;
-  max-width: 1400px; 
+  max-width: 1467px; /* 1400px + padding 64px + border 3px */
   margin: 0 auto; 
   border: 1.5px solid #d1dbe7;
   border-radius: 16px;

@@ -10,7 +10,6 @@
     height: 60px;
     justify-content: space-between;
     padding: 10px 90px;
-    box-sizing: border-box;
     z-index: 1; /*맨 앞으로*/
 }
 
