@@ -509,7 +509,7 @@ function handleGetMatrix(data) {
       success: true, 
       header: headers, 
       data: dataRows, 
-      sheetName: `${year}-${semester}`
+      sheetName: matrixData.sheetName
     });
   } catch (error) {
     console.error('매트릭스 데이터 로드 실패:', error);
@@ -1116,7 +1116,9 @@ function getMatrixDataFromUrl(matrixUrl, year, semester) {
       }
     } else {
     }
-    
+
+    // 요청한 탭이 없으면 다른 탭을 읽었을 수 있으니, 실제로 읽은 탭 이름을 함께 넘긴다.
+    matrixData.sheetName = sheet.getName();
     return matrixData;
     
   } catch (error) {

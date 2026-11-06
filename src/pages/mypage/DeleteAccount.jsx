@@ -18,6 +18,19 @@ function DeleteAccount({ user, onLogout }) {
             return;
         }
 
+        setLoading(true);
+        try{
+            // 비밀번호가 맞는지 먼저 확인한 뒤에 탈퇴 여부를 묻는다.
+            const check = await googleSheetsService.verifyPassword(user.id, password);
+            if(!check.success){
+                alert(check.message || "비밀번호가 일치하지 않습니다.");
+                setPassword("");
+                return;
+            }
+        } finally {
+            setLoading(false);
+        }
+
         // 사용자에게 재확인
         if(window.confirm("정말로 탈퇴하시겠습니까? 탈퇴 후에는 계정을 복구할 수 없습니다.")){
             setLoading(true);

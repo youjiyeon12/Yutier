@@ -21,9 +21,9 @@ function Detail({ user, onLogout }) {
         <div className={dmc.menuContent}>
           <p className={dmc.menuTitle}>YUHAN TRUST</p>
           <div className={dmc.menuBar}>
-            <p><span onClick={() => handleMenuClick("info")}
+            <p><span role="button" tabIndex={0} onKeyDown={(e) => e.key === "Enter" && handleMenuClick("info")} onClick={() => handleMenuClick("info")}
               className={activeMenuKey === "info" ? dmc.menuClickBtn : dmc.menuNoBtn}>교육 인증 제도 안내</span></p>
-            <p><span onClick={() => handleMenuClick("trust")}
+            <p><span role="button" tabIndex={0} onKeyDown={(e) => e.key === "Enter" && handleMenuClick("trust")} onClick={() => handleMenuClick("trust")}
               className={activeMenuKey === "trust" ? dmc.menuClickBtn : dmc.menuNoBtn}>TRUST 역량 안내</span></p>
           </div>
         </div>

@@ -119,7 +119,9 @@ function Matrix({ user, onLogout }) {
     const m = new Date().getMonth() + 1;
     return m >= 3 && m <= 8 ? '1' : '2';
   });
-  const yearOptions = Array.from({ length: new Date().getFullYear() - 2023 + 1 }, (_, i) => String(2023 + i));
+  // 2023년~올해. 시트에서 읽은 학기의 연도가 범위 밖이어도 선택값으로 보이게 포함한다.
+  const yearOptions = [...new Set([...Array.from({ length: new Date().getFullYear() - 2023 + 1 }, (_, i) => String(2023 + i)), year])].sort();
+  const [sheetNotice, setSheetNotice] = useState('');
   const [matrixData, setMatrixData] = useState([]);
   const [loadError, setLoadError] = useState('');
   const navigate = useNavigate();
@@ -228,6 +230,15 @@ function Matrix({ user, onLogout }) {
       googleSheetsService.loadMatrix(userId, year, semester)
         .then(matrixResult => {
           if (matrixResult.success) {
+            // 요청한 학기 탭이 없어 다른 탭을 읽었으면, 화면의 년도·학기를 실제 탭에 맞춘다 (저장도 그 탭으로 가게).
+            const m = /^(\d{4})-([12])$/.exec(matrixResult.sheetName || '');
+            if (m && matrixResult.sheetName !== `${year}-${semester}`) {
+              setYear(m[1]);
+              setSemester(m[2]);
+              setSheetNotice(`${year}년 ${semester}학기 탭이 시트에 없어 ${m[1]}년 ${m[2]}학기를 표시합니다.`);
+            } else {
+              setSheetNotice('');
+            }
             setMatrixData(matrixResult.data);
             setOriginalMatrixData(JSON.parse(JSON.stringify(matrixResult.data)));
             setOpenAcc({});
@@ -639,6 +650,7 @@ function Matrix({ user, onLogout }) {
           </button>
         </div>
       </div>
+      {sheetNotice && <p role="status" className={styles.sheetNotice}>{sheetNotice}</p>}
 
       
       
