@@ -9,7 +9,9 @@ function DeleteAccount({ user, onLogout }) {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleDelete = async () => {
+    const handleDelete = async (e) => {
+        e?.preventDefault();
+        if (loading) return;
         // 비밀번호 입력 확인
         if(!password){
             alert("현재 비밀번호를 입력해주세요.");
@@ -42,7 +44,7 @@ function DeleteAccount({ user, onLogout }) {
     }
 
     return (
-        <div className={styles.detailCard}>
+        <form className={styles.detailCard} onSubmit={handleDelete}>
             <p className={styles.sectionTitle}>회원 탈퇴</p>
             <div className={styles.detailList}>
 
@@ -61,22 +63,21 @@ function DeleteAccount({ user, onLogout }) {
                 {/* 현재 비밀번호 입력 */}
                 <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>현재 비밀번호</span>
-                <input
+                <input aria-label="현재 비밀번호"
                     className={styles.inputField}
                     type="password"
                     placeholder="현재 비밀번호 입력"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && !loading && handleDelete()}
                 />
                 </div>
             </div>
             
             {/* 탈퇴 버튼 */}
             <div className={styles.buttonWrapper}>
-                <button className={styles.deleteButton} onClick={handleDelete} disabled={loading} aria-busy={loading}>{loading ? '처리 중...' : '탈퇴'}</button>
+                <button type="submit" className={styles.deleteButton} disabled={loading} aria-busy={loading}>{loading ? '처리 중...' : '탈퇴'}</button>
             </div>
-        </div>
+        </form>
     );
 }
 

@@ -20,7 +20,9 @@ function MatrixURLSubmit({ user, onLogout }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e?.preventDefault();
+    if (loading) return;
     
     if (!url.trim()) {
       setError('URL을 입력하세요.');
@@ -98,15 +100,17 @@ return (
             <li>아래에 본인의 시트 URL을 붙여넣고 '<b>조회</b>'를 클릭하세요.</li>
           </ol>
 
+          <form onSubmit={handleSubmit} style={{ display: 'contents' }}>
           <label>📄 사본 시트 URL:</label>
-          <input
+          <input aria-label="매트릭스 시트 URL"
             type="text"
             className={style.input}
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="URL을 입력하세요"
           />
-          <button onClick={handleSubmit} className={style.button} disabled={loading} aria-busy={loading}>{loading ? '확인 중...' : '조회'}</button>
+          <button type="submit" className={style.button} disabled={loading} aria-busy={loading}>{loading ? '확인 중...' : '조회'}</button>
+          </form>
 
           {error && <p style={{ color: 'red' }}>{error}</p>}
           {success && <p style={{ color: 'green' }}>✅ 저장되었습니다.</p>}

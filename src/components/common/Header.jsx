@@ -44,10 +44,10 @@ function Header({ user, onLogout }){
     <div className={styles.header}>
       <img className={styles.symbol} alt="yutierSymbol2" src={`${import.meta.env.BASE_URL}yutierSymbol2.svg`} onClick={() => navigate('/')}/>
       <div className={styles.menu}>
-        <p><span onClick={() => navigate('/')}>HOME</span></p>
-        <p><span onClick={() => navigate('/detail')}>YUHAN TRUST란?</span></p>
-        <p><span onClick={() => navigate('/guide')}>설정가이드</span></p>
-        <p><span onClick={handleMatrixClick}>매트릭스</span></p>
+        <p><span role="link" tabIndex={0} onClick={() => navigate('/')} onKeyDown={(e) => e.key === 'Enter' && (() => navigate('/'))()}>HOME</span></p>
+        <p><span role="link" tabIndex={0} onClick={() => navigate('/detail')} onKeyDown={(e) => e.key === 'Enter' && (() => navigate('/detail'))()}>YUHAN TRUST란?</span></p>
+        <p><span role="link" tabIndex={0} onClick={() => navigate('/guide')} onKeyDown={(e) => e.key === 'Enter' && (() => navigate('/guide'))()}>설정가이드</span></p>
+        <p><span role="link" tabIndex={0} onClick={handleMatrixClick} onKeyDown={(e) => e.key === 'Enter' && (handleMatrixClick)()}>매트릭스</span></p>
         {/* 로그인 여부에 따른 버튼 변화 */}
         {user ? (
           // 로그인 상태

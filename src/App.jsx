@@ -19,10 +19,10 @@ function App() {
   const [user, setUserState] = useState(() => {
     try {
       const stored = JSON.parse(localStorage.getItem('user'));
-      return stored?.token ? stored : null;
-    } catch {
-      return null;
-    }
+      if (stored?.token) return stored;
+    } catch { /* 깨진 값은 아래에서 지운다 */ }
+    localStorage.removeItem('user');
+    return null;
   });
 
   // localStorage를 state보다 먼저 갱신한다. 자식 페이지의 첫 API 호출이 바로 token을 읽기 때문이다.

@@ -168,7 +168,7 @@ function FindPassword(){
                             <>
                                 <div className={styles.inputRow}>
                                     <label className={styles.label}>새 비밀번호</label>
-                                    <input
+                                    <input aria-label="새 비밀번호"
                                         type="password"
                                         className={styles.input}
                                         value={newPassword}
@@ -177,7 +177,7 @@ function FindPassword(){
                                 </div>
                                 <div className={styles.inputRow}>
                                     <label className={styles.label}>새 비밀번호 확인</label>
-                                    <input
+                                    <input aria-label="새 비밀번호 확인"
                                         type="password"
                                         className={styles.input}
                                         value={confirmPassword}
@@ -194,8 +194,8 @@ function FindPassword(){
                             // ============ 인증 전 (기존 UI) ============
                             <>
                                 <div className={styles.inputRow}>
-                                    <label className={styles.label}>이&nbsp;&nbsp;&nbsp;름</label>
-                                    <input
+                                    <label className={styles.label}>이름</label>
+                                    <input aria-label="이름"
                                         type="text"
                                         className={styles.input}
                                         value={name}
@@ -205,7 +205,7 @@ function FindPassword(){
                                 </div>
                                 <div className={styles.inputRow}>
                                     <label className={styles.label}>아이디</label>
-                                    <input
+                                    <input aria-label="아이디"
                                         type="text"
                                         className={styles.input}
                                         value={id}
@@ -215,7 +215,7 @@ function FindPassword(){
                                 </div>
                                 <div className={styles.inputRow}>
                                     <label className={styles.label}>이메일</label>
-                                    <input
+                                    <input aria-label="이메일"
                                         type="email"
                                         className={styles.input}
                                         value={email}
@@ -229,7 +229,7 @@ function FindPassword(){
                                 {isCodeSent && (
                                     <div className={styles.inputRow}>
                                         <label className={styles.label}>인증번호</label>
-                                        <input
+                                        <input aria-label="인증번호"
                                             type="text"
                                             className={styles.input}
                                             value={checknumber}

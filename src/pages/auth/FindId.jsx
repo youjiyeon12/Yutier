@@ -122,8 +122,8 @@ function FindId(){
 
                     <form onSubmit={handleSubmit}>
                         <div className={styles.inputRow}>
-                            <label className={styles.label}>이&nbsp;&nbsp;&nbsp;름</label>
-                            <input
+                            <label className={styles.label}>이름</label>
+                            <input aria-label="이름"
                                 type="text"
                                 className={styles.input}
                                 value={name}
@@ -133,8 +133,8 @@ function FindId(){
                         </div>
 
                         <div className={styles.inputRow}>
-                            <label className={styles.label}>학&nbsp;&nbsp;&nbsp;번</label>
-                            <input
+                            <label className={styles.label}>학번</label>
+                            <input aria-label="학번"
                                 type="text"
                                 className={styles.input}
                                 value={studentID}
@@ -145,7 +145,7 @@ function FindId(){
 
                         <div className={styles.inputRow}>
                             <label className={styles.label}>이메일</label>
-                            <input type="email" 
+                            <input aria-label="이메일" type="email" 
                                 className={styles.input} 
                                 value={email} 
                                 onChange={(e) => setEmail(e.target.value)} 
@@ -159,7 +159,7 @@ function FindId(){
                         {isCodeSent && (
                             <div className={styles.inputRow}>
                                 <label className={styles.label}>인증번호</label>
-                                <input type="text" 
+                                <input aria-label="인증번호" type="text" 
                                     className={styles.input} 
                                     value={checknumber} 
                                     onChange={(e) => setCheckNumber(e.target.value)} 

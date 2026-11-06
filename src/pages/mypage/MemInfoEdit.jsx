@@ -27,7 +27,9 @@ function MemInfoEdit({ user, setUser }) {
   const pwRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!?/@#$%^])[a-zA-Z\d!?/@#$%^]{8,20}$/;
 
   // 확인 버튼 클릭 시
-  const handleSave = async () => {
+  const handleSave = async (e) => {
+    e?.preventDefault();
+    if (saving) return;
     // 아무것도 변경되지 않았을 경우
     const currentDept = user?.department ? user.department.split(" ")[0] : "";
     const currentMajor = user?.major || (user?.department ? user.department.split(" ")[1] || "" : "");
@@ -78,6 +80,9 @@ function MemInfoEdit({ user, setUser }) {
           major: selectedMajor,
         };
         setUser(updatedUser); // 상태 업데이트
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
       } else {
         alert(result.message || "수정에 실패했습니다.");
       }
@@ -130,7 +135,7 @@ function MemInfoEdit({ user, setUser }) {
   // 디버깅 정보
 
   return (
-    <div className={styles.detailCard}>
+    <form className={styles.detailCard} onSubmit={handleSave}>
       <p className={styles.sectionTitle}>회원 정보 수정</p>
       <div className={styles.detailList}>
         {/* 이름 */}
@@ -149,7 +154,7 @@ function MemInfoEdit({ user, setUser }) {
         <div className={styles.detailItem}>
           <label className={styles.detailLabel}>학부/전공</label>
           <div className={styles.selectRow}>
-            <select
+            <select aria-label="학부"
               className={styles.select}
               value={selectedDept}
               onChange={(e) => {
@@ -161,7 +166,7 @@ function MemInfoEdit({ user, setUser }) {
               {departments.map((dept) => (<option key={dept} value={dept}>{dept}</option>
               ))}
             </select>
-            <select
+            <select aria-label="전공"
               className={styles.select}
               value={selectedMajor}
               onChange={(e) => {
@@ -186,7 +191,7 @@ function MemInfoEdit({ user, setUser }) {
         {/* 현재 비밀번호 */}
         <div className={styles.detailItem}>
           <span className={styles.detailLabel}>현재 비밀번호</span>
-          <input
+          <input aria-label="현재 비밀번호"
             className={styles.inputField}
             type="password"
             placeholder="현재 비밀번호 입력"
@@ -198,7 +203,7 @@ function MemInfoEdit({ user, setUser }) {
         {/* 새 비밀번호 */}
         <div className={styles.detailItem}>
           <span className={styles.detailLabel}>새 비밀번호</span>
-          <input
+          <input aria-label="새 비밀번호"
             className={styles.inputField}
             type="password"
             placeholder="새 비밀번호 입력"
@@ -210,7 +215,7 @@ function MemInfoEdit({ user, setUser }) {
         {/* 새 비밀번호 확인 */}
         <div className={styles.detailItem}>
           <span className={styles.detailLabel}>새 비밀번호 확인</span>
-          <input
+          <input aria-label="새 비밀번호 확인"
             className={styles.inputField}
             type="password"
             placeholder="새 비밀번호 다시 입력"
@@ -221,9 +226,9 @@ function MemInfoEdit({ user, setUser }) {
       </div>
       {/* 확인 버튼 */}
       <div className={styles.buttonWrapper}>
-        <button className={styles.confirmButton} onClick={handleSave} disabled={saving} aria-busy={saving}>{saving ? '저장 중...' : '확인'}</button>
+        <button type="submit" className={styles.confirmButton} disabled={saving} aria-busy={saving}>{saving ? '저장 중...' : '확인'}</button>
       </div>
-    </div>
+    </form>
   );
 }
 

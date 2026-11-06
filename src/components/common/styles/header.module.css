@@ -10,7 +10,7 @@
     height: 60px;
     justify-content: space-between;
     padding: 10px 90px;
-    z-index: 1; /*맨 앞으로*/
+    z-index: 100; /*맨 앞으로 (본문 버튼보다 위, 모달(1000+)보다 아래)*/
 }
 
 .symbol {

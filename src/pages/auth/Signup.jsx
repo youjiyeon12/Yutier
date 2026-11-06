@@ -106,6 +106,7 @@ function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (busy) return;
 
     if (!validateForm()) return;
 
@@ -202,7 +203,7 @@ function Signup() {
 
       <label className={styles.label}>아이디</label>
       <div className={styles.idRow}>
-        <input
+        <input aria-label="아이디"
           ref={idRef}
           className={styles.input}
           value={id}
@@ -218,7 +219,7 @@ function Signup() {
       </div>
 
       <label className={styles.label}>비밀번호</label>
-      <input
+      <input aria-label="비밀번호"
         ref={pwRef}
         type="password"
         className={styles.input}
@@ -228,7 +229,7 @@ function Signup() {
       />
 
       <label className={styles.label}>비밀번호 확인</label>
-      <input
+      <input aria-label="비밀번호 확인"
         ref={confirmPwRef}
         type="password"
         className={styles.input}
@@ -238,7 +239,7 @@ function Signup() {
       />
 
       <label className={styles.label}>이름</label>
-      <input
+      <input aria-label="이름"
         ref={nameRef}
         className={styles.input}
         value={name}
@@ -247,8 +248,9 @@ function Signup() {
       />
 
       <label className={styles.label}>이메일</label>
-      <input
+      <input aria-label="이메일"
         ref={emailRef}
+        type="email"
         className={styles.input}
         value={email}
         onChange={(e) => setEmail(e.target.value)}
@@ -257,7 +259,7 @@ function Signup() {
 
       <label className={styles.label}>학번</label>
       <div className={styles.idRow}>
-        <input
+        <input aria-label="학번"
           ref={studentIDRef}
           className={styles.input}
           value={studentID}
@@ -274,7 +276,7 @@ function Signup() {
 
       <label className={styles.label}>학부 / 전공</label>
       <div className={styles.selectRow}>
-        <select
+        <select aria-label="학부"
           className={styles.select}
           value={selectedDept}
           onChange={(e) => {
@@ -288,7 +290,7 @@ function Signup() {
           ))}
         </select>
 
-        <select
+        <select aria-label="전공"
           className={styles.select}
           value={selectedMajor}
           onChange={(e) => setSelectedMajor(e.target.value)}

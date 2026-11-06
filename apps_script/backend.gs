@@ -430,7 +430,18 @@ function handleVerifyMatrixUrl(data) {
   if (!user) {
     return json(200, { success: false, message: '사용자를 찾을 수 없습니다.' });
   }
-  
+
+  // 실제로 열리는지, 매트릭스 템플릿 사본인지(학기 탭 'YYYY-N'이 있는지) 확인한 뒤 저장한다.
+  try {
+    const ss = SpreadsheetApp.openById(match[1]);
+    const hasSemesterTab = ss.getSheets().some(s => /^\d{4}-[12]$/.test(s.getName()));
+    if (!hasSemesterTab) {
+      return json(200, { success: false, message: '매트릭스 템플릿 사본이 아닌 것 같아요. 안내에 있는 템플릿을 복사한 시트의 URL을 입력해주세요.' });
+    }
+  } catch (e) {
+    return json(200, { success: false, message: '시트를 열 수 없습니다. URL이 맞는지, 시트 공유 설정(링크가 있는 모든 사용자 또는 편집자 추가)을 확인해주세요.' });
+  }
+
   // URL 저장
   const sheet = getSheet(SHEET_NAMES.USERS);
   const sheetData = sheet.getDataRange().getValues();
@@ -502,7 +513,8 @@ function handleGetMatrix(data) {
     });
   } catch (error) {
     console.error('매트릭스 데이터 로드 실패:', error);
-    return json(200, { success: false, message: '매트릭스 읽기 실패: ' + String(error) });
+    console.error('매트릭스 읽기 실패:', error);
+    return json(200, { success: false, message: '매트릭스 시트를 읽지 못했습니다. 시트 공유 설정과 해당 학기 탭이 있는지 확인해주세요.' });
   }
 }
 
@@ -701,10 +713,9 @@ function handleGetUserMatrixUrl(data) {
 // 현재 연도와 학기를 자동으로 계산
 function getCurrentYearSemester() {
   const now = new Date();
-  const year = now.getFullYear();
   const month = now.getMonth() + 1; // 1~12월
-
-  // 1학기: 3~8월, 2학기: 9~2월
+  // 1학기: 3~8월, 2학기: 9~2월. 1~2월은 전년도 2학기다.
+  const year = month <= 2 ? now.getFullYear() - 1 : now.getFullYear();
   const semester = (month >= 3 && month <= 8) ? 1 : 2;
 
   return { year, semester };
@@ -753,7 +764,7 @@ function handleGetRecommendedPrograms(data) {
     console.error('❌ 매트릭스 데이터 조회 실패:', error);
     return json(200, { 
       success: false, 
-      message: '매트릭스 데이터를 가져올 수 없습니다: ' + error.message 
+      message: '매트릭스 데이터를 가져올 수 없습니다.' 
     });
   }
 }

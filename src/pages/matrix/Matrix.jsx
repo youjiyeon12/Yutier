@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import { googleSheetsService } from '../../services/googleSheetsService';
+import { useNavigate } from 'react-router-dom';
 
 const colorSet = [styles.c0, styles.c1, styles.c2, styles.c3, styles.c4];
 
@@ -110,7 +111,10 @@ function Matrix({ user, onLogout }) {
   
   // 상태 저장
   // 기본값은 현재 학기 (1학기: 3~8월, 2학기: 9~2월. 백엔드 getCurrentYearSemester와 같은 규칙)
-  const [year, setYear] = useState(() => String(new Date().getFullYear()));
+  const [year, setYear] = useState(() => {
+    const now = new Date();
+    return String(now.getMonth() + 1 <= 2 ? now.getFullYear() - 1 : now.getFullYear());
+  });
   const [semester, setSemester] = useState(() => {
     const m = new Date().getMonth() + 1;
     return m >= 3 && m <= 8 ? '1' : '2';
@@ -118,6 +122,7 @@ function Matrix({ user, onLogout }) {
   const yearOptions = Array.from({ length: new Date().getFullYear() - 2023 + 1 }, (_, i) => String(2023 + i));
   const [matrixData, setMatrixData] = useState([]);
   const [loadError, setLoadError] = useState('');
+  const navigate = useNavigate();
   const [originalMatrixData, setOriginalMatrixData] = useState([]); // 원본 데이터 저장
   const [openAcc, setOpenAcc] = useState({});
   const [isSaving, setIsSaving] = useState(false);
@@ -660,9 +665,17 @@ function Matrix({ user, onLogout }) {
             {renderTable()}
           </div>
         ) : (
+          <>
           <h2 className={styles.placeholderText}>
-            {isFilter ? '매트릭스를 불러오는 중입니다...' : loadError ? `${loadError} 년도·학기를 확인하고 다시 조회해주세요.` : '조회할 데이터가 없습니다.'}
+            {isFilter ? '매트릭스를 불러오는 중입니다...'
+              : loadError.includes('미등록') ? '매트릭스 시트 URL이 아직 등록되지 않았어요.'
+              : loadError ? `${loadError} 년도·학기를 바꿔 다시 조회해보세요.`
+              : '조회할 데이터가 없습니다.'}
           </h2>
+          {!isFilter && loadError.includes('미등록') && (
+            <button className={styles.searchBtn} onClick={() => navigate('/matrix-url')}>매트릭스 URL 등록하러 가기</button>
+          )}
+          </>
         )}
       </div>
 

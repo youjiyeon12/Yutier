@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './styles/login.module.css';
 import { googleSheetsService } from '../../services/googleSheetsService';
@@ -8,6 +8,7 @@ function Login({ onLogin }) {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const pwRef = useRef(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,6 +36,8 @@ function Login({ onLogin }) {
         return;
       } else {
         alert(result.message || '아이디 또는 비밀번호가 올바르지 않습니다.');
+        setPassword('');
+        pwRef.current?.focus();
       }
     }
     } catch (err) {
@@ -58,9 +61,14 @@ function Login({ onLogin }) {
             value={id}
             onChange={(e) => setId(e.target.value)}
             placeholder="아이디"
+            aria-label="아이디"
+            autoComplete="username"
           />
           <input
+            ref={pwRef}
             type="password"
+            aria-label="비밀번호"
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="비밀번호"

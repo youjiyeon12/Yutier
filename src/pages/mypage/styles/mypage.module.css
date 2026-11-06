@@ -529,3 +529,11 @@
     gap: 20px;
   }
 }
+
+@media (max-width: 768px) {
+  .detailCard {
+    min-width: 0;
+    padding: 24px 16px;
+    max-height: none;
+  }
+}
