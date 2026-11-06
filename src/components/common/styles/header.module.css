@@ -10,7 +10,7 @@
     height: 60px;
     justify-content: space-between;
     padding: 10px 90px;
-    min-width: 1000px;
+    box-sizing: border-box;
     z-index: 1; /*맨 앞으로*/
 }
 
@@ -93,4 +93,10 @@
 
 @keyframes spin {
   100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+    .header {
+        padding: 10px 16px;
+    }
 }

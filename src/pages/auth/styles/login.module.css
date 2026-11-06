@@ -22,8 +22,10 @@
 
 .contentArea {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   gap: 40px;
+  padding: 0 16px;
 }
 
 .loginBox {
@@ -31,7 +33,9 @@
   border: 1px solid #ddd;
   padding: 30px;
   border-radius: 10px;
-  width: 330px;
+  width: 390px;
+  max-width: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
 }
@@ -80,7 +84,9 @@
   border: 1px solid #ddd;
   padding: 30px;
   border-radius: 10px;
-  width: 330px;
+  width: 390px;
+  max-width: 100%;
+  box-sizing: border-box;
   font-size: 13px;
 }
 

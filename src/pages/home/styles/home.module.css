@@ -139,8 +139,9 @@
 }
 
 .linkCard {
-  flex: 0 0 auto;
-  width: 450px;                     
+  flex: 0 1 auto; /* 좁은 화면에서는 줄어들게 */
+  width: 450px;
+  min-width: 0;                     
   height: 50px;
   display: flex;
   justify-content: center;

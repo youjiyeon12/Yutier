@@ -5,7 +5,8 @@
 
 .contentWrapper {
   display: flex;
-  max-width: 1200px;
+  max-width: 1500px; /* 1200px + 좌우 padding (border-box) */
+  box-sizing: border-box;
   margin: 0 auto;
   padding: 80px 150px;
   gap: 40px;
@@ -494,4 +495,10 @@
 
 @keyframes spin {
   100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 1400px) {
+  .contentWrapper {
+    padding: 80px 24px;
+  }
 }
