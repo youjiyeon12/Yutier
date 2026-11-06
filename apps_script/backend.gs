@@ -1,4 +1,4 @@
-// Google Apps Script - Web App (GET 요청 처리)
+// Google Apps Script - Web App
 // 이 스크립트는 React 프론트엔드로부터 들어오는 요청을 받아
 // Google 스프레드시트(users, tier, major)를 읽고/쓰는 백엔드 역할을 합니다.
 // 모든 응답은 JSON(TextOutput) 형식으로 반환합니다.
@@ -12,130 +12,158 @@ const SHEET_NAMES = {
   MAJOR: 'major'
 };
 
-// 웹 앱 진입점: 쿼리 파라미터의 action 값으로 라우팅합니다.
+// 웹 앱 진입점. 프론트엔드는 POST(text/plain, JSON body)로 호출한다.
+// doGet은 예전 클라이언트 호환용이다. 비밀번호가 URL에 남으므로 쓰지 않는 것이 좋다.
 function doGet(e) {
   try {
     const { action, ...data } = e.parameter || {};
-    console.log('=== API 호출 시작 (GET) ===');
-    console.log('요청된 액션:', action);
-    console.log('전체 파라미터:', e.parameter);
-    console.log('현재 시간:', new Date().toISOString());
-    
-  // IMPORTANT: 프론트엔드에서 직렬화된 'data' 파라미터를 파싱
-    let parsedData = { ...data }; // data 객체의 속성을 복사하여 초기화
-    
-    // 프론트엔드에서 직렬화된 'data' 키가 있는지 확인하고 파싱
+    let parsedData = { ...data };
     if (data.data && typeof data.data === 'string') {
-        try {
-            // JSON 문자열을 파싱한 객체로 parsedData를 업데이트 (덮어쓰기)
-            parsedData = JSON.parse(data.data);
-            console.log('파싱된 데이터:', parsedData);
-        } catch (jsonError) {
-            console.error('데이터 파싱 오류:', jsonError);
-            return json(400, { success: false, message: 'Invalid JSON data format' });
-        }
+      try {
+        parsedData = JSON.parse(data.data);
+      } catch (jsonError) {
+        return json(400, { success: false, message: 'Invalid JSON data format' });
+      }
     }
-    // routeRequest에 파싱된 데이터를 전달
-    return routeRequest(action, parsedData); 
+    return routeRequest(action, parsedData);
   } catch (err) {
-    return json(500, { success: false, message: 'Server error', detail: String(err) });
+    console.error('GET 처리 오류:', err);
+    return json(500, { success: false, message: '서버 오류가 발생했습니다.' });
   }
-  return ContentService.createTextOutput(response.getContent())
-    .setMimeType(ContentService.MimeType.JSON)
-    .setHeader("Access-Control-Allow-Origin", "*")
-    .setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-    .setHeader("Access-Control-Allow-Headers", "Content-Type");
 }
 
-// POST 요청 처리: JSON 데이터를 받아서 처리합니다.
 function doPost(e) {
   try {
-    console.log('=== API 호출 시작 (POST) ===');
-    console.log('POST 데이터:', e.postData);
-    console.log('현재 시간:', new Date().toISOString());
-    
     let data = {};
     if (e.postData && e.postData.contents) {
       try {
         data = JSON.parse(e.postData.contents);
       } catch (parseError) {
-        console.error('JSON 파싱 오류:', parseError);
-        return json(200, { success: false, message: 'JSON 파싱 오류: ' + String(parseError) });
+        return json(400, { success: false, message: '요청 형식이 올바르지 않습니다.' });
       }
     }
-    
     const { action, ...requestData } = data;
-    console.log('요청된 액션:', action);
-    console.log('요청 데이터:', requestData);
-    
     return routeRequest(action, requestData);
   } catch (error) {
-    console.error('POST API 처리 중 오류:', error);
-    return json(200, { success: false, message: '서버 오류: ' + String(error) });
+    console.error('POST 처리 오류:', error);
+    return json(500, { success: false, message: '서버 오류가 발생했습니다.' });
   }
-  return ContentService.createTextOutput(response.getContent())
-    .setMimeType(ContentService.MimeType.JSON)
-    .setHeader("Access-Control-Allow-Origin", "*")
-    .setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-    .setHeader("Access-Control-Allow-Headers", "Content-Type");
 }
 
-// 공통 라우팅 함수
+// 로그인 토큰이 있어야 하는 액션. 핸들러에는 토큰에서 꺼낸 id가 data.id로 전달된다.
+const PROTECTED_HANDLERS = {
+  updateUser: data => handleUpdateUser(data),
+  verifyMatrixUrl: data => handleVerifyMatrixUrl(data),
+  validateMatrixUrl: data => handleValidateMatrixUrl(data),
+  getMatrix: data => handleGetMatrix(data),
+  saveMatrix: data => handleSaveMatrix(data),
+  saveTierScores: data => handleSaveTierScores(data),
+  getTierScores: data => handleGetTierScores(data),
+  getTierInfo: data => handleGetTierInfo(data),
+  getRecommendedPrograms: data => handleGetRecommendedPrograms(data),
+  getUserMatrixUrl: data => handleGetUserMatrixUrl(data),
+  verifyPassword: data => handleVerifyPassword(data),
+  deleteAccount: data => handleDeleteAccount(data),
+};
+
+const PUBLIC_HANDLERS = {
+  login: data => handleLogin(data),
+  logout: data => handleLogout(data),
+  signup: data => handleSignup(data),
+  checkId: data => handleCheckId(data),
+  checkStudentID: data => handleCheckStudentID(data),
+  getMajorList: () => handleGetMajorList(),
+  sendVerificationCode: data => handleSendVerificationCode(data),
+  findIdWithVerification: data => handleFindIdWithVerification(data),
+  sendVerificationCodeForPassword: data => handleSendVerificationCodeForPassword(data),
+  findPasswordWithVerification: data => handleFindPasswordWithVerification(data),
+  updatePassword: data => handleUpdatePassword(data),
+};
+// recalculateAllTiers는 공개하지 않는다. 필요하면 Apps Script 편집기에서 직접 실행한다.
+
 function routeRequest(action, data) {
-  switch (action) {
-    case 'login':
-      return handleLogin(data);
-    case 'signup':
-      return handleSignup(data);
-    case 'checkId':
-      return handleCheckId(data);
-    case 'checkIdDuplicate': 
-      return handleCheckIdDuplicate(data);
-    case 'checkStudentID':
-      return handleCheckStudentID(data);
-    case 'checkStudentIdDuplicate': 
-      return handleCheckStudentIdDuplicate(data);
-    case 'getMajorList':
-      return handleGetMajorList();
-    case 'updateUser':
-      return handleUpdateUser(data);
-    case 'verifyMatrixUrl':
-      return handleVerifyMatrixUrl(data);
-    case 'validateMatrixUrl':
-      return handleValidateMatrixUrl(data);
-    case 'getMatrix':
-      return handleGetMatrix(data);
-    case 'saveMatrix':
-      return handleSaveMatrix(data);
-    case 'saveTierScores':
-      return handleSaveTierScores(data);
-    case 'getTierScores':
-      return handleGetTierScores(data);
-    case 'getTierInfo':
-      return handleGetTierInfo(data);
-    case 'getRecommendedPrograms':
-      return handleGetRecommendedPrograms(data);
-    case 'getUserMatrixUrl':
-      return handleGetUserMatrixUrl(data);
-    case 'verifyPassword':
-      return handleVerifyPassword(data);
-    case 'deleteAccount':
-      return handleDeleteAccount(data);
-    case 'sendVerificationCode':
-      return handleSendVerificationCode(data);
-    case 'findIdWithVerification':
-      return handleFindIdWithVerification(data);
-     case 'sendVerificationCodeForPassword':
-      return handleSendVerificationCodeForPassword(data);
-    case 'findPasswordWithVerification':
-      return handleFindPasswordWithVerification(data);
-    case 'updatePassword':
-      return handleUpdatePassword(data);
-    case 'recalculateAllTiers':
-      return recalculateAllTiers();
-    default:
-      return json(400, { success: false, message: 'Unknown action' });
+  if (PROTECTED_HANDLERS[action]) {
+    const id = getSessionUserId(data.token);
+    if (!id) {
+      return json(401, { success: false, code: 'AUTH_REQUIRED', message: '로그인이 필요합니다.' });
+    }
+    return PROTECTED_HANDLERS[action]({ ...data, id });
   }
+  if (PUBLIC_HANDLERS[action]) return PUBLIC_HANDLERS[action](data);
+  return json(400, { success: false, message: 'Unknown action' });
+}
+
+// ---- 세션 / 일회용 토큰 (CacheService) ----
+const SESSION_TTL = 21600;       // 6시간 (CacheService 최대값)
+const RESET_TOKEN_TTL = 600;     // 비밀번호 재설정 토큰 10분
+const CODE_TTL = 180;            // 인증번호 3분
+const MAX_CODE_TRIES = 5;
+
+function createSession(id) {
+  const token = Utilities.getUuid();
+  CacheService.getScriptCache().put('session:' + token, id, SESSION_TTL);
+  return token;
+}
+
+function getSessionUserId(token) {
+  if (!token) return null;
+  return CacheService.getScriptCache().get('session:' + token);
+}
+
+function handleLogout(data) {
+  if (data.token) CacheService.getScriptCache().remove('session:' + data.token);
+  return json(200, { success: true });
+}
+
+// 인증번호 저장. 값에 인증번호와 사용자 id를 함께 넣는다.
+function putVerificationCode(key, code, id) {
+  const cache = CacheService.getScriptCache();
+  cache.put(key, JSON.stringify({ code, id }), CODE_TTL);
+  cache.remove('tries:' + key);
+}
+
+// 인증번호 확인. 성공하면 id를 돌려주고 코드를 지운다. 실패 횟수가 MAX_CODE_TRIES를 넘으면 코드를 폐기한다.
+function consumeVerificationCode(key, code) {
+  const cache = CacheService.getScriptCache();
+  const stored = cache.get(key);
+  if (stored == null) return { ok: false, message: '인증번호 유효 시간이 만료되었습니다. 다시 시도해주세요.' };
+
+  const { code: storedCode, id } = JSON.parse(stored);
+  if (String(storedCode) !== String(code)) {
+    const tries = Number(cache.get('tries:' + key) || 0) + 1;
+    if (tries >= MAX_CODE_TRIES) {
+      cache.removeAll([key, 'tries:' + key]);
+      return { ok: false, message: '인증 시도 횟수를 초과했습니다. 인증번호를 다시 받아주세요.' };
+    }
+    cache.put('tries:' + key, String(tries), CODE_TTL);
+    return { ok: false, message: '인증번호가 일치하지 않습니다.' };
+  }
+  cache.removeAll([key, 'tries:' + key]);
+  return { ok: true, id };
+}
+
+function generateVerificationCode() {
+  // Math.random 대신 UUID 기반 난수 사용
+  const n = parseInt(Utilities.getUuid().replace(/-/g, '').slice(0, 12), 16);
+  return String(100000 + (n % 900000));
+}
+
+// 입력 비밀번호가 users 행(배열)의 저장값과 일치하는지 확인. salt가 없는 레거시 계정은 평문 비교.
+function checkPassword(row, password) {
+  if (!password) return false;
+  const storedHash = row[USER_COLUMNS.PASSWORD];
+  const salt = row[USER_COLUMNS.SALT];
+  const inputHash = salt ? sha256Hex(salt + password) : String(password);
+  return storedHash === inputHash;
+}
+
+// users 시트에서 아이디로 [행 번호(1-based), 행 배열]을 찾는다.
+function findUserRow(sheet, id) {
+  const values = sheet.getDataRange().getValues();
+  for (let i = 1; i < values.length; i++) {
+    if (values[i][USER_COLUMNS.ID] === id) return { rowNumber: i + 1, row: values[i] };
+  }
+  return null;
 }
 
 const USER_COLUMNS = {
@@ -177,13 +205,8 @@ function verifyPasswordHash(inputPassword, salt, storedHash) {
   }
 }
 
-function generateSalt(length = 16) {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let salt = '';
-  for (let i = 0; i < length; i++) {
-    salt += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return salt;
+function generateSalt() {
+  return Utilities.getUuid().replace(/-/g, '');
 }
 
 // 로그인 처리
@@ -197,47 +220,32 @@ function handleLogin(data) {
 
   const userRow = findUserById(id);
 
-  if (!userRow) {
-    console.log(`로그인 실패: 사용자 ID ${id}를 찾을 수 없음`);
-    return json(401, { success: false, message: '아이디 또는 비밀번호가 올바르지 않습니다.' });
+  const fail = () => json(401, { success: false, message: '아이디 또는 비밀번호가 올바르지 않습니다.' });
+  if (!userRow) return fail();
+
+  // 레거시 계정(salt 없음): 비밀번호가 맞으면 재설정 화면으로 보낸다.
+  if (!userRow.salt) {
+    if (userRow.password !== password) return fail();
+    return json(401, {
+      success: false,
+      code: 'LEGACY_ACCOUNT',
+      message: '계정 보안 기준 미달로 인해 비밀번호 재설정 페이지로 이동합니다.'
+    });
   }
 
-  const storedHash = userRow.password;
-  const salt = userRow.salt;
+  if (!verifyPasswordHash(password, userRow.salt, userRow.password)) return fail();
 
-  // 레거시 계정 체크 (Salt가 없는 경우)
-  if (!salt) {
-    if (storedHash === password) {
-      console.log(`로그인 성공 (레거시): ${id}`);
-      return json(401, { 
-        success: false, 
-        code: 'LEGACY_ACCOUNT', 
-        message: '계정 보안 기준 미달로 인해 비밀번호 재설정 페이지로 이동합니다.' 
-      });
-    } else {
-      console.log(`로그인 실패 (레거시 비밀번호 불일치): ${id}`);
-      return json(401, { success: false, message: '아이디 또는 비밀번호가 올바르지 않습니다.' });
-    }
-  }
-  
-  // 비밀번호 검증 (Salt + Hash 사용)
-  if (verifyPasswordHash(password, salt, storedHash)) {
-    console.log(`로그인 성공 (최신): ${id}`);
-
-    const user = {
-      id: userRow.id,
-      name: userRow.name,
-      email: userRow.email,
-      studentId: userRow.studentID,
-      department: userRow.department, 
-      major: userRow.major, 
-      matrixUrl: userRow.matrixUrl || null 
-    };
-    return json(200, { success: true, message: '로그인 성공', user: user });
-  } else {
-    console.log(`로그인 실패 (비밀번호 불일치): ${id}`);
-    return json(401, { success: false, message: '아이디 또는 비밀번호가 올바르지 않습니다.' });
-  }
+  const user = {
+    id: userRow.id,
+    name: userRow.name,
+    email: userRow.email,
+    studentId: userRow.studentID,
+    department: userRow.department,
+    major: userRow.major,
+    matrixUrl: userRow.url || null,
+    token: createSession(userRow.id)
+  };
+  return json(200, { success: true, message: '로그인 성공', user: user });
 }
 
 // 회원가입 처리
@@ -472,7 +480,6 @@ function extractGidFromUrl(url) {
 // 입력: id, year, semester
 function handleGetMatrix(data) {
   const { id, year, semester } = data;
-  console.log('매트릭스 데이터 로드 요청:', { id, year, semester });
   
   const user = findUserById(id);
   if (!user || !user.url) {
@@ -482,8 +489,6 @@ function handleGetMatrix(data) {
   try {
     // 매트릭스 시트에서 데이터 가져오기
     const matrixData = getMatrixDataFromUrl(user.url, year, semester);
-    console.log('매트릭스 데이터 로드 성공, 데이터 길이:', matrixData.length);
-    console.log('매트릭스 데이터 샘플:', matrixData.slice(0, 3)); // 처음 3개 행만 로그
     
     // 헤더 추출 (첫 번째 행의 키들)
     const headers = matrixData.length > 0 ? Object.keys(matrixData[0]) : [];
@@ -493,14 +498,7 @@ function handleGetMatrix(data) {
       success: true, 
       header: headers, 
       data: dataRows, 
-      sheetName: `${year}-${semester}`,
-      debug: {
-        message: '매트릭스 데이터 로드 성공',
-        timestamp: new Date().toISOString(),
-        action: 'getMatrix',
-        dataCount: matrixData.length,
-        sampleData: matrixData.slice(0, 2) // 처음 2개 행 샘플
-      }
+      sheetName: `${year}-${semester}`
     });
   } catch (error) {
     console.error('매트릭스 데이터 로드 실패:', error);
@@ -604,141 +602,78 @@ function handleSaveMatrix(data) {
 }
 
 // 회원 정보 수정
-// 입력: id, updateData { department?, major?, currentPassword?, newPassword? }
+// 입력: id(세션), updateData { department?, major?, currentPassword?, newPassword? }
 function handleUpdateUser(data) {
-  const { id, updateData } = data;
-  
-  // updateData가 JSON 문자열인 경우 파싱
-  let parsedUpdateData = updateData;
+  let updateData = data.updateData || {};
   if (typeof updateData === 'string') {
     try {
-      parsedUpdateData = JSON.parse(updateData);
+      updateData = JSON.parse(updateData);
     } catch (e) {
-      console.error('updateData 파싱 오류:', e);
-      return json(200, { success: false, message: '데이터 파싱 오류가 발생했습니다.' });
+      return json(400, { success: false, message: '데이터 파싱 오류가 발생했습니다.' });
     }
   }
-  
-  console.log('파싱된 updateData:', parsedUpdateData);
-  
-  const user = findUserById(id);
+
   const sheet = getSheet(SHEET_NAMES.USERS);
-  const values = sheet.getDataRange().getValues();
-  const idIndex = 0, pwIndex = 1, saltIndex = 8;
-  
-  if (!user) {
-    return json(200, { success: false, message: '사용자를 찾을 수 없습니다.' });
+  const found = findUserRow(sheet, data.id);
+  if (!found) return json(404, { success: false, message: '사용자를 찾을 수 없습니다.' });
+
+  // 비밀번호를 바꿀 때는 현재 비밀번호를 반드시 확인한다.
+  if (updateData.newPassword && !checkPassword(found.row, updateData.currentPassword)) {
+    return json(403, { success: false, message: '현재 비밀번호가 일치하지 않습니다.' });
   }
 
-  for (let i = 1; i < values.length; i++) {
-    const row = values[i];
-    if (row[idIndex] === id) {
-      const storedHash = row[pwIndex];
-      const salt = row[saltIndex];
-  
-  // 현재 비밀번호 확인
-      if (parsedUpdateData.currentPassword) {
-  const currentInputHash = salt ? sha256Hex(salt + parsedUpdateData.currentPassword) : parsedUpdateData.currentPassword;
-  if (storedHash !== currentInputHash) {
-    return json(200, { success: false, message: '현재 비밀번호가 일치하지 않습니다.' });
-  }
-}
-  
-  // 정보 수정
-  const sheetData = sheet.getDataRange().getValues();
-  
-  if (parsedUpdateData.department) {
-      sheet.getRange(i + 1, 6).setValue(parsedUpdateData.department);
-      console.log('학부 업데이트:', parsedUpdateData.department);
-    }
-    if (parsedUpdateData.major) {
-      sheet.getRange(i + 1, 7).setValue(parsedUpdateData.major);
-      console.log('전공 업데이트:', parsedUpdateData.major);
-    }
-    if (parsedUpdateData.newPassword) {
-      const newSalt = generateSalt();
-      const newHash = sha256Hex(newSalt + parsedUpdateData.newPassword);
-      sheet.getRange(i + 1, 2).setValue(newHash);
-      sheet.getRange(i + 1, 9).setValue(newSalt);
-      console.log('비밀번호 업데이트');
-    }
+  const r = found.rowNumber;
+  if (updateData.department) sheet.getRange(r, USER_COLUMNS.DEPT + 1).setValue(updateData.department);
+  if (updateData.major) sheet.getRange(r, USER_COLUMNS.MAJOR + 1).setValue(updateData.major);
+  if (updateData.newPassword) setPassword(sheet, r, updateData.newPassword);
 
-    return json(200, { success: true, message: '정보가 수정되었습니다.' });
-  }
-}
-  
   return json(200, { success: true, message: '정보가 수정되었습니다.' });
+}
+
+function setPassword(sheet, rowNumber, newPassword) {
+  const salt = generateSalt();
+  sheet.getRange(rowNumber, USER_COLUMNS.PASSWORD + 1).setValue(sha256Hex(salt + newPassword));
+  sheet.getRange(rowNumber, USER_COLUMNS.SALT + 1).setValue(salt);
 }
 
 // 비밀번호 확인
 function handleVerifyPassword(data) {
-  const { id, password } = data;
-  const user = findUserById(id);
-  const sheet = getSheet(SHEET_NAMES.USERS);
-  const values = sheet.getDataRange().getValues();
-  const idIndex = 0, pwIndex = 1, saltIndex = 8;
-
-  for (let i = 1; i < values.length; i++) {
-    const row = values[i];
-    if (row[idIndex] === id) {
-      const storedHash = row[pwIndex];
-      const salt = row[saltIndex];
-  
-  const inputHash = salt ? sha256Hex(salt + password) : password;
-      if (storedHash === inputHash) {
-        return json(200, { success: true, message: '비밀번호가 확인되었습니다.' });
-      } else {
-        return json(200, { success: false, message: '비밀번호가 일치하지 않습니다.' });
-      }
-    }
+  const found = findUserRow(getSheet(SHEET_NAMES.USERS), data.id);
+  if (!found) return json(404, { success: false, message: '사용자를 찾을 수 없습니다.' });
+  if (!checkPassword(found.row, data.password)) {
+    return json(403, { success: false, message: '비밀번호가 일치하지 않습니다.' });
   }
-
-  return json(200, { success: false, message: '사용자를 찾을 수 없습니다.' });
+  return json(200, { success: true, message: '비밀번호가 확인되었습니다.' });
 }
 
-// 회원 탈퇴
+// 회원 탈퇴: users, tier 행을 지우고 세션도 끊는다.
 function handleDeleteAccount(data) {
   const { id, password } = data;
-  const user = findUserById(id);
   const sheet = getSheet(SHEET_NAMES.USERS);
+  const found = findUserRow(sheet, id);
+  if (!found) return json(404, { success: false, message: '사용자를 찾을 수 없습니다.' });
+  if (!checkPassword(found.row, password)) {
+    return json(403, { success: false, message: '비밀번호가 일치하지 않습니다.' });
+  }
+
+  sheet.deleteRow(found.rowNumber);
+
   const sheetT = getSheet(SHEET_NAMES.TIER);
-  const values = sheet.getDataRange().getValues();
-  const idIndex = 0, pwIndex = 1, saltIndex = 8;
-
-  for (let i = 1; i < values.length; i++) {
-    const row = values[i];
-    if (row[idIndex] === id) {
-      const storedHash = row[pwIndex];
-      const salt = row[saltIndex];
-      const inputHash = salt ? sha256Hex(salt + password) : password;
-
-      if (storedHash !== inputHash) {
-        return json(200, { success: false, message: '비밀번호가 일치하지 않습니다.' });
-      }
-
-      // User 시트 삭제
-      sheet.deleteRow(i + 1);
-
-      const tierValues = sheetT.getDataRange().getValues();
-      for (let j = 1; j < tierValues.length; j++) {
-        if (tierValues[j][0] === id) {
-          // Tier 시트 삭제
-          sheetT.deleteRow(j + 1);
-          break;
-        }
-      }
-
-      return json(200, { success: true, message: '회원 탈퇴가 성공적으로 처리되었습니다.' });
+  const tierValues = sheetT.getDataRange().getValues();
+  for (let j = 1; j < tierValues.length; j++) {
+    if (tierValues[j][0] === id) {
+      sheetT.deleteRow(j + 1);
+      break;
     }
   }
 
-  return json(200, { success: false, message: '사용자를 찾을 수 없습니다.' });
+  CacheService.getScriptCache().remove('session:' + data.token);
+  return json(200, { success: true, message: '회원 탈퇴가 성공적으로 처리되었습니다.' });
 }
 
 // 사용자의 매트릭스 URL 조회
 function handleGetUserMatrixUrl(data) {
   const { id } = data;
-  console.log('사용자 매트릭스 URL 조회 요청:', { id });
   
   const user = findUserById(id);
   if (!user) {
@@ -746,7 +681,6 @@ function handleGetUserMatrixUrl(data) {
   }
   
   const matrixUrl = user.url || '';
-  console.log('사용자 매트릭스 URL:', matrixUrl);
   
   return json(200, { 
     success: true, 
@@ -781,36 +715,26 @@ function handleGetRecommendedPrograms(data) {
   const { year, semester } = getCurrentYearSemester();
 
   // 현재 학기 정보 콘솔 출력
-  console.log('📅 현재 자동 계산된 학기 정보:');
-  console.log(`👉 연도: ${year}, 학기: ${semester} (${semester === 1 ? '1학기 (3~8월)' : '2학기 (9~2월)'})`);
 
-  console.log('=== 추천 프로그램 조회 시작 ===');
-  console.log('요청 정보:', { 사용자ID: id, 연도: year, 학기: semester });
   
   // 1. 사용자 정보 확인
   const user = findUserById(id);
   if (!user) {
-    console.log('❌ 사용자를 찾을 수 없습니다:', id);
     return json(200, { success: false, message: '사용자를 찾을 수 없습니다.' });
   }
   
   // 2. 매트릭스 URL 확인
   const matrixUrl = user.url;
   if (!matrixUrl) {
-    console.log('⚠️ 사용자 매트릭스 URL이 없습니다:', id);
     return json(200, { success: true, data: [], message: '매트릭스 URL이 등록되지 않았습니다.' });
   }
   
   try {
     // 3. 매트릭스 시트에서 데이터 가져오기
-    console.log('📊 매트릭스 데이터 조회 중...');
     const matrixData = getMatrixDataFromUrl(matrixUrl, year, semester);
-    console.log('✅ 매트릭스 데이터 조회 성공, 총 데이터 수:', matrixData.length);
     
     // 4. 추천 프로그램 로직 적용
-    console.log('🎯 추천 프로그램 계산 중...');
     const recommendations = getRecommendedPrograms(matrixData, year, semester, id);
-    console.log('✅ 추천 프로그램 계산 완료, 추천 수:', recommendations.length);
     
     // 5. 결과 반환
     return json(200, { 
@@ -860,27 +784,21 @@ function isProgramCompleted(matrixData, programName) {
  */
 function getRecommendedPrograms(matrixData, year, semester, id) {
   try {
-    console.log('🎯 추천 프로그램 로직 시작');
-    console.log('요청자 ID:', id);
     
     // 1. 핵심역량별 총합 계산 (전체 학기 기준)
     const trustScores = getTrustCategoryTotals(id);
-    console.log('📊 [TIER 시트] 사용자 역량 점수:', trustScores);
 
     const categoryTotals = {};
     for (const [key, value] of Object.entries(trustScores)) {
     categoryTotals[key] = { total: value, count: 1, average: value };
   }
-  console.log('📈 핵심역량별 총합(TIER 기반):', categoryTotals);
     
     // 2. 핵심역량을 총합 점수 오름차순으로 정렬 (낮은 점수 우선)
     const sortedCategories = Object.entries(categoryTotals)
       .sort(([,a], [,b]) => a.total - b.total);
-    console.log('📋 정렬된 핵심역량 (낮은 순):', sortedCategories.map(([name, info]) => `${name}: ${info.total}점`));
     
     // 3. 핵심역량이 없는 경우 처리
     if (sortedCategories.length === 0) {
-      console.log('⚠️ 핵심역량 없음 - 모든 프로그램을 1회 점수 순으로 정렬');
       const allPrograms = matrixData
         .filter(row => !row['내 점수'] || row['내 점수'] === '' || row['내 점수'] === '0')
         .map(row => ({
@@ -937,8 +855,6 @@ function getRecommendedPrograms(matrixData, year, semester, id) {
 function calculateCategoryTotals(matrixData) {
   const categoryTotals = {};
   
-  console.log('📊 핵심역량별 총합 계산 시작');
-  console.log('📋 처리할 데이터 행 수:', matrixData.length);
   
   // 각 행을 순회하며 핵심역량별 점수 집계
   for (const row of matrixData) {
@@ -965,9 +881,7 @@ function calculateCategoryTotals(matrixData) {
           name: programName,
           score: myScore
         });
-        console.log(`✅ 점수 포함: ${category} - ${programName} (${myScore}점)`);
       } else {
-        console.log(`⏭️ 점수 없음: ${category} - ${programName} (내 점수: "${row['내 점수']}")`);
       }
     }
   }
@@ -976,10 +890,8 @@ function calculateCategoryTotals(matrixData) {
   for (const category in categoryTotals) {
     const data = categoryTotals[category];
     data.average = data.count > 0 ? data.total / data.count : 0;
-    console.log(`📈 ${category}: 총합=${data.total}점, 개수=${data.count}개, 평균=${data.average.toFixed(1)}점`);
   }
   
-  console.log('🎯 최종 핵심역량별 총합:', categoryTotals);
   return categoryTotals;
 }
 
@@ -1009,37 +921,27 @@ function getTrustCategoryTotals(id) {
 // 매트릭스 시트에서 데이터 가져오기
 function getMatrixDataFromUrl(matrixUrl, year, semester) {
   try {
-    console.log('매트릭스 URL에서 데이터 가져오기:', matrixUrl);
     
     // URL에서 스프레드시트 ID 추출
-    console.log('🔍 추출할 URL:', matrixUrl);
     const spreadsheetId = extractSpreadsheetId(matrixUrl);
-    console.log('🔍 추출된 스프레드시트 ID:', spreadsheetId);
     if (!spreadsheetId) {
       throw new Error('유효하지 않은 매트릭스 URL입니다.');
     }
     
     // 스프레드시트 열기
     const ss = SpreadsheetApp.openById(spreadsheetId);
-    console.log(`✅ 스프레드시트 열기 성공: ${ss.getName()}`);
     
     // 시트 이름 생성 (예: "2025-2")
     const sheetName = `${year}-${semester}`;
     let sheet = ss.getSheetByName(sheetName);
-    console.log(`초기 sheet 객체 (ss.getSheetByName 결과):`, sheet ? sheet.getName() : 'null/undefined');
     
-    console.log(`=== 시트 선택 디버깅 ===`);
-    console.log(`찾고 있는 시트 이름: ${sheetName}`);
     
     // 사용 가능한 시트 목록 확인
     const allSheets = ss.getSheets();
-    console.log('사용 가능한 시트들:');
     allSheets.forEach(s => {
-      console.log(`- ${s.getName()}`);
     });
     
     if (!sheet) {
-      console.log(`시트 ${sheetName}을 찾을 수 없습니다.`);
       
       // 최신 시트 찾기 (2025-2, 2025-1, 2024-2, 2024-1 순서)
       const yearSemesterPattern = /^(\d{4})-(\d{1,2})$/;
@@ -1054,27 +956,20 @@ function getMatrixDataFromUrl(matrixUrl, year, semester) {
         });
       
       if (availableSheets.length > 0) {
-        console.log(`최신 시트 "${availableSheets[0].name}" 사용`);
         sheet = availableSheets[0].sheet;
       } else if (allSheets.length > 0) {
-        console.log(`첫 번째 시트 "${allSheets[0].getName()}" 사용`);
         sheet = allSheets[0];
       } else {
-        console.log('사용 가능한 시트가 없습니다.');
         throw new Error('사용 가능한 시트가 없습니다.');
       }
     } else {
-      console.log(`시트 ${sheetName}을 찾았습니다.`);
     }
     
     // sheet가 여전히 undefined인지 확인
     if (!sheet) {
-      console.log('❌ 시트를 찾을 수 없습니다.');
       throw new Error('시트를 찾을 수 없습니다.');
     }
     
-    console.log(`최종 선택된 시트: ${sheet.getName()}`);
-    console.log(`최종 선택된 시트 (데이터 로드 직전):`, sheet ? sheet.getName() : 'null/undefined');
     
     if (!sheet) {
       console.error('❌ 최종적으로 유효한 시트를 찾지 못했습니다. 데이터 로드를 진행할 수 없습니다.');
@@ -1088,14 +983,11 @@ function getMatrixDataFromUrl(matrixUrl, year, semester) {
     
     if (testCompletionColumnIndex !== -1) {
       const completionValues = testValues.slice(1).map(row => row[testCompletionColumnIndex]).filter(val => val && val.toString().trim() !== '');
-      console.log(`선택된 시트의 이수/미이수 값들 (처음 10개):`, completionValues);
       
       if (completionValues.length === 0) {
-        console.log('⚠️ 선택된 시트에 이수/미이수 데이터가 없습니다. 다른 시트를 찾아보겠습니다.');
         
         // 다른 시트에서 이수/미이수 데이터가 있는 시트 찾기
         for (const testSheet of allSheets) {
-          console.log(`루프 내 시트 확인: ${testSheet.name}, 유효성:`, testSheet.sheet ? '유효함' : '유효하지 않음');
           if (!testSheet.sheet) {
             console.error(`❌ 루프 내에서 시트 객체가 유효하지 않습니다: ${testSheet.name}`);
             continue; // 유효하지 않은 시트는 건너뛰기
@@ -1108,7 +1000,6 @@ function getMatrixDataFromUrl(matrixUrl, year, semester) {
           if (testCompletionColumnIndex2 !== -1) {
             const completionValues2 = testValues2.slice(1).map(row => row[testCompletionColumnIndex2]).filter(val => val && val.toString().trim() !== '');
             if (completionValues2.length > 0) {
-              console.log(`✅ 시트 "${testSheet.name}"에서 이수/미이수 데이터를 찾았습니다!`);
               sheet = testSheet.sheet;
               break;
             }
@@ -1120,32 +1011,24 @@ function getMatrixDataFromUrl(matrixUrl, year, semester) {
     // 데이터 범위 가져오기 (헤더 포함) - 더 넓은 범위로 읽기
     const lastRow = sheet.getLastRow();
     const lastCol = sheet.getLastColumn();
-    console.log(`시트의 마지막 행: ${lastRow}, 마지막 열: ${lastCol}`);
     
     // A1부터 마지막 셀까지 모든 데이터 읽기
     const range = sheet.getRange(1, 1, lastRow, lastCol);
     const values = range.getValues();
     
-    console.log(`데이터 범위: ${range.getA1Notation()}`);
-    console.log(`읽어온 데이터 행 수: ${values.length}`);
-    console.log(`읽어온 데이터 열 수: ${values[0] ? values[0].length : 0}`);
     
     if (values.length <= 1) {
-      console.log('데이터가 없습니다.');
       return [];
     }
     
     // 첫 번째 행(헤더) 확인
-    console.log('첫 번째 행 (헤더):', values[0]);
     
     // 이수/미이수 컬럼이 있는지 확인
     const completionColumnIndex = values[0].findIndex(header => header === '이수/미이수');
-    console.log('이수/미이수 컬럼 인덱스:', completionColumnIndex);
     
     if (completionColumnIndex !== -1) {
       // 이수/미이수 컬럼의 실제 값들 확인 (처음 10개 행)
       const completionValues = values.slice(1, 11).map(row => row[completionColumnIndex]);
-      console.log('이수/미이수 컬럼의 실제 값들 (처음 10개):', completionValues);
     }
     
     // 헤더와 데이터 분리
@@ -1208,29 +1091,19 @@ function getMatrixDataFromUrl(matrixUrl, year, semester) {
       return obj;
     });
     
-    console.log(`매트릭스 데이터 변환 완료: ${matrixData.length}개 행`);
     
     // 이수/미이수 컬럼 데이터 확인을 위한 디버깅
-    console.log('=== 이수/미이수 컬럼 디버깅 ===');
-    console.log('헤더 목록:', headers);
     
     // 이수/미이수 컬럼 인덱스 찾기 (이미 위에서 선언됨)
-    console.log('이수/미이수 컬럼 인덱스:', completionColumnIndex);
     
     if (completionColumnIndex !== -1) {
       // 이수/미이수 컬럼의 모든 값들 확인
       const completionValues = matrixData.map(row => row['이수/미이수']).filter(val => val && val.trim() !== '');
-      console.log('이수/미이수 컬럼의 고유 값들:', [...new Set(completionValues)]);
-      console.log('빈 값이 아닌 이수/미이수 값 개수:', completionValues.length);
       
       const completedItems = matrixData.filter(row => row['이수/미이수'] === '이수');
-      console.log(`이수 완료된 항목 수: ${completedItems.length}개`);
       if (completedItems.length > 0) {
-        console.log('이수 완료된 항목 샘플:', completedItems.slice(0, 3));
       }
     } else {
-      console.log('❌ 이수/미이수 컬럼을 찾을 수 없습니다!');
-      console.log('사용 가능한 컬럼들:', headers);
     }
     
     return matrixData;
@@ -1245,33 +1118,6 @@ function getMatrixDataFromUrl(matrixUrl, year, semester) {
 function extractSpreadsheetId(url) {
   const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
   return match ? match[1] : null;
-}
-
-// 테스트용 함수 - 추천 프로그램 로직 테스트
-function testRecommendationLogic() {
-  console.log('=== 추천 프로그램 로직 테스트 시작 ===');
-
-  const id = 'test123'; // 테스트용 사용자 ID
-  const { year, semester } = getCurrentYearSemester();
-
-  console.log(`📅 현재 학기 기준: ${year}년 ${semester}학기`);
-
-  const testMatrixData = [
-    { '핵심역량': '유한인성역량', '프로그램명': '사회봉사', '1회 점수': 5, '최대 점수': 10, '내 점수': '', '상세항목': '' },
-    { '핵심역량': '유한인성역량', '프로그램명': '교양 교과', '1회 점수': 5, '최대 점수': 20, '내 점수': 10, '상세항목': '직장예절' },
-    { '핵심역량': '직무수행역량', '프로그램명': '학습성과 경진대회', '1회 점수': 10, '최대 점수': 15, '내 점수': '', '상세항목': '' },
-    { '핵심역량': '직무수행역량', '프로그램명': '전공 경진대회', '1회 점수': 8, '최대 점수': 12, '내 점수': '', '상세항목': '교외 참가' },
-  ];
-
-  const trustScores = getTrustCategoryTotals(id);
-  console.log('📊 [TIER 시트] 사용자 역량 점수:', trustScores);
-
-  const recommendations = getRecommendedPrograms(testMatrixData, year, semester, id);
-  console.log('추천 프로그램 결과:', recommendations);
-  console.log('추천 프로그램 개수:', recommendations.length);
-
-  console.log('=== 테스트 완료 ===');
-  return { recommendations, count: recommendations.length };
 }
 
 // 헬퍼 함수들
@@ -1344,7 +1190,6 @@ function findTierUserById(id) {
  * 모든 학생의 티어를 새로운 규칙에 따라 재계산하고 시트에 한 번에 업데이트합니다.
  */
 function recalculateAllTiers() {
-  console.log('🔄 [recalculateAllTiers] 전체 티어 재계산 시작');
   try {
     const sheet = getSheet(SHEET_NAMES.TIER);
     const sheetData = sheet.getDataRange().getValues();
@@ -1451,160 +1296,89 @@ function recalculateAllTiers() {
 }
 
 /**
- * 아이디 찾기용 인증번호 발송 처리 핸들러
- * @param {Object} data - { name, studentID, email }
- * @returns {ContentService.TextOutput} JSON 응답
+ * 아이디 찾기: 이름·학번·이메일이 일치하면 인증번호를 메일로 보낸다.
  */
 function handleSendVerificationCode(data) {
   const { name, studentID, email } = data;
-
   try {
-    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAMES.USERS);
-    const allData = sheet.getDataRange().getValues();
-    let userExists = false;
+    const allData = getSheet(SHEET_NAMES.USERS).getDataRange().getValues();
+    const row = allData.slice(1).find(r =>
+      r[USER_COLUMNS.NAME] == name && String(r[USER_COLUMNS.STUDENT_ID]) == String(studentID) && r[USER_COLUMNS.EMAIL] == email);
+    if (!row) return json(404, { success: false, message: '입력하신 정보와 일치하는 사용자가 없습니다.' });
 
-    // 사용자 존재 여부 확인
-    for (let i = 1; i < allData.length; i++) {
-      const row = allData[i];
-      // C열=이름(2), E열=학번(4), D열=이메일(3)
-      if (row[2] == name && String(row[4]) == String(studentID) && row[3] == email) {
-        userExists = true;
-        break;
-      }
-    }
-
-    if (!userExists) {
-      return json(404, { success: false, message: '입력하신 정보와 일치하는 사용자가 없습니다.' });
-    }
-    
-    // 6자리 랜덤 인증번호 생성
-    const verificationCode = String(Math.floor(100000 + Math.random() * 900000));
-    
-    // CacheService를 이용해 3분(180초) 동안만 인증번호 임시 저장
-    const cache = CacheService.getScriptCache();
-    cache.put(email, verificationCode, 180); // 키: 이메일, 값: 인증번호, 유효시간: 180초
-    
-    // MailApp을 이용해 사용자에게 이메일 발송
-    const subject = "[YUTIER] 아이디 찾기 인증번호 안내";
-    const body = `인증번호는 [ ${verificationCode} ] 입니다.`;
-    MailApp.sendEmail(email, subject, body);
-    
+    const code = generateVerificationCode();
+    MailApp.sendEmail(email, '[YUTIER] 아이디 찾기 인증번호 안내', `인증번호는 [ ${code} ] 입니다.`);
+    putVerificationCode('idcode:' + email, code, row[USER_COLUMNS.ID]);
     return json(200, { success: true, message: '인증번호가 발송되었습니다.' });
-
   } catch (error) {
-    console.error("handleSendVerificationCode 오류:", error);
+    console.error('handleSendVerificationCode 오류:', error);
     return json(500, { success: false, message: '인증번호 발송 중 오류가 발생했습니다.' });
   }
 }
 
 /**
- * 인증번호 확인 후 아이디를 반환하는 핸들러
- * @param {Object} data - { email, code }
- * @returns {ContentService.TextOutput} JSON 응답
+ * 아이디 찾기: 인증번호가 맞으면 발송 때 확인한 사용자의 아이디를 돌려준다.
  */
 function handleFindIdWithVerification(data) {
-  const { email, code } = data;
-  try {
-    const cache = CacheService.getScriptCache();
-    const storedCode = cache.get(email);
-    
-    // 캐시에 저장된 코드가 있는지, 만료되지는 않았는지 확인
-    if (storedCode == null) {
-      return json(400, { success: false, message: '인증번호 유효 시간이 만료되었습니다. 다시 시도해주세요.' });
-    }
-    
-    // 사용자가 입력한 코드와 저장된 코드가 일치하는지 확인
-    if (storedCode != code) {
-      return json(400, { success: false, message: '인증번호가 일치하지 않습니다.' });
-    }
-    
-    // 인증 성공! 시트에서 아이디를 찾아서 반환
-    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAMES.USERS);
-    const allData = sheet.getDataRange().getValues();
-    
-    for (let i = 1; i < allData.length; i++) {
-      const row = allData[i];
-      // A열=아이디(0), D열=이메일(3)
-      if (row[3] == email) {
-        cache.remove(email); // 인증에 사용된 코드는 즉시 삭제하여 재사용 방지
-        return json(200, { success: true, id: row[0] });
-      }
-    }
-    
-    // 혹시 모를 예외 상황 (인증은 됐는데 DB에 이메일이 없는 경우)
-    return json(404, { success: false, message: '사용자 정보를 찾는 데 실패했습니다.' });
-    
-  } catch (error) {
-    console.error("handleFindIdWithVerification 오류:", error);
-    return json(500, { success: false, message: '인증 확인 중 오류가 발생했습니다.' });
-  }
+  const result = consumeVerificationCode('idcode:' + data.email, data.code);
+  if (!result.ok) return json(400, { success: false, message: result.message });
+  return json(200, { success: true, id: result.id });
 }
 
 /**
- * 비밀번호 찾기용 인증번호 발송 처리
+ * 비밀번호 찾기: 이름·아이디·이메일이 일치하면 인증번호를 메일로 보낸다.
  */
 function handleSendVerificationCodeForPassword(data) {
   const { name, id, email } = data;
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAMES.USERS);
-  const allData = sheet.getDataRange().getValues();
-  const userExists = allData.slice(1).some(row => row[2] == name && row[0] == id && row[3] == email);
-  
-  if (!userExists) {
-    return json(404, { success: false, message: '입력하신 정보와 일치하는 사용자가 없습니다.' });
-  }
-  
-  const verificationCode = String(Math.floor(100000 + Math.random() * 900000));
   try {
-    MailApp.sendEmail(email, '[YUTIER] 비밀번호 찾기 인증번호 안내', `인증번호는 [ ${verificationCode} ] 입니다.`);
-    CacheService.getScriptCache().put(email, verificationCode, 180);
+    const allData = getSheet(SHEET_NAMES.USERS).getDataRange().getValues();
+    const exists = allData.slice(1).some(r =>
+      r[USER_COLUMNS.NAME] == name && r[USER_COLUMNS.ID] == id && r[USER_COLUMNS.EMAIL] == email);
+    if (!exists) return json(404, { success: false, message: '입력하신 정보와 일치하는 사용자가 없습니다.' });
+
+    const code = generateVerificationCode();
+    MailApp.sendEmail(email, '[YUTIER] 비밀번호 찾기 인증번호 안내', `인증번호는 [ ${code} ] 입니다.`);
+    putVerificationCode('pwcode:' + email, code, id);
     return json(200, { success: true, message: '인증번호가 발송되었습니다.' });
   } catch (err) {
+    console.error('handleSendVerificationCodeForPassword 오류:', err);
     return json(500, { success: false, message: '이메일 발송 중 오류가 발생했습니다.' });
   }
 }
 
 /**
- * 비밀번호 찾기용 인증번호 확인 처리
+ * 비밀번호 찾기: 인증번호가 맞으면 일회용 재설정 토큰을 발급한다.
  */
 function handleFindPasswordWithVerification(data) {
-  const { email, code } = data;
-  const cache = CacheService.getScriptCache();
-  const storedCode = cache.get(email);
-  
-  if (storedCode == null) return json(400, { success: false, message: '인증 시간이 만료되었습니다.' });
-  if (storedCode != code) return json(400, { success: false, message: '인증번호가 일치하지 않습니다.' });
-  
-  // 인증 성공 시 프론트엔드에서 UI를 변경할 수 있도록 성공 응답만 보냄
-  return json(200, { success: true });
+  const result = consumeVerificationCode('pwcode:' + data.email, data.code);
+  if (!result.ok) return json(400, { success: false, message: result.message });
+
+  const resetToken = Utilities.getUuid();
+  CacheService.getScriptCache().put('reset:' + resetToken, result.id, RESET_TOKEN_TTL);
+  return json(200, { success: true, resetToken });
 }
 
 /**
- * 새 비밀번호 업데이트 처리 
+ * 새 비밀번호 저장. 재설정 토큰이 있어야 하고, 토큰은 한 번 쓰면 사라진다.
  */
 function handleUpdatePassword(data) {
-  const { id, newPassword } = data;
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAMES.USERS);
-  const allData = sheet.getDataRange().getValues();
-  
-  for (let i = 1; i < allData.length; i++) {
-    if (allData[i][0] == id) { // A열(아이디)
-      const newSalt = generateSalt();
-      const newHash = sha256Hex(newSalt + newPassword);
+  const { resetToken, newPassword } = data;
+  if (!resetToken || !newPassword) return json(400, { success: false, message: '잘못된 요청입니다.' });
 
-      sheet.getRange(i + 1, 2).setValue(newHash); // B열(비밀번호)
-      sheet.getRange(i + 1, 9).setValue(newSalt);  // I열(salt)
+  const cache = CacheService.getScriptCache();
+  const id = cache.get('reset:' + resetToken);
+  if (!id) return json(401, { success: false, message: '인증이 만료되었습니다. 다시 인증해주세요.' });
 
-      const userEmail = allData[i][3]; // D열(이메일)
-      CacheService.getScriptCache().remove(userEmail);
-      
-      return json(200, { success: true, message: '비밀번호가 성공적으로 변경되었습니다.' });
-    }
-  }
-  
-  return json(404, { success: false, message: '사용자 정보를 찾을 수 없어 비밀번호를 변경할 수 없습니다.' });
+  const sheet = getSheet(SHEET_NAMES.USERS);
+  const found = findUserRow(sheet, id);
+  if (!found) return json(404, { success: false, message: '사용자 정보를 찾을 수 없어 비밀번호를 변경할 수 없습니다.' });
+
+  setPassword(sheet, found.rowNumber, newPassword);
+  cache.remove('reset:' + resetToken);
+  return json(200, { success: true, message: '비밀번호가 성공적으로 변경되었습니다.' });
 }
 
-// JSON 응답 헬퍼: 항상 JSON 텍스트로 반환합니다.
+// JSON 응답 헬퍼. Apps Script 웹 앱은 HTTP 상태 코드를 바꿀 수 없어서 status는 읽기용 표시일 뿐이다.
 function json(status, obj) {
   return ContentService.createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
