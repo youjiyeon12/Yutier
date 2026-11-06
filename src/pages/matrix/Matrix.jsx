@@ -107,8 +107,6 @@ function processDataForRender(data, openStates) {
 }
 
 function Matrix({ user, onLogout }) {
-  console.log("🔍 [Matrix] user.id:", user?.id);
-  console.log("🔍 [Matrix] user.matrixUrl:", user?.matrixUrl);
   
   // 상태 저장
   const [year, setYear] = useState('2025');
@@ -128,7 +126,7 @@ function Matrix({ user, onLogout }) {
   });
   const [totalTierScore, setTotalTierScore] = useState(0);
   const [filteredCompetency, setFilteredCompetency] = useState(null); // 필터링된 핵심역량
-  const department = `${user.department} ${user.major}`  || "학과명";
+  const department = user?.department || user?.major ? `${user.department ?? ''} ${user.major ?? ''}`.trim() : "학과명";
   const name = user?.name || "이름";
   const userId = user?.id;
   // 도움말 버튼 상태 추가
@@ -137,12 +135,12 @@ function Matrix({ user, onLogout }) {
   const [isMounted, setIsMounted] = useState(false); // Portal용 상태
 
 
-  console.log("🔍 [Matrix] year:", year, "semester:", semester);
 
   useEffect(() => {
     if (userId) {
       handleSearch();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 사용자가 바뀔 때만 조회한다
   }, [userId]); 
   
   // Portal용 useEffect
@@ -196,7 +194,6 @@ function Matrix({ user, onLogout }) {
 
   // 조회
   const handleSearch = async () => {
-    console.log("🔍 [Matrix] 조회 파라미터 - userId:", userId, "year:", year, "semester:", semester);
     
     if (!userId) {
       alert("사용자 정보가 없습니다.");
@@ -209,8 +206,7 @@ function Matrix({ user, onLogout }) {
       // Trust 인증 총점 로드
       const tierResult = await googleSheetsService.getTierScores(userId);
       if (tierResult.success) {
-        console.log("✅ [Matrix] TRUST 점수 조회 성공:", tierResult.scores);
-        setTierScores(tierResult.scores || {});
+        setTierScores(prev => ({ ...prev, ...(tierResult.scores || {}) }));
         setTotalTierScore(tierResult.totalScore || 0);
       } else {
         console.warn("⚠️ [Matrix] TRUST 점수 조회 실패");
@@ -220,7 +216,6 @@ function Matrix({ user, onLogout }) {
       googleSheetsService.loadMatrix(userId, year, semester)
         .then(matrixResult => {
           if (matrixResult.success) {
-            console.log("✅ [Matrix] 매트릭스 데이터 로드 성공:", matrixResult.data?.length);
             setMatrixData(matrixResult.data);
             setOriginalMatrixData(JSON.parse(JSON.stringify(matrixResult.data)));
             setOpenAcc({});
@@ -306,7 +301,6 @@ function Matrix({ user, onLogout }) {
     // 변경된 데이터만 수집
     const updates = getChangedData();
     
-    console.log(`💾 [Matrix] 변경된 데이터: ${updates.length}개`);
 
     if (updates.length === 0) {
       alert('변경된 데이터가 없습니다.');
@@ -561,12 +555,6 @@ function Matrix({ user, onLogout }) {
                           checked={detail['이수/미이수'] && detail['이수/미이수'].toString().trim() === '이수'} // 문자열 정리 후 비교
                           onChange={(e) => handleCheckboxChange(data['프로그램명'], detail['상세항목'], e.target.checked)}
                         />
-                        {/* 디버깅용 - 개발 모드에서만 표시 */}
-                        {process.env.NODE_ENV === 'development' && (
-                          <span style={{fontSize: '10px', color: 'gray'}}>
-                            ({detail['이수/미이수']})
-                          </span>
-                        )}
                       </td>
                     </tr>
                   ))}

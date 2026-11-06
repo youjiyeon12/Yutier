@@ -37,7 +37,7 @@ function FindId(){
     }, [timer, isCodeSent, isVerified]);
 
     // '인증번호 받기' 버튼 클릭 핸들러
-    const handleSendCode = async(e) => {
+    const handleSendCode = async () => {
         setMessage('');
         
         if(!name || !studentID || !email){

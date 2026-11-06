@@ -1,7 +1,6 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-//import { useNavigate } from 'react-router-dom';
-// Navigate = redirect 느낌 / Route = 특정 URL 경로에 대해 어떤 컴포넌트 보여줄지
-import { useEffect, useState } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useCallback, useState } from 'react';
+import { googleSheetsService } from './services/googleSheetsService';
 // 파일 import
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
@@ -16,18 +15,27 @@ import MatrixURLSubmit from './pages/matrix/MatrixURLSubmit';
 //** route는 Home.jsx
 
 function App() {
-  // 로그인한 사용자 정보가 있으면 불러옴(세션) - localStorage
-  const [user, setUser] = useState(() => {
-    const stored = localStorage.getItem('user');
-    return stored ? JSON.parse(stored) : null;
+  // 로그인 정보는 localStorage에 둔다. token이 없는 예전 로그인 정보는 버린다.
+  const [user, setUserState] = useState(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('user'));
+      return stored?.token ? stored : null;
+    } catch {
+      return null;
+    }
   });
 
-  // 로그인하면 localStorage에 저장 -> 로그아웃 시 삭제
-  useEffect(() => {
-    if (user) localStorage.setItem('user', JSON.stringify(user));
+  // localStorage를 state보다 먼저 갱신한다. 자식 페이지의 첫 API 호출이 바로 token을 읽기 때문이다.
+  const setUser = useCallback((next) => {
+    if (next) localStorage.setItem('user', JSON.stringify(next));
     else localStorage.removeItem('user');
-  }, [user]);
-  
+    setUserState(next);
+  }, []);
+
+  const handleLogout = () => {
+    googleSheetsService.logout();
+    setUser(null);
+  };
 
   return (
       <Routes>
@@ -35,7 +43,7 @@ function App() {
         <Route
           path="/"
           element={
-            user ? <Home user={user} onLogout={() => setUser(null)} />
+            user ? <Home user={user} onLogout={handleLogout} />
               : <Navigate to="/login" />
           }
         />
@@ -52,7 +60,7 @@ function App() {
         <Route
           path="/signup"
           element={
-            user ? <Navigate to="/" /> : <Signup onRegister={setUser} />
+            user ? <Navigate to="/" /> : <Signup />
           }
         />
 
@@ -75,21 +83,21 @@ function App() {
         {/* trust 설명 페이지 */}
         <Route path="/detail" 
           element={
-            <Detail user={user} onLogout={() => setUser(null)} />
+            <Detail user={user} onLogout={handleLogout} />
           } 
         />
         
         {/* 이용가이드 페이지 */}
         <Route
           path="/guide"
-          element={<Guide user={user} onLogout={() => setUser(null)} />}
+          element={<Guide user={user} onLogout={handleLogout} />}
         />
 
         {/* 마이 페이지 */}
         <Route
           path="/mypage"
           element={
-            user ? <Mypage user={user} setUser={setUser} onLogout={() => setUser(null)} />
+            user ? <Mypage user={user} setUser={setUser} onLogout={handleLogout} />
               : <Navigate to="/login" />
           }
         />
@@ -98,7 +106,7 @@ function App() {
         <Route
         path="/matrix"
         element={
-          user ? <Matrix user={user} onLogout={() => setUser(null)} />
+          user ? <Matrix user={user} onLogout={handleLogout} />
               : <Navigate to="/login" />
           }
         />
@@ -106,10 +114,12 @@ function App() {
         <Route
         path="/matrix-url"
         element={
-        user ? <MatrixURLSubmit user={user} onLogout={() => setUser(null)} />
+        user ? <MatrixURLSubmit user={user} onLogout={handleLogout} />
             : <Navigate to="/login" />
         }
         />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
   );
 }

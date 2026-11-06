@@ -25,12 +25,6 @@ import { googleSheetsService } from '../../services/googleSheetsService';
 
 function Mypage({ user, setUser, onLogout }) {
   // 개발 모드에서만 로깅
-  if (import.meta.env.DEV) {
-    console.log("🏠 [Mypage] 컴포넌트 렌더링 시작");
-    console.log("👤 [Mypage] 사용자 정보:", user);
-    console.log("🆔 [Mypage] 사용자 ID:", user?.id);
-    console.log("🔗 [Mypage] 매트릭스 URL:", user?.matrixUrl);
-  }
 
   const navigate = useNavigate();
 
@@ -48,12 +42,8 @@ function Mypage({ user, setUser, onLogout }) {
   // 매트릭드 이동 로딩 바
   const [loading2, setLoading2] = useState(false);
 
-  // 메뉴 클릭 시 localStorage에 저장
   const handleMenuClick = async (menuKey) => {
     setSelectedMenuKey(menuKey)
-
-    // 쿼리 파라미터 제거
-    window.history.replaceState({}, "", "/mypage")
 
     // 매트릭스 페이지로 이동
     if (menuKey === "매트릭스 관리") {
@@ -79,25 +69,17 @@ function Mypage({ user, setUser, onLogout }) {
 
   // URL 정리 useEffect
   useEffect(() => {
-    // 쿼리 파라미터 제거
-    window.history.replaceState({}, "", "/mypage")
   }, [])
 
   // 서버에서 티어 정보를 가져오는 useEffect
   useEffect(() => {
-    console.log("🔍 [Mypage] 티어 정보 useEffect 실행");
-    console.log("🔍 [Mypage] user 존재 여부:", !!user);
-    console.log("🔍 [Mypage] user.id 존재 여부:", !!user?.id);
     
     // 로그인한 사용자 정보(user.id)가 있을 때만 API를 호출
     if (user && user.id) {
-      console.log("🔍 [Mypage] 티어 정보 API 호출 시작");
       const fetchTierInfo = async () => {
         try {
-          console.log("🔍 [Mypage] getTierInfo 호출 중...");
           // 서버에 티어 정보를 요청합
           const data = await googleSheetsService.getTierInfo(user.id);
-          console.log("🔍 [Mypage] getTierInfo 응답:", data);
           setTierInfo(data); // 받아온 데이터를 tierInfo state에 저장
         } catch (err) {
           console.error("❌ [Mypage] 티어 정보 로딩 실패:", err);
@@ -112,8 +94,6 @@ function Mypage({ user, setUser, onLogout }) {
       };
 
       fetchTierInfo();
-    } else {
-      console.log("⚠️ [Mypage] user 또는 user.id가 없어서 티어 정보를 가져오지 않습니다.");
     }
   }, [user]);
 
@@ -125,12 +105,6 @@ function Mypage({ user, setUser, onLogout }) {
    * 회원 정보 메뉴가 선택되었을 때만 추천 프로그램을 조회
    */
   useEffect(() => {
-    if (import.meta.env.DEV) {
-      console.log("🎯 [Mypage] 추천 프로그램 useEffect 실행");
-      console.log("📋 [Mypage] 선택된 메뉴:", selectedMenuKey);
-      console.log("👤 [Mypage] 사용자 ID:", user?.id);
-      console.log("🔗 [Mypage] 매트릭스 URL:", user?.matrixUrl);
-    }
     
     /**
      * 추천 프로그램 조회 함수
@@ -141,9 +115,6 @@ function Mypage({ user, setUser, onLogout }) {
     const fetchRecommendedPrograms = async () => {
       // 1. 사용자 정보 확인
       if (!user?.id) {
-        if (import.meta.env.DEV) {
-          console.log("⚠️ [Mypage] 사용자 ID가 없어서 추천 프로그램을 불러오지 못했습니다.");
-        }
         setRecommended([]);
         return;
       }
@@ -152,25 +123,16 @@ function Mypage({ user, setUser, onLogout }) {
       let currentUser = user;
       
       if (!user.matrixUrl || user.matrixUrl === '') {
-        if (import.meta.env.DEV) {
-          console.log("🔍 [Mypage] 매트릭스 URL이 없어서 서버에서 조회");
-        }
         
         try {
           const userData = await googleSheetsService.getUserMatrixUrl(user.id);
           if (userData.success && userData.matrixUrl) {
             currentUser = { ...user, matrixUrl: userData.matrixUrl };
-            if (import.meta.env.DEV) {
-              console.log("✅ [Mypage] 매트릭스 URL 조회 성공:", currentUser.matrixUrl);
-            }
             // 사용자 정보 업데이트
             if (setUser) {
               setUser(currentUser);
             }
           } else {
-            if (import.meta.env.DEV) {
-              console.log("⚠️ [Mypage] 매트릭스 URL을 찾을 수 없습니다.");
-            }
             setRecommended([]);
             return;
           }
@@ -182,9 +144,6 @@ function Mypage({ user, setUser, onLogout }) {
       }
 
       // 3. 추천 프로그램 API 호출
-      if (import.meta.env.DEV) {
-        console.log("🚀 [Mypage] 추천 프로그램 API 호출 시작");
-      }
       
       setLoading(true);
       const [year, semester] = [2025, 2]; // 현재 연도/학기
@@ -193,15 +152,8 @@ function Mypage({ user, setUser, onLogout }) {
         const data = await googleSheetsService.getRecommendedPrograms(user.id, year, semester);
 
         if (data.success) {
-          if (import.meta.env.DEV) {
-            console.log("✅ [Mypage] 추천 프로그램 조회 성공");
-            console.log("📊 [Mypage] 추천된 프로그램 수:", data.data?.length || 0);
-          }
           setRecommended(data.data || []);
         } else {
-          if (import.meta.env.DEV) {
-            console.log("⚠️ [Mypage] 추천 프로그램 조회 실패:", data.message);
-          }
           setRecommended([]);
         }
       } catch (err) {
@@ -209,25 +161,16 @@ function Mypage({ user, setUser, onLogout }) {
         setRecommended([]);
       } finally {
         setLoading(false);
-        if (import.meta.env.DEV) {
-          console.log("🏁 [Mypage] 추천 프로그램 로딩 완료");
-        }
       }
     };
 
     // 회원 정보 메뉴만 추천 프로그램 조회 (과도한 API 호출 방지)
     if (selectedMenuKey === "회원 정보") {
-      if (import.meta.env.DEV) {
-        console.log("📋 [Mypage] 회원 정보 메뉴 선택됨, 추천 프로그램 호출");
-      }
       fetchRecommendedPrograms();
     } else {
-      if (import.meta.env.DEV) {
-        console.log("📋 [Mypage] 다른 메뉴 선택됨, 추천 프로그램 목록 비움");
-      }
       setRecommended([]); // 다른 메뉴 선택 시 추천 목록을 비움
     }
-  }, [user, selectedMenuKey]);
+  }, [user, selectedMenuKey, setUser]);
 
   // 아이디 마스킹 함수
     const maskId = (id) => {
@@ -252,11 +195,6 @@ function Mypage({ user, setUser, onLogout }) {
     { label: "학번", value: user?.studentId || "123456789" },
   ];
 
-  console.log("🔍 [Mypage] 현재 상태:");
-  console.log("🔍 [Mypage] tierInfo:", tierInfo);
-  console.log("🔍 [Mypage] recommended:", recommended);
-  console.log("🔍 [Mypage] loading:", loading);
-  console.log("🔍 [Mypage] selectedMenuKey:", selectedMenuKey);
 
   const tierImageMap = {
     Bronze: `${import.meta.env.BASE_URL}tier1.png`,

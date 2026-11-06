@@ -13,18 +13,6 @@ import React from "react";
  * @param {Array} props.data - 추천 프로그램 데이터 배열
  */
 function List({ data }) {
-  // 개발 모드에서만 로깅
-  if (import.meta.env.DEV) {
-    console.log("📋 [List] 컴포넌트 렌더링");
-    console.log("📊 [List] 받은 데이터:", data);
-    console.log("🔢 [List] 데이터 길이:", data?.length);
-    
-    if (data && data.length > 0) {
-      console.log("📝 [List] 첫 번째 항목:", data[0]);
-      console.log("🔑 [List] 데이터 키들:", data[0] ? Object.keys(data[0]) : []);
-    }
-  }
-
   // 상세항목이 있는 프로그램이 있는지 확인
   const hasDetails = data && data.some(item => 
     item.hasDetails || 

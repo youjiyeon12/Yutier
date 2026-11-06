@@ -1,6 +1,6 @@
 // 회원 탈퇴 컴포넌트
 import styles from "./styles/mypage.module.css";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { googleSheetsService } from "../../services/googleSheetsService";
 

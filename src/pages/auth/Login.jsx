@@ -7,7 +7,6 @@ function Login({ onLogin }) {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-  const [message, setMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,7 +20,6 @@ function Login({ onLogin }) {
       const result = await googleSheetsService.login(id, password);
 
       if (result.success) {
-        console.log("✅ 로그인 성공:", result.user);
         // 로그인 상태 갱신 (App.jsx의 setUser 호출)
         if (onLogin) onLogin(result.user);
 
@@ -39,7 +37,7 @@ function Login({ onLogin }) {
     }
     } catch (err) {
       console.error(err);
-      setMessage('로그인 중 오류가 발생했습니다.');
+      alert('로그인 중 오류가 발생했습니다.');
     }
   }
 

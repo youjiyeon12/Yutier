@@ -1,5 +1,5 @@
 // URL 제출 화면
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import style from './styles/matrixURLSubmit.module.css';
@@ -9,9 +9,6 @@ import { googleSheetsService } from '../../services/googleSheetsService';
 
 // 조회 버튼 클릭 시 실행
 function MatrixURLSubmit({ user, onLogout }) {
-  console.log("🔍 [MatrixURLSubmit] 컴포넌트 렌더링 시작");
-  console.log("🔍 [MatrixURLSubmit] 받은 user 정보:", user);
-  console.log("🔍 [MatrixURLSubmit] user.id:", user?.id);
   
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
@@ -23,11 +20,8 @@ function MatrixURLSubmit({ user, onLogout }) {
   
 
   const handleSubmit = async () => {
-    console.log("🔍 [MatrixURLSubmit] handleSubmit 시작");
-    console.log("🔍 [MatrixURLSubmit] 입력된 URL:", url);
     
     if (!url.trim()) {
-      console.log("❌ [MatrixURLSubmit] URL이 비어있습니다.");
       setError('URL을 입력하세요.');
       setSuccess(false);
       return;
@@ -42,12 +36,9 @@ function MatrixURLSubmit({ user, onLogout }) {
 
     // Apps Script 경유 서비스 호출
     try {
-      console.log("🔍 [MatrixURLSubmit] verifyMatrixUrl API 호출 시작");
       const result = await googleSheetsService.verifyMatrixUrl(user.id, url);
-      console.log("🔍 [MatrixURLSubmit] verifyMatrixUrl 응답:", result);
 
       if (result.success) {
-        console.log("✅ [MatrixURLSubmit] URL 검증 성공");
         setError('');
         setSuccess(true);
         navigate('/matrix');

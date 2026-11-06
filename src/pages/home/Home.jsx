@@ -27,9 +27,7 @@ function Home({ user, onLogout }) {
     if (user && user.id) {
       const checkUserScoreStatus = async () => {
         try {
-          console.log("홈화면 - 티어 정보 조회 시작");
           const data = await googleSheetsService.getTierInfo(user.id);
-          console.log("홈화면 - 티어 정보 응답:", data);
           setTierInfo(data); // API 응답 전체를 저장
         } catch (err) {
           console.error("점수 정보 확인 실패:", err);
@@ -47,15 +45,12 @@ function Home({ user, onLogout }) {
     const fetchRecommendedPrograms = async () => {
       setLoading(true);
       try {
-        console.log("홈화면 - 추천 프로그램 조회 시작");
         const [year, semester] = [2025, 2];
         const data = await googleSheetsService.getRecommendedPrograms(user.id, year, semester);
-        console.log("홈화면 - 추천 프로그램 응답:", data);
         
         if (data.success) {
           setRecommended(data.data || []);
         } else {
-          console.log("추천 프로그램 조회 실패:", data.message);
           setRecommended([]);
         }
       } catch (err) {
@@ -72,9 +67,7 @@ function Home({ user, onLogout }) {
   // '점수 입력하러 가기' 버튼 클릭 시 실행될 함수
   const handleGoToMatrix = async () => {
     try {
-      console.log("홈화면 - 매트릭스 URL 검증 시작");
       const data = await googleSheetsService.validateMatrixUrl(user.id);
-      console.log("홈화면 - URL 검증 결과:", data);
       
       if (data.valid) {
         navigate('/matrix');
@@ -88,10 +81,6 @@ function Home({ user, onLogout }) {
   };
 
   // 디버깅 정보
-  console.log("홈화면 렌더링 - user:", user);
-  console.log("홈화면 렌더링 - tierInfo:", tierInfo);
-  console.log("홈화면 렌더링 - recommended:", recommended);
-  console.log("홈화면 렌더링 - loading:", loading);
 
   return (
     <div className={styles.container}>

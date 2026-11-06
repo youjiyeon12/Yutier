@@ -17,6 +17,7 @@ function FindPassword(){
     const[isLoading, setIsLoading] = useState(false);
     const[isCodeSent, setIsCodeSent] = useState(false); // 인증번호 발송 여부
     const[isVerified, setIsVerified] = useState(false); // 인증 완료 여부
+    const[resetToken, setResetToken] = useState(''); // 인증 후 서버가 준 일회용 재설정 토큰
     const[timer, setTimer] = useState(0); // 타이머
     const timerRef = useRef(null);
     const navigate = useNavigate();
@@ -47,7 +48,7 @@ function FindPassword(){
     }, [timer, isCodeSent, isVerified]);
 
     // '인증번호 받기' 버튼 클릭 핸들러
-    const handleSendCode = async(e) => {
+    const handleSendCode = async () => {
         setMessage('');
         
         if(!name || !id || !email){
@@ -96,6 +97,7 @@ function FindPassword(){
 
         setIsLoading(false);
         if (result.success) {
+            setResetToken(result.resetToken);
             setIsVerified(true); // 인증 성공 상태로 전환
             setTimer(0);         
             setMessage('');      
@@ -128,7 +130,7 @@ function FindPassword(){
     setIsLoading(true);
     setMessage('');
 
-    const result = await googleSheetsService.updatePassword({id, newPassword});
+    const result = await googleSheetsService.updatePassword({resetToken, newPassword});
 
     setIsLoading(false);
     if (result.success) {

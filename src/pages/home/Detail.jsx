@@ -1,5 +1,5 @@
 // trust 설명 페이지
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 //import { useSearchParams } from 'react-router-dom';
 
 import Header from '../../components/common/Header';
@@ -11,19 +11,8 @@ function Detail({ user, onLogout }) {
   // URL에 파라미터 없이 상태 유지
   const [activeMenuKey, setActiveMenuKey] = useState("info");
 
-  // 메뉴 클릭 시 localStorage에 저장
-  const handleMenuClick = (menuKey) => {
-    setActiveMenuKey(menuKey)
+  const handleMenuClick = (menuKey) => setActiveMenuKey(menuKey);
 
-    // 쿼리 파라미터 제거
-    window.history.replaceState({}, "", "/detail")
-  }
-
-  // URL 정리
-  useEffect(() => {
-    // 쿼리 파라미터 제거
-    window.history.replaceState({}, "", "/detail")
-  }, [])
 
   return (
     <div className={dmc.container}>

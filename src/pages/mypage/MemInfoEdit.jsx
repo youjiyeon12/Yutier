@@ -31,9 +31,6 @@ function MemInfoEdit({ user, setUser }) {
     const currentDept = user?.department ? user.department.split(" ")[0] : "";
     const currentMajor = user?.major || (user?.department ? user.department.split(" ")[1] || "" : "");
     
-    console.log("현재 학부:", currentDept, "선택된 학부:", selectedDept);
-    console.log("현재 전공:", currentMajor, "선택된 전공:", selectedMajor);
-    console.log("새 비밀번호:", newPassword);
     
     if (
       selectedDept.trim() === currentDept.trim() &&
@@ -65,11 +62,8 @@ function MemInfoEdit({ user, setUser }) {
         newPassword: newPassword || undefined
       };
 
-      console.log("전송할 데이터:", updateData);
-      console.log("사용자 ID:", user.id);
 
       const result = await googleSheetsService.updateUser(user.id, updateData);
-      console.log("서버 응답:", result);
 
       // 응답 결과에 따라 알림
       if (result.success) {
@@ -82,8 +76,6 @@ function MemInfoEdit({ user, setUser }) {
           major: selectedMajor,
         };
         setUser(updatedUser); // 상태 업데이트
-        localStorage.setItem("user", JSON.stringify(updatedUser)); // 로컬스토리지도 동기화
-        console.log("사용자 정보 업데이트됨:", updatedUser);
       } else {
         alert(result.message || "수정에 실패했습니다.");
       }
@@ -99,7 +91,6 @@ function MemInfoEdit({ user, setUser }) {
       .getMajorList()
       .then((data) => {
         setDepartments(Object.keys(data || {}));
-        console.log("학부 목록 로드됨:", Object.keys(data || {}));
       })
       .catch((err) => console.error("학부/전공 불러오기 오류:", err));
   }, []);
@@ -117,7 +108,6 @@ function MemInfoEdit({ user, setUser }) {
       .then((data) => {
         const majorList = (data && data[selectedDept]) || [];
         setMajors(majorList);
-        console.log(`${selectedDept} 학부의 전공 목록:`, majorList);
       })
       .catch((err) => {
         console.error("전공 목록 불러오기 오류:", err);
@@ -134,8 +124,6 @@ function MemInfoEdit({ user, setUser }) {
   }, [user]);
 
   // 디버깅 정보
-  console.log("MemInfoEdit 렌더링 - selectedDept:", selectedDept, "selectedMajor:", selectedMajor);
-  console.log("MemInfoEdit 렌더링 - departments:", departments, "majors:", majors);
 
   return (
     <div className={styles.detailCard}>
@@ -161,7 +149,6 @@ function MemInfoEdit({ user, setUser }) {
               className={styles.select}
               value={selectedDept}
               onChange={(e) => {
-                console.log("학부 선택됨:", e.target.value);
                 setSelectedDept(e.target.value);
                 setSelectedMajor("");
               }}
@@ -174,7 +161,6 @@ function MemInfoEdit({ user, setUser }) {
               className={styles.select}
               value={selectedMajor}
               onChange={(e) => {
-                console.log("전공 선택됨:", e.target.value);
                 setSelectedMajor(e.target.value);
               }}
               disabled={!selectedDept}

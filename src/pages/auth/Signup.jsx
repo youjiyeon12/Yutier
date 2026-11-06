@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from './styles/signup.module.css';
 import { googleSheetsService } from '../../services/googleSheetsService';
 
-function Signup({ onRegister }) {
+function Signup() {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
