@@ -109,7 +109,6 @@ function processDataForRender(data, openStates) {
 
 function Matrix({ user, onLogout }) {
   
-  // 상태 저장
   // 기본값은 현재 학기 (1학기: 3~8월, 2학기: 9~2월. 백엔드 getCurrentYearSemester와 같은 규칙)
   const [year, setYear] = useState(() => {
     const now = new Date();
@@ -125,7 +124,7 @@ function Matrix({ user, onLogout }) {
   const [matrixData, setMatrixData] = useState([]);
   const [loadError, setLoadError] = useState('');
   const navigate = useNavigate();
-  const [originalMatrixData, setOriginalMatrixData] = useState([]); // 원본 데이터 저장
+  const [originalMatrixData, setOriginalMatrixData] = useState([]);
   const [openAcc, setOpenAcc] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const [isFilter, setIsFilter] = useState(false);
@@ -138,16 +137,13 @@ function Matrix({ user, onLogout }) {
     취창업기초역량: '',
   });
   const [totalTierScore, setTotalTierScore] = useState(0);
-  const [filteredCompetency, setFilteredCompetency] = useState(null); // 필터링된 핵심역량
+  const [filteredCompetency, setFilteredCompetency] = useState(null);
   const department = user?.department || user?.major ? `${user.department ?? ''} ${user.major ?? ''}`.trim() : "학과명";
   const name = user?.name || "이름";
   const userId = user?.id;
-  // 도움말 버튼 상태 추가
   const [showHelp, setShowHelp] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMounted, setIsMounted] = useState(false); // Portal용 상태
-
-
 
   useEffect(() => {
     if (userId) {
@@ -156,13 +152,10 @@ function Matrix({ user, onLogout }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 사용자가 바뀔 때만 조회한다
   }, [userId]); 
   
-  // Portal용 useEffect
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-
-  // 점수 입력 시, 실시간으로 합산 점수 계산
   useEffect(() => {
     const total = Object.values(tierScores).reduce((sum, score) => {
       return sum + (Number(score) || 0);
@@ -170,10 +163,8 @@ function Matrix({ user, onLogout }) {
     setTotalTierScore(total);
   }, [tierScores]);
 
-  // 체크박스 상태 변경 핸들러
   const handleCheckboxChange = (programName, detailName, isChecked) => {
     const updatedData = matrixData.map(row => {
-      // 해당 프로그램의 상세항목을 찾아서 '이수/미이수' 값을 변경
       if (row['프로그램명'] === programName && row['상세항목'] === detailName) {
         return { ...row, '이수/미이수': isChecked ? '이수' : '' };
       }
@@ -181,7 +172,6 @@ function Matrix({ user, onLogout }) {
     });
     setMatrixData(updatedData);
   };
-  // 내 점수 상태 변경 핸들러
   const handleScoreChange = (programName, newScore) => {
     const updatedData = matrixData.map(row => {
       if (row['프로그램명'] === programName && !row['상세항목']) {
@@ -205,7 +195,6 @@ function Matrix({ user, onLogout }) {
     setMatrixData(updated);
   };
 
-  // 조회
   const handleSearch = async () => {
     
     if (!userId) {
@@ -213,10 +202,9 @@ function Matrix({ user, onLogout }) {
       return;
     }
 
-    setIsFilter(true); // 로딩 시작
+    setIsFilter(true);
 
     try {
-      // Trust 인증 총점 로드
       const tierResult = await googleSheetsService.getTierScores(userId);
       if (tierResult.success) {
         setTierScores(prev => ({ ...prev, ...(tierResult.scores || {}) }));
@@ -225,7 +213,6 @@ function Matrix({ user, onLogout }) {
         console.warn("⚠️ [Matrix] TRUST 점수 조회 실패");
       }
 
-      // 매트릭스 로드
       setLoadError('');
       googleSheetsService.loadMatrix(userId, year, semester)
         .then(matrixResult => {
@@ -261,7 +248,6 @@ function Matrix({ user, onLogout }) {
     }
   };
 
-  // 변경된 데이터만 감지하는 함수
   const getChangedData = () => {
     const changes = [];
     
@@ -309,7 +295,6 @@ function Matrix({ user, onLogout }) {
           maxScore: currentMaxScore,
         };
 
-        // 세부항목이면 detailName 포함
         if (currentRow['상세항목']) {
           updateItem.detailName = currentRow['상세항목'];
         }
@@ -321,9 +306,7 @@ function Matrix({ user, onLogout }) {
     return changes;
   };
 
-  // 저장
   const handlesave = async () => {
-    // 변경된 데이터만 수집
     const updates = getChangedData();
     
 
@@ -338,7 +321,6 @@ function Matrix({ user, onLogout }) {
       const json = await googleSheetsService.saveMatrix(userId, updates, year, semester);
       if (json.success) {
         alert(`저장 완료! (${updates.length}개 항목 변경됨)`);
-        // 저장 성공 시 원본 데이터 업데이트
         setOriginalMatrixData(JSON.parse(JSON.stringify(matrixData)));
         handleSearch();
       } else {
@@ -356,7 +338,6 @@ function Matrix({ user, onLogout }) {
     setOpenAcc(prev => ({ ...prev, [groupKey]: !prev[groupKey] }));
   };
   
-  // 필터링된 데이터 처리
   const filteredData = filteredCompetency 
     ? matrixData.filter(row => row['핵심역량'] === filteredCompetency)
     : matrixData;
@@ -364,17 +345,13 @@ function Matrix({ user, onLogout }) {
   // 렌더링 시점에 아코디언 상태를 전달하여 rowSpan을 다시 계산
   const processedData = processDataForRender(filteredData, openAcc); 	
 
-  // 매트릭스 핵심역량 점수 입력
   function renderScoreInput() {
-    // 입력값이 바뀔 때마다 tierScores 상태를 업데이트하는 함수
     const handleScoreChange = (e) => {
       const { name, value } = e.target;
       setTierScores(prev => ({ ...prev, [name]: value }));
     };
 
-    // '등록' 버튼을 눌렀을 때 실행될 함수 
     const handleRegisterScores = async () => {
-      // 빈 값이 있는지 확인
       const hasEmptyValue = Object.values(tierScores).some(score => score === '');
       if (hasEmptyValue) {
         alert('모든 역량 점수를 입력해주세요.');
@@ -394,7 +371,6 @@ function Matrix({ user, onLogout }) {
       }
     };
 
-    // 역량 클릭 핸들러
     const handleCompetencyClick = (competency) => {
       setFilteredCompetency(competency);
     };
@@ -481,7 +457,6 @@ function Matrix({ user, onLogout }) {
         </thead>
         <tbody>
           {processedData.map((item, index) => {
-            // 필요한거 꺼내오기
             const { data, detailRows, renderFlags, rowSpans, totalScore, accordionKey, colorClass } = item;
             const hasDetail = detailRows.length > 0;
             const isAccordionOpen = !!openAcc[accordionKey];
@@ -577,7 +552,7 @@ function Matrix({ user, onLogout }) {
 
                         <input
                           type="checkbox"
-                          checked={detail['이수/미이수'] && detail['이수/미이수'].toString().trim() === '이수'} // 문자열 정리 후 비교
+                          checked={detail['이수/미이수'] && detail['이수/미이수'].toString().trim() === '이수'}
                           onChange={(e) => handleCheckboxChange(data['프로그램명'], detail['상세항목'], e.target.checked)}
                         />
                       </td>
@@ -597,7 +572,6 @@ function Matrix({ user, onLogout }) {
       <Header user={user} onLogout={onLogout} />
         <div className={styles.topContentContainer}>
 
-        {/* 도움말 */}
         <div className={styles.titleWithHelp}>
           <button
             onClick={() => setShowHelp(true)}
@@ -653,8 +627,6 @@ function Matrix({ user, onLogout }) {
       {sheetNotice && <p role="status" className={styles.sheetNotice}>{sheetNotice}</p>}
 
       
-      
-      {/* 필터링 상태 표시 */}
       {matrixData.length > 0 && filteredCompetency && (
         <div className={styles.competencyFilter}>
           <div className={styles.filterTitle}>
@@ -670,7 +642,6 @@ function Matrix({ user, onLogout }) {
         </div>
       )}
       <div className={styles.container_wrap}>
-        {/* 매트릭스 점수 입력 및 테이블 출력(조회 버튼 클릭 시) */}
         {matrixData.length > 0 ? (
           <div className={styles.matrixContent}>
             
@@ -691,8 +662,6 @@ function Matrix({ user, onLogout }) {
         )}
       </div>
 
-{/*-----도움말 버튼---------------------*/}
-      
 {showHelp && isMounted && ReactDOM.createPortal(
     <div 
       className={styles.modalOverlay} 
@@ -704,7 +673,6 @@ function Matrix({ user, onLogout }) {
       >
 
         {(() => {
-          //  실제 도움말 내용
           const slideContents = [
             { 
               id: 1, 
@@ -783,12 +751,10 @@ function Matrix({ user, onLogout }) {
                 &times;
               </button>
 
-              {/* 슬라이드 내용 영역 */}
               <div className={styles.slideContentArea}>
                 {slideContents[currentSlide].text}
               </div>
 
-              {/* 슬라이드 제어 버튼 (왼쪽 하단 고정) */}
               <div className={styles.slideControlsBottomLeft}>
                 <button
                   onClick={() => setCurrentSlide(prev => Math.max(0, prev - 1))}

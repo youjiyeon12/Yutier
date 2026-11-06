@@ -1,19 +1,7 @@
 import React from "react";
 
-/**
- * 추천 프로그램 리스트 컴포넌트
- * 추천 프로그램 데이터를 테이블 형태로 표시
- * 
- * 주요 기능:
- * - 추천 프로그램을 테이블로 표시
- * - 상세항목이 있는 프로그램에 * 표시
- * - 데이터가 없을 때 안내 메시지 표시
- * 
- * @param {Object} props - 컴포넌트 props
- * @param {Array} props.data - 추천 프로그램 데이터 배열
- */
+/** 추천 프로그램 테이블. 상세항목이 있는 프로그램에는 * 표시 */
 function List({ data }) {
-  // 상세항목이 있는 프로그램이 있는지 확인
   const hasDetails = data && data.some(item => 
     item.hasDetails || 
     (item.상세항목 && item.상세항목 !== '') ||
@@ -30,7 +18,6 @@ function List({ data }) {
         추천 프로그램 리스트
       </h3>
       
-      {/* 상세항목 표시 안내 */}
       {hasDetails && (
         <div style={{ 
           textAlign: 'right', 
@@ -50,7 +37,6 @@ function List({ data }) {
         textAlign: "center",
         margin: "0 auto"
       }}>
-        {/* 행 배치 */}
         <colgroup>
           <col style={{ width: "20%" }} />   
           <col style={{ width: "60%" }} />   

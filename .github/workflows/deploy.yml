@@ -20,13 +20,22 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
 
+      - name: Test
+        run: npm test
+
       - name: Build
-        run: npm run build
+        run: |
+          if [ -z "$VITE_APPS_SCRIPT_URL" ]; then echo "::error::Actions 변수 VITE_APPS_SCRIPT_URL이 비어 있습니다"; exit 1; fi
+          npm run build
+        env:
+          # 저장소 Settings > Secrets and variables > Actions > Variables 에 등록한 운영 Apps Script 웹 앱 URL
+          VITE_APPS_SCRIPT_URL: ${{ vars.VITE_APPS_SCRIPT_URL }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

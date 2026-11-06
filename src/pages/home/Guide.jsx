@@ -185,7 +185,7 @@ function Guide({ user, onLogout }) {
 
       <Header user={user} onLogout={onLogout} />
 
-      <div className={dmc.topSectionWrapper}>{/* pdf */}
+      <div className={dmc.topSectionWrapper}>
     
       <div className={dmc.menuContent}>
         <span className={dmc.menuTitleText}>
@@ -203,7 +203,6 @@ function Guide({ user, onLogout }) {
         ))}
       </div>
 
-      {/*  PDF 다운로드----------------------------------------------  */}
         <a href={`${import.meta.env.BASE_URL}유티어(Yutier) 프로젝트 상세 배포 가이드.pdf`} download className={dmc.pdfDownloadLink}>
           <img src={`${import.meta.env.BASE_URL}sheet.png`} alt="PDF Download" className={dmc.pdfIconOnly} />
           <span className={dmc.pdfIconLabel}>상세 배포 가이드 PDF</span>
@@ -215,7 +214,6 @@ function Guide({ user, onLogout }) {
       
       <div className={dmc.sliderContainer}>
         
-        {/* 이전 버튼 */}
         <button 
           onClick={goToPrev} 
           disabled={currentSlideIndex === 0}
@@ -229,16 +227,13 @@ function Guide({ user, onLogout }) {
           />
         </button>
 
-        {/* 슬라이드 내용 */}
         <div className={dmc.body} key={currentCategory}>
           {currentContent}
-          {/* 페이지 번호 (position: absolute) */}
           <p className={dmc.slideCounter}> 
             {currentSlideIndex + 1} / {totalSlides}
           </p>
         </div>
 
-        {/* 다음 버튼 */}
         <button 
           onClick={goToNext} 
           disabled={currentSlideIndex === totalSlides - 1}

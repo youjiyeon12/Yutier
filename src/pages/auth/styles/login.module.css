@@ -149,7 +149,7 @@
 .separator {
   margin: 0 10px;
   color: #ccc;
-  cursor: default !important; /* 기본 요소 */
+  cursor: default !important;
 }
 
 .separator:hover {

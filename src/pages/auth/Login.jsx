@@ -23,14 +23,11 @@ function Login({ onLogin }) {
       const result = await googleSheetsService.login(id, password);
 
       if (result.success) {
-        // 로그인 상태 갱신 (App.jsx의 setUser 호출)
         if (onLogin) onLogin(result.user);
 
-        // 홈 화면으로 이동
         navigate('/');
       } else {
       if (result.code === 'LEGACY_ACCOUNT') {
-        // 안내창 확인 비밀번호 재설정 페이지로 이동
         alert('이 계정은 보안 기준 이전에 생성되었습니다.\n비밀번호를 재설정해주세요.');
         navigate('/findpassword', { state: { id } });
         return;

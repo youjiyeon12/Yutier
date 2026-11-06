@@ -1,4 +1,3 @@
-// 상단 화면
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './styles/header.module.css';
@@ -48,15 +47,12 @@ function Header({ user, onLogout }){
         <p><span role="link" tabIndex={0} onClick={() => navigate('/detail')} onKeyDown={(e) => e.key === 'Enter' && (() => navigate('/detail'))()}>YUHAN TRUST란?</span></p>
         <p><span role="link" tabIndex={0} onClick={() => navigate('/guide')} onKeyDown={(e) => e.key === 'Enter' && (() => navigate('/guide'))()}>설정가이드</span></p>
         <p><span role="link" tabIndex={0} onClick={handleMatrixClick} onKeyDown={(e) => e.key === 'Enter' && (handleMatrixClick)()}>매트릭스</span></p>
-        {/* 로그인 여부에 따른 버튼 변화 */}
         {user ? (
-          // 로그인 상태
           <>
           <button className={styles.btn1} onClick={() => navigate('/mypage')}>마이페이지</button>
           <button className={styles.btn2} onClick={handleLogout}>로그아웃</button>
           </>
         ) : (
-          //로그아웃 상태
           <>
           <button className={styles.btn1} onClick={() => navigate('/login')}>로그인</button>
           <button className={styles.btn2} onClick={() => navigate('/signup')}>회원가입</button>

@@ -10,7 +10,6 @@ function Signup() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [studentID, setStudentID] = useState('');
-  //아이디, 학번 중복 체크
   const [isIdChecked, setIsIdChecked] = useState(false);
   const [isStudentIdChecked, setIsStudentIdChecked] = useState(false);
 
@@ -23,7 +22,6 @@ function Signup() {
 
   const navigate = useNavigate();
 
-  //ref 객체
   const idRef = useRef(null);
   const pwRef = useRef(null);
   const confirmPwRef = useRef(null);
@@ -136,7 +134,6 @@ function Signup() {
     }
   };
 
-  // 아이디 확인
   const checkSignupId = async () => {
     const idPattern = /^[a-zA-Z0-9]{5,20}$/;
     if (!idPattern.test(id)) {
@@ -164,8 +161,6 @@ function Signup() {
     }
   };
 
-
-  // 학번 확인
   const checkStudentID = async () => {
   if (!/^\d{9}$/.test(studentID)) {
     alert('학번은 9자리 숫자여야 합니다.');

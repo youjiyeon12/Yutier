@@ -1,6 +1,5 @@
 // trust 설명 페이지
 import { useState } from 'react';
-//import { useSearchParams } from 'react-router-dom';
 
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
@@ -8,7 +7,6 @@ import dmc from './styles/detail.module.css';
 import Detail2 from './Detail2';
 
 function Detail({ user, onLogout }) {
-  // URL에 파라미터 없이 상태 유지
   const [activeMenuKey, setActiveMenuKey] = useState("info");
 
   const handleMenuClick = (menuKey) => setActiveMenuKey(menuKey);

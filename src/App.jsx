@@ -1,7 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useCallback, useState } from 'react';
 import { googleSheetsService } from './services/googleSheetsService';
-// 파일 import
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
 import FindId from './pages/auth/FindId';
@@ -12,7 +11,6 @@ import Guide from './pages/home/Guide';
 import Mypage from './pages/mypage/Mypage';
 import Matrix from './pages/matrix/Matrix';
 import MatrixURLSubmit from './pages/matrix/MatrixURLSubmit';
-//** route는 Home.jsx
 
 function App() {
   // 로그인 정보는 localStorage에 둔다. token이 없는 예전 로그인 정보는 버린다.
@@ -39,7 +37,6 @@ function App() {
 
   return (
       <Routes>
-        {/* 홈 화면: 로그인된 유저만 접근 가능 */}
         <Route
           path="/"
           element={
@@ -48,7 +45,6 @@ function App() {
           }
         />
 
-        {/* 로그인 페이지: 비로그인 상태에서만 접근 가능 */}
         <Route
           path="/login"
           element={
@@ -56,7 +52,6 @@ function App() {
           }
         />
 
-        {/* 회원가입 페이지 */}
         <Route
           path="/signup"
           element={
@@ -64,7 +59,6 @@ function App() {
           }
         />
 
-        {/* 아이디 찾기 페이지: 비로그인 상태에서만 접근 가능 */}
         <Route
           path="/findid" 
           element={
@@ -72,7 +66,6 @@ function App() {
           }
         />
 
-        {/* 비밀번호 찾기 페이지: 비로그인 상태에서만 접근 가능 */}
         <Route
           path="/findpassword"
           element={
@@ -80,20 +73,17 @@ function App() {
           }
         />
 
-        {/* trust 설명 페이지 */}
         <Route path="/detail" 
           element={
             <Detail user={user} onLogout={handleLogout} />
           } 
         />
         
-        {/* 이용가이드 페이지 */}
         <Route
           path="/guide"
           element={<Guide user={user} onLogout={handleLogout} />}
         />
 
-        {/* 마이 페이지 */}
         <Route
           path="/mypage"
           element={
@@ -102,7 +92,6 @@ function App() {
           }
         />
 
-        {/* 매트릭스 페이지 */}
         <Route
         path="/matrix"
         element={

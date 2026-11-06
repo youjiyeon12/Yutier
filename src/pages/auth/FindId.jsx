@@ -4,22 +4,19 @@ import { googleSheetsService } from '../../services/googleSheetsService';
 import { useNavigate } from 'react-router-dom';
 
 function FindId(){
-    // 입력 값 State
     const[name, setName] = useState('');
     const[studentID, setStudentID] = useState('');
     const[email, setEmail] = useState('');
     const[checknumber, setCheckNumber] = useState('');
 
-    // 로직 제어 State
     const[message, setMessage] = useState('');
     const[isLoading, setIsLoading] = useState(false);
-    const[isCodeSent, setIsCodeSent] = useState(false); // 인증번호 발송 여부
-    const[isVerified, setIsVerified] = useState(false); // 인증 완료 여부
-    const[timer, setTimer] = useState(0); // 타이머
+    const[isCodeSent, setIsCodeSent] = useState(false);
+    const[isVerified, setIsVerified] = useState(false);
+    const[timer, setTimer] = useState(0);
     const timerRef = useRef(null);
     const navigate = useNavigate();
 
-    // 타이머 효과
     useEffect(() => {
         if(timer > 0) {
             timerRef.current = setTimeout(() => {
@@ -36,7 +33,6 @@ function FindId(){
          return () => clearTimeout(timerRef.current);
     }, [timer, isCodeSent, isVerified]);
 
-    // '인증번호 받기' 버튼 클릭 핸들러
     const handleSendCode = async () => {
         setMessage('');
         
@@ -45,14 +41,12 @@ function FindId(){
             return;
         }
 
-    // 이메일 형식 검사
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
         setMessage('올바른 이메일 형식이 아닙니다.');
         return;
     }
     
-    // 학번 형식 검사
     const studentIDRegex = /^[0-9]+$/;
     if (!studentIDRegex.test(studentID)) {
         setMessage('학번은 숫자만 입력해주세요.');
@@ -75,7 +69,6 @@ function FindId(){
     };
 
 
-    // '확인' 버튼 클릭 핸들러
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!isCodeSent) {
@@ -94,8 +87,8 @@ function FindId(){
         setIsLoading(false);
         if (result.success) {
             setMessage(`회원님의 아이디는 [ ${result.id} ] 입니다.`);
-            setIsVerified(true); // 인증 성공
-            setTimer(0); // 타이머 중지
+            setIsVerified(true);
+            setTimer(0);
         } else {
             setMessage(result.message || '인증에 실패했습니다.');
         }
@@ -117,7 +110,6 @@ function FindId(){
                 <div className={styles.findIdBox}>
                     <h1 className={styles.title}>아이디 찾기</h1>
                     
-                    {/* 결과 메시지를 표시할 영역 */}
                     {message && <div className={styles.resultBox}>{message}</div>}
 
                     <form onSubmit={handleSubmit}>

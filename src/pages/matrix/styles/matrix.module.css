@@ -12,7 +12,7 @@
   align-items: center;
   gap: 28px;                  
   padding: 18px 16px 12px 16px;
-  border-bottom: 1.5px solid #e5e7eb; /*매트릭스 필터 밑에 선*/
+  border-bottom: 1.5px solid #e5e7eb;
   background: #fff;
   font-size: 16px;
   min-height: 50px;
@@ -507,7 +507,7 @@ footer {
 }
 
 
-/* -------------------- 반응형 웹 -------------------- */
+/* 반응형 */
 @media screen and (max-width: 600px) {
     .mainContent {
         padding: 24px;
@@ -523,20 +523,18 @@ footer {
         padding: 10px 14px;
     }
     
-    /* 모바일에서 버튼 위치 조정 */
     .help-button-corner {
         top: 10px;
         right: 10px;
     }
     
-    /* 모바일에서 모달 크기 조정 */
     .help-window {
         width: 80%;
         max-height: 1000vh;
     }
 }
 
-/* ------ 도움말 버튼 */
+/* 도움말 버튼 */
 .titleWithHelp {
   display: flex;
   gap: 10px; 
@@ -549,7 +547,7 @@ footer {
   cursor: pointer;
   padding: 0;
   
-  position: relative; /*버튼 이동*/
+  position: relative;
   left: min(700px, calc(50vw - 40px)); /* 좁은 화면에서는 화면 안에 머물게 */ 
   top: 130px; 
 }
@@ -564,16 +562,15 @@ footer {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100vw;  /* 화면 전체 너비 */
-  height: 100vh; /* 화면 전체 높이 */
+  width: 100vw;
+  height: 100vh;
   
-  /* (선택) 반투명한 검은색 배경 추가 (권장) */
   background-color:transparent;
    display: flex;
   justify-content: center;
   align-items: center;
   margin-top: 35px;
-  z-index: 2000; /*앞으로*/
+  z-index: 2000;
 }
 
 .helpWindow {
@@ -591,7 +588,6 @@ footer {
   position: relative; 
   overflow-y: auto; 
   
-  /* 전체적 확대 */
   transform: scale(0.95);
 }
 
@@ -607,7 +603,7 @@ footer {
   color: #333;
 }
 
-/* -------------------- 슬라이드 내용 영역 -------------------- */
+/* 슬라이드 내용 영역 */
 .slideContentArea {
   height: calc(100% - 60px); 
   overflow-y: auto; 
@@ -615,7 +611,7 @@ footer {
   padding-left: 60px;
 }
 
-/* 슬라이드 제어 버튼 그룹 (왼쪽 하단 고정) -------------------- */
+/* 슬라이드 제어 버튼 (왼쪽 하단) */
 .slideControlsBottomLeft {
   position: absolute; 
   bottom: 20px;     
@@ -628,7 +624,7 @@ footer {
   padding-left: 50px     
 }
 
-/*슬라이드 내비게이션 버튼 (이미지 버튼) -------------------- */
+/* 슬라이드 내비게이션 버튼 */
 .slideNavButton {
   background: none;
   padding: 0;
@@ -648,14 +644,13 @@ footer {
   filter: none; 
 }
 
-/* 슬라이드 버튼 이미지 크기 -------------------- */
 .slideNavIcon {
   width: 27px; 
   height: 27px;
   display: block;
 }
 
-/* 페이지 번호 표시 -------------------- */
+/* 페이지 번호 */
 .slidePageIndicator {
   font-weight: bold;
   color: #333;
@@ -664,7 +659,7 @@ footer {
   text-align: center;
 }
 
-/* -------------------- 슬라이드 내부 이미지 스타일*/
+/* 슬라이드 내부 이미지 */
 .guideImage {
   max-width: 100%;
   height: auto;
@@ -674,7 +669,7 @@ footer {
   display: block; 
 }
 
-/* -------------------- 슬라이드 내부 텍스트 스타일 -------------------- */
+/* 슬라이드 내부 텍스트 */
 .title {
   font-size: 27px;
   font-weight: bold;

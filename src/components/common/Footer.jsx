@@ -1,4 +1,3 @@
-// 상단 화면
 import styles from './styles/footer.module.css';
 
 function Footer() {

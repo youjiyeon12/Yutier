@@ -4,7 +4,6 @@ import styles from './styles/findpassword.module.css';
 import { googleSheetsService } from '../../services/googleSheetsService';
 
 function FindPassword(){
-// 입력 값 State
     const[name, setName] = useState('');
     const[id, setId] = useState('');
     const[email, setEmail] = useState('');
@@ -12,13 +11,12 @@ function FindPassword(){
     const[newPassword, setNewPassword] = useState('');
     const[confirmPassword, setConfirmPassword] = useState('');
 
-    // 로직 제어 State
     const[message, setMessage] = useState('');
     const[isLoading, setIsLoading] = useState(false);
-    const[isCodeSent, setIsCodeSent] = useState(false); // 인증번호 발송 여부
-    const[isVerified, setIsVerified] = useState(false); // 인증 완료 여부
+    const[isCodeSent, setIsCodeSent] = useState(false);
+    const[isVerified, setIsVerified] = useState(false);
     const[resetToken, setResetToken] = useState(''); // 인증 후 서버가 준 일회용 재설정 토큰
-    const[timer, setTimer] = useState(0); // 타이머
+    const[timer, setTimer] = useState(0);
     const timerRef = useRef(null);
     const navigate = useNavigate();
     const location = useLocation();
@@ -30,7 +28,6 @@ function FindPassword(){
         }
      }, [location.state]);
 
-    // 타이머 효과
     useEffect(() => {
         if(timer > 0) {
             timerRef.current = setTimeout(() => {
@@ -47,7 +44,6 @@ function FindPassword(){
          return () => clearTimeout(timerRef.current);
     }, [timer, isCodeSent, isVerified]);
 
-    // '인증번호 받기' 버튼 클릭 핸들러
     const handleSendCode = async () => {
         setMessage('');
         
@@ -56,7 +52,6 @@ function FindPassword(){
             return;
         }
 
-    // 이메일 형식 검사
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
         setMessage('올바른 이메일 형식이 아닙니다.');
@@ -79,7 +74,6 @@ function FindPassword(){
     };
 
 
-    // '확인' 버튼 클릭 핸들러
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!isCodeSent) {
@@ -98,7 +92,7 @@ function FindPassword(){
         setIsLoading(false);
         if (result.success) {
             setResetToken(result.resetToken);
-            setIsVerified(true); // 인증 성공 상태로 전환
+            setIsVerified(true);
             setTimer(0);         
             setMessage('');      
         } else {
@@ -106,13 +100,11 @@ function FindPassword(){
         }
     };
 
-    // '비밀번호 변경' 버튼 클릭 핸들러
     const handlePasswordChange = async (e) => {
     e.preventDefault();
 
     const pwRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!?/@#$%^])[a-zA-Z\d!?/@#$%^]{8,20}$/;
 
-    // 비밀번호 유효성 검사
     if (!newPassword || !confirmPassword) {
         setMessage('새 비밀번호를 모두 입력해주세요.');
         return;
@@ -135,7 +127,6 @@ function FindPassword(){
     setIsLoading(false);
     if (result.success) {
         setMessage('비밀번호가 성공적으로 변경되었습니다. 로그인 페이지로 이동합니다.');
-        // 성공 후 로그인 페이지로 이동
         setTimeout(() => {
             navigate('/login');
         }, 2000);
@@ -159,12 +150,10 @@ function FindPassword(){
                 <div className={styles.findIdBox}>
                     <h1 className={styles.title}>비밀번호 찾기</h1>
                     
-                    {/* 결과 메시지를 표시할 영역 */}
                     {message && <div className={styles.resultBox}>{message}</div>}
 
                     <form onSubmit={isVerified ? handlePasswordChange : handleSubmit}>
                         {isVerified ? (
-                            // ============ 인증 완료 후 (새 비밀번호 입력) ============
                             <>
                                 <div className={styles.inputRow}>
                                     <label className={styles.label}>새 비밀번호</label>
@@ -191,7 +180,6 @@ function FindPassword(){
                                 </div>
                             </>
                         ) : (
-                            // ============ 인증 전 (기존 UI) ============
                             <>
                                 <div className={styles.inputRow}>
                                     <label className={styles.label}>이름</label>

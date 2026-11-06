@@ -1,4 +1,4 @@
-/*메뉴바*/
+/* 메뉴바 */
 .menuContent {
   display: flex;
   padding: 10px 30px; 
@@ -44,12 +44,11 @@
 }
 
 
-/*슬라이드///////////////////////////////*/
+/* 슬라이드 */
 .sliderContainer {
   display: flex;
   justify-content: center; 
   align-items: center; 
-  /* 메뉴 박스와 20px 간격 */
   margin: 20px auto 40px auto; 
   margin-top: 35px;
   margin-bottom: 80px;
@@ -126,7 +125,7 @@
   height: auto;
 }
 
-/*페이지 번호*/
+/* 페이지 번호 */
 .slideCounter {
   position: absolute;
   right: 20px; 
@@ -138,7 +137,7 @@
   width: auto; 
 }
 
-/*pdf 버튼---------------------------------------------------------------*/
+/* PDF 버튼 */
 .topSectionWrapper {
   position: relative; 
   width: 100%;
@@ -158,13 +157,12 @@
   margin: 0 auto; 
 }
 
-/*  PDF 다운로드 링크*/
+/* PDF 다운로드 링크 */
 .pdfDownloadLink {
   position: absolute; 
   top: 55%;
   transform: translateY(-50%); 
   right: 15%; 
-  /* (기존 스타일 유지) */
   display: flex;
   flex-direction: column; 
   align-items: center;   

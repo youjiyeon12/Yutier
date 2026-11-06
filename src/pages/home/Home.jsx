@@ -1,4 +1,3 @@
-// 메인 화면
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/common/Header';
@@ -18,17 +17,15 @@ function Home({ user, onLogout }) {
     Silver: `${import.meta.env.BASE_URL}tier2.png`,
     Gold: `${import.meta.env.BASE_URL}tier3.png`,
     Diamond: `${import.meta.env.BASE_URL}tier4.png`,
-    // 기본값
     Unranked: `${import.meta.env.BASE_URL}tier0.png`
   };
 
-  // 컴포넌트가 로드될 때 사용자의 점수 상태를 확인
   useEffect(() => {
     if (user && user.id) {
       const checkUserScoreStatus = async () => {
         try {
           const data = await googleSheetsService.getTierInfo(user.id);
-          setTierInfo(data); // API 응답 전체를 저장
+          setTierInfo(data);
         } catch (err) {
           console.error("점수 정보 확인 실패:", err);
           setTierInfo({ success: false }); // 에러 발생 시 점수가 없는 것으로 간주
@@ -38,7 +35,6 @@ function Home({ user, onLogout }) {
     }
   }, [user]);
 
-  // 추천 프로그램 가져오기
   useEffect(() => {
     if (!user?.id) return;
 
@@ -64,7 +60,6 @@ function Home({ user, onLogout }) {
     fetchRecommendedPrograms();
   }, [user]);
 
-  // '점수 입력하러 가기' 버튼 클릭 시 실행될 함수
   const handleGoToMatrix = async () => {
     try {
       const data = await googleSheetsService.validateMatrixUrl(user.id);
@@ -79,8 +74,6 @@ function Home({ user, onLogout }) {
       navigate('/matrix-url');
     }
   };
-
-  // 디버깅 정보
 
   return (
     <div className={styles.container}>
@@ -112,7 +105,6 @@ function Home({ user, onLogout }) {
             </div>
           
 
-          {/* 점수 상태에 따라 다른 버튼*/}
           {!tierInfo ? (
             <div className={styles.loadingWrapper}>
               <p>정보를 불러오는 중...</p>  
@@ -129,7 +121,6 @@ function Home({ user, onLogout }) {
           </div>
         
 
-        {/* 추천 프로그램 리스트 */}
         <div className={styles.programCard}>
           <div
             className={styles.programContent}

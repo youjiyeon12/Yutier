@@ -1,10 +1,9 @@
-// Google Apps Script - Web App
-// 이 스크립트는 React 프론트엔드로부터 들어오는 요청을 받아
-// Google 스프레드시트(users, tier, major)를 읽고/쓰는 백엔드 역할을 합니다.
-// 모든 응답은 JSON(TextOutput) 형식으로 반환합니다.
-const SPREADSHEET_ID = '13QT8_OnNJ0FZaPkpx0_yMHz-v8ERg14lf9CXB_7bFzA'; // 실제 스프레드시트 ID로 변경
+// Yutier 백엔드 (Google Apps Script 웹 앱)
+// React 프론트엔드의 요청을 받아 Google 스프레드시트(users, tier, major)를 읽고 쓴다. 응답은 모두 JSON.
+//
+// 배포 전 설정: 프로젝트 설정 > 스크립트 속성에 SPREADSHEET_ID(DB 시트 ID)를 넣는다.
+const SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
 
-// 시트 이름 상수 정의
 // USERS: 회원 정보, TIER: 역량 점수/합산/티어, MAJOR: 학부/전공 목록
 const SHEET_NAMES = {
   USERS: 'users',
@@ -148,13 +147,9 @@ function generateVerificationCode() {
   return String(100000 + (n % 900000));
 }
 
-// 입력 비밀번호가 users 행(배열)의 저장값과 일치하는지 확인. salt가 없는 레거시 계정은 평문 비교.
+// 입력 비밀번호가 users 행(배열)에 저장된 해시와 맞는지 확인한다.
 function checkPassword(row, password) {
-  if (!password) return false;
-  const storedHash = row[USER_COLUMNS.PASSWORD];
-  const salt = row[USER_COLUMNS.SALT];
-  const inputHash = salt ? sha256Hex(salt + password) : String(password);
-  return storedHash === inputHash;
+  return verifyPassword(row[USER_COLUMNS.PASSWORD], row[USER_COLUMNS.SALT], password).ok;
 }
 
 // users 시트에서 아이디로 [행 번호(1-based), 행 배열]을 찾는다.
@@ -178,54 +173,75 @@ const USER_COLUMNS = {
   SALT: 8        // I 열: 솔트
 };
 
-/**
- * SHA-256 해시를 HEX 문자열로 반환
- */
-function sha256Hex(str) {
-  const raw = Utilities.computeDigest(
-    Utilities.DigestAlgorithm.SHA_256,
-    str,
-    Utilities.Charset.UTF_8
-  );
-  return raw.map(b => ('00' + (b & 0xff).toString(16)).slice(-2)).join('');
+// ---- 비밀번호 해시 ----
+// 저장 형식: "pbkdf2$<반복 횟수>$<hex>" (PBKDF2-HMAC-SHA256, salt는 I열).
+// 예전 형식(sha256(salt + 비밀번호))은 로그인에 성공하면 새 형식으로 바꿔 저장한다.
+// shortcut: Apps Script 실행 시간 제한 때문에 반복 횟수를 낮게 잡았다. 횟수는 해시마다 저장되니 나중에 올려도 기존 계정이 깨지지 않는다.
+const PBKDF2_ITERATIONS = 2000;
+
+function toHex(bytes) {
+  return bytes.map(b => ('0' + (b & 0xff).toString(16)).slice(-2)).join('');
 }
 
-/**
- * 비밀번호 검증 함수
- */
-function verifyPasswordHash(inputPassword, salt, storedHash) {
-  try {
-    if (!inputPassword || !salt || !storedHash) return false;
+function sha256Hex(str) {
+  return toHex(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, str, Utilities.Charset.UTF_8));
+}
 
-    const computedHash = sha256Hex(salt + inputPassword);
-    return computedHash === storedHash;
-  } catch (e) {
-    console.error("verifyPasswordHash error:", e);
-    return false;
+// PBKDF2-HMAC-SHA256, 출력 32바이트(블록 1개)
+function pbkdf2Hex(password, salt, iterations) {
+  const key = Utilities.newBlob(password).getBytes();
+  let u = Utilities.computeHmacSha256Signature(Utilities.newBlob(salt).getBytes().concat([0, 0, 0, 1]), key);
+  const t = u.slice();
+  for (let i = 1; i < iterations; i++) {
+    u = Utilities.computeHmacSha256Signature(u, key);
+    for (let j = 0; j < t.length; j++) t[j] ^= u[j];
   }
+  return toHex(t);
+}
+
+function hashPassword(password, salt) {
+  return `pbkdf2$${PBKDF2_ITERATIONS}$${pbkdf2Hex(password, salt, PBKDF2_ITERATIONS)}`;
+}
+
+// 길이가 같으면 끝까지 비교해서, 어디서 달라지는지 응답 시간으로 드러나지 않게 한다.
+function safeEqual(a, b) {
+  a = String(a); b = String(b);
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+// { ok, needsUpgrade }: needsUpgrade면 예전 형식이라 새 형식으로 다시 저장해야 한다.
+function verifyPassword(stored, salt, password) {
+  if (!password || !stored || !salt) return { ok: false };
+  const parts = String(stored).split('$');
+  if (parts[0] === 'pbkdf2' && parts.length === 3) {
+    const iterations = Number(parts[1]);
+    return { ok: safeEqual(pbkdf2Hex(password, salt, iterations), parts[2]), needsUpgrade: iterations < PBKDF2_ITERATIONS };
+  }
+  return { ok: safeEqual(sha256Hex(salt + password), stored), needsUpgrade: true };
 }
 
 function generateSalt() {
   return Utilities.getUuid().replace(/-/g, '');
 }
 
-// 로그인 처리
-// 입력: id, password
-// 처리: users 시트 조회 후 일치 시 사용자 요약 정보 반환
 function handleLogin(data) {
   const { id, password } = data;
-
-  if (!id || !password) 
+  if (!id || !password) {
     return json(400, { success: false, message: '아이디와 비밀번호를 모두 입력해주세요.' });
+  }
 
-  const userRow = findUserById(id);
-
+  const sheet = getSheet(SHEET_NAMES.USERS);
+  const found = findUserRow(sheet, id);
   const fail = () => json(401, { success: false, message: '아이디 또는 비밀번호가 올바르지 않습니다.' });
-  if (!userRow) return fail();
+  if (!found) return fail();
+  const row = found.row;
 
-  // 레거시 계정(salt 없음): 비밀번호가 맞으면 재설정 화면으로 보낸다.
-  if (!userRow.salt) {
-    if (userRow.password !== password) return fail();
+  // salt가 없는 초창기 계정은 평문으로 저장돼 있다. 비밀번호가 맞으면 재설정 화면으로 보낸다.
+  if (!row[USER_COLUMNS.SALT]) {
+    if (!safeEqual(row[USER_COLUMNS.PASSWORD], password)) return fail();
     return json(401, {
       success: false,
       code: 'LEGACY_ACCOUNT',
@@ -233,24 +249,23 @@ function handleLogin(data) {
     });
   }
 
-  if (!verifyPasswordHash(password, userRow.salt, userRow.password)) return fail();
+  const result = verifyPassword(row[USER_COLUMNS.PASSWORD], row[USER_COLUMNS.SALT], password);
+  if (!result.ok) return fail();
+  if (result.needsUpgrade) setPassword(sheet, found.rowNumber, password);
 
   const user = {
-    id: userRow.id,
-    name: userRow.name,
-    email: userRow.email,
-    studentId: userRow.studentID,
-    department: userRow.department,
-    major: userRow.major,
-    matrixUrl: userRow.url || null,
-    token: createSession(userRow.id)
+    id: row[USER_COLUMNS.ID],
+    name: row[USER_COLUMNS.NAME],
+    email: row[USER_COLUMNS.EMAIL],
+    studentId: row[USER_COLUMNS.STUDENT_ID],
+    department: row[USER_COLUMNS.DEPT],
+    major: row[USER_COLUMNS.MAJOR],
+    matrixUrl: row[USER_COLUMNS.MATRIX_URL] || null,
+    token: createSession(row[USER_COLUMNS.ID])
   };
   return json(200, { success: true, message: '로그인 성공', user: user });
 }
 
-// 회원가입 처리
-// 입력: id, password, name, email, studentID, department, major
-// 처리: 아이디/학번 중복 검사 후 users 시트에 행 추가
 function handleSignup(data) {
   const { id, password, name, email, studentID, department, major } = data;
   
@@ -258,45 +273,33 @@ function handleSignup(data) {
     return json(400, { success: false, message: '모든 필드를 입력해주세요.' });
   }
   
-  // 아이디 중복 확인
   if (findUserById(id)) {
     return json(200, { success: false, message: '이미 존재하는 아이디입니다.' });
   }
   
-  // 학번 중복 확인
   if (findUserByStudentID(studentID)) {
     return json(200, { success: false, message: '이미 존재하는 학번입니다.' });
   }
 
-  // 비밀번호 해싱
-  const salt = generateSalt();                   
-  const hash = sha256Hex(salt + password.trim()); 
-
-  // 사용자 추가
-  const sheet = getSheet(SHEET_NAMES.USERS);
-  sheet.appendRow([id, hash, name, email, studentID, department, major, '', salt]);
+  const salt = generateSalt();
+  getSheet(SHEET_NAMES.USERS).appendRow([id, hashPassword(password, salt), name, email, studentID, department, major, '', salt]);
   
   return json(200, { success: true, message: '회원가입이 완료되었습니다.' });
 }
 
-// 아이디 중복 확인
-// 입력: id → { exists }
 function handleCheckId(data) {
   const { id } = data;
   const exists = findUserById(id) !== null;
   return json(200, { exists });
 }
 
-// 학번 중복 확인
-// 입력: studentID → { exists }
 function handleCheckStudentID(data) {
   const { studentID } = data;
   const exists = findUserByStudentID(studentID) !== null;
   return json(200, { exists });
 }
 
-// 학부/전공 목록 조회
-// major 시트의 각 열이 학부, 그 열 아래 행들이 전공이라고 가정합니다.
+// major 시트의 각 열이 학부, 그 열 아래 행들이 전공이다.
 function handleGetMajorList() {
   const sheet = getSheet(SHEET_NAMES.MAJOR);
   const sheetData = sheet.getDataRange().getValues();
@@ -318,9 +321,8 @@ function handleGetMajorList() {
   
   return json(200, result);
 }
-// 티어 점수 저장
-// 입력: id, scores(JSON 또는 문자열)
-// 처리: 1) 5개 핵심역량 모두 70점 이상 확인 → 2) 전체 학생들과 비교하여 상위 % 계산 → 3) 티어 산정
+
+// 점수를 저장한 뒤 전체 티어를 다시 계산한다(5개 역량 모두 70점 이상인 학생끼리 상위 % 비교).
 function handleSaveTierScores(data) {
   const { id } = data;
   var scores = data.scores;
@@ -349,20 +351,16 @@ function handleSaveTierScores(data) {
   
   const values = [id, scores.유한인성역량, scores.기초학습역량, scores.직업기초역량, scores.직무수행역량, scores.취창업기초역량, totalScore];
   
+  // 티어 열(8~11)은 아래 recalculateAllTiers가 채운다.
   if (rowIndex > 0) {
-    // 7개 항목만 먼저 업데이트 (티어 정보 제외)
     sheet.getRange(rowIndex + 1, 1, 1, values.length).setValues([values]);
   } else {
-    // 새 행 추가 시에도 7개 항목만 먼저 추가
     sheet.appendRow(values);
   }
 
-  // 모든 사용자의 티어 재계산 실행
   return recalculateAllTiers();
 }
 
-// 티어 점수 조회
-// 저장된 역량 점수들과 합산 점수를 반환합니다.
 function handleGetTierScores(data) {
   const { id } = data;
   const user = findTierUserById(id);
@@ -384,8 +382,7 @@ function handleGetTierScores(data) {
   return json(200, { success: true, scores: null, totalScore: 0 });
 }
 
-// 티어 정보 조회
-// 저장된 티어 정보를 반환합니다. (새로운 컬럼 구조: 8=티어, 9=다음티어, 10=필요점수, 11=1위여부)
+// tier 시트 열: 8=티어, 9=다음티어, 10=필요점수, 11=1위여부
 function handleGetTierInfo(data) {
   const { id } = data;
   const user = findUserById(id);
@@ -416,8 +413,6 @@ function handleGetTierInfo(data) {
   });
 }
 
-// 매트릭스 URL 검증
-// URL 형식 확인 후 users 시트 8열(URL)에 저장합니다.
 function handleVerifyMatrixUrl(data) {
   const { id, url } = data;
   const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
@@ -442,13 +437,12 @@ function handleVerifyMatrixUrl(data) {
     return json(200, { success: false, message: '시트를 열 수 없습니다. URL이 맞는지, 시트 공유 설정(링크가 있는 모든 사용자 또는 편집자 추가)을 확인해주세요.' });
   }
 
-  // URL 저장
   const sheet = getSheet(SHEET_NAMES.USERS);
   const sheetData = sheet.getDataRange().getValues();
-  
+
   for (let i = 1; i < sheetData.length; i++) {
     if (sheetData[i][0] === id) {
-      sheet.getRange(i + 1, 8).setValue(url); // 8번째 컬럼에 URL 저장
+      sheet.getRange(i + 1, 8).setValue(url);
       break;
     }
   }
@@ -456,7 +450,6 @@ function handleVerifyMatrixUrl(data) {
   return json(200, { success: true, message: 'URL이 저장되었습니다.' });
 }
 
-// 매트릭스 URL 유효성 검사
 function handleValidateMatrixUrl(data) {
   const { id } = data;
   const user = findUserById(id);
@@ -473,22 +466,12 @@ function handleValidateMatrixUrl(data) {
   return json(200, { valid: true });
 }
 
-// 사용자의 URL에서 스프레드시트 ID 추출
 function extractSpreadsheetIdFromUrl(url) {
   if (!url) return '';
   const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
   return match ? match[1] : '';
 }
 
-// URL에서 gid(시트 탭 ID) 추출
-function extractGidFromUrl(url) {
-  if (!url) return null;
-  const gidMatch = url.match(/[?#&]gid=(\d+)/);
-  return gidMatch ? Number(gidMatch[1]) : null;
-}
-
-// 매트릭스 데이터 로드: users 시트의 url 컬럼에서 스프레드시트 ID 추출 후 읽기
-// 입력: id, year, semester
 function handleGetMatrix(data) {
   const { id, year, semester } = data;
   
@@ -498,32 +481,25 @@ function handleGetMatrix(data) {
   }
   
   try {
-    // 매트릭스 시트에서 데이터 가져오기
     const matrixData = getMatrixDataFromUrl(user.url, year, semester);
-    
-    // 헤더 추출 (첫 번째 행의 키들)
     const headers = matrixData.length > 0 ? Object.keys(matrixData[0]) : [];
-    const dataRows = matrixData;
-    
-    return json(200, { 
-      success: true, 
-      header: headers, 
-      data: dataRows, 
+
+    return json(200, {
+      success: true,
+      header: headers,
+      data: matrixData,
       sheetName: matrixData.sheetName
     });
   } catch (error) {
     console.error('매트릭스 데이터 로드 실패:', error);
-    console.error('매트릭스 읽기 실패:', error);
     return json(200, { success: false, message: '매트릭스 시트를 읽지 못했습니다. 시트 공유 설정과 해당 학기 탭이 있는지 확인해주세요.' });
   }
 }
 
-// 매트릭스 데이터 저장: 프로그램별 점수와 이수 여부 저장
-// 입력: updates 배열 [{ programName, myScore?, detailName?, isCompleted? }]
+// updates: [{ programName, detailName?, myScore?, isCompleted?, oneScore?, maxScore? }]
 function handleSaveMatrix(data) {
   const { id, updates, year, semester } = data;
 
-  // updates 파싱
   let parsedUpdates = updates;
   if (typeof updates === 'string') {
     try {
@@ -555,7 +531,6 @@ function handleSaveMatrix(data) {
     const values = sheet.getDataRange().getValues();
     const headers = values[0];
 
-    // 헤더 인덱스 선언
     const programNameCol = headers.indexOf('프로그램명');
     const detailCol = headers.indexOf('상세항목');
     const completedCol = headers.indexOf('이수/미이수');
@@ -566,10 +541,9 @@ function handleSaveMatrix(data) {
     if (programNameCol === -1)
       return json(200, { success: false, message: '프로그램명 컬럼을 찾을 수 없습니다.' });
 
-    // 문자열 비교 함수 (공백, undefined 방지)
+    // 셀 값 앞뒤 공백, 빈 셀(undefined)도 같은 값으로 본다.
     const eq = (a, b) => (a ?? '').toString().trim() === (b ?? '').toString().trim();
 
-    // 각 업데이트 적용
     parsedUpdates.forEach(update => {
       const { programName, detailName, myScore, isCompleted, oneScore, maxScore } = update;
 
@@ -586,10 +560,10 @@ function handleSaveMatrix(data) {
               sheet.getRange(r + 1, oneScoreCol + 1).setValue(oneScore);
             if (maxScore !== undefined && maxScoreCol !== -1)
               sheet.getRange(r + 1, maxScoreCol + 1).setValue(maxScore);
-            break; // 일치하는 상세항목 1건만 처리
+            break;
           }
         }
-        return; // 이 update 끝
+        return;
       }
 
       // 상세항목이 없는 경우 — 대표행 업데이트
@@ -602,7 +576,7 @@ function handleSaveMatrix(data) {
             sheet.getRange(r + 1, oneScoreCol + 1).setValue(oneScore);
           if (maxScore !== undefined && maxScoreCol !== -1)
             sheet.getRange(r + 1, maxScoreCol + 1).setValue(maxScore);
-          break; // 대표행 1건만 처리
+          break;
         }
       }
     });
@@ -613,7 +587,6 @@ function handleSaveMatrix(data) {
   }
 }
 
-// 회원 정보 수정
 // 입력: id(세션), updateData { department?, major?, currentPassword?, newPassword? }
 function handleUpdateUser(data) {
   let updateData = data.updateData || {};
@@ -644,11 +617,10 @@ function handleUpdateUser(data) {
 
 function setPassword(sheet, rowNumber, newPassword) {
   const salt = generateSalt();
-  sheet.getRange(rowNumber, USER_COLUMNS.PASSWORD + 1).setValue(sha256Hex(salt + newPassword));
+  sheet.getRange(rowNumber, USER_COLUMNS.PASSWORD + 1).setValue(hashPassword(newPassword, salt));
   sheet.getRange(rowNumber, USER_COLUMNS.SALT + 1).setValue(salt);
 }
 
-// 비밀번호 확인
 function handleVerifyPassword(data) {
   const found = findUserRow(getSheet(SHEET_NAMES.USERS), data.id);
   if (!found) return json(404, { success: false, message: '사용자를 찾을 수 없습니다.' });
@@ -683,7 +655,6 @@ function handleDeleteAccount(data) {
   return json(200, { success: true, message: '회원 탈퇴가 성공적으로 처리되었습니다.' });
 }
 
-// 사용자의 매트릭스 URL 조회
 function handleGetUserMatrixUrl(data) {
   const { id } = data;
   
@@ -700,20 +671,9 @@ function handleGetUserMatrixUrl(data) {
   });
 }
 
-/**
- * 추천 프로그램 조회 API
- * 사용자의 매트릭스 시트에서 데이터를 가져와 추천 로직을 적용하여 반환
- * 
- * @param {Object} data - 요청 데이터
- * @param {string} data.id - 사용자 ID
- * @param {number} data.year - 연도 (예: 2025)
- * @param {number} data.semester - 학기 (예: 2)
- * @returns {Object} JSON 응답 { success: boolean, data: Array, message: string }
- */
-// 현재 연도와 학기를 자동으로 계산
 function getCurrentYearSemester() {
   const now = new Date();
-  const month = now.getMonth() + 1; // 1~12월
+  const month = now.getMonth() + 1;
   // 1학기: 3~8월, 2학기: 9~2월. 1~2월은 전년도 2학기다.
   const year = month <= 2 ? now.getFullYear() - 1 : now.getFullYear();
   const semester = (month >= 3 && month <= 8) ? 1 : 2;
@@ -725,30 +685,21 @@ function handleGetRecommendedPrograms(data) {
   const { id } = data;
   const { year, semester } = getCurrentYearSemester();
 
-  // 현재 학기 정보 콘솔 출력
-
-  
-  // 1. 사용자 정보 확인
   const user = findUserById(id);
   if (!user) {
     return json(200, { success: false, message: '사용자를 찾을 수 없습니다.' });
   }
-  
-  // 2. 매트릭스 URL 확인
+
   const matrixUrl = user.url;
   if (!matrixUrl) {
     return json(200, { success: true, data: [], message: '매트릭스 URL이 등록되지 않았습니다.' });
   }
-  
+
   try {
-    // 3. 매트릭스 시트에서 데이터 가져오기
     const matrixData = getMatrixDataFromUrl(matrixUrl, year, semester);
-    
-    // 4. 추천 프로그램 로직 적용
     const recommendations = getRecommendedPrograms(matrixData, year, semester, id);
-    
-    // 5. 결과 반환
-    return json(200, { 
+
+    return json(200, {
       success: true, 
       data: recommendations,
       message: '추천 프로그램 조회 완료',
@@ -775,40 +726,21 @@ function isProgramCompleted(matrixData, programName) {
     .some(r => r['내 점수'] && r['내 점수'] !== '' && r['내 점수'] !== '0');
 }
 
-
-/**
- * 추천 프로그램 로직 구현
- * 핵심역량별 총합을 계산하여 낮은 점수의 역량을 우선 추천
- * 
- * 추천 규칙:
- * 1. 핵심역량별 총합 계산 (내 점수가 있는 프로그램들)
- * 2. 총합이 낮은 순서로 정렬 (오름차순)
- * 3. 최하위 핵심역량: 2개 프로그램 추천
- * 4. 나머지 핵심역량: 각각 1개씩 추천
- * 5. 최대 6개까지 추천
- * 6. 1회 점수 높은 순으로 정렬
- * 
- * @param {Array} matrixData - 매트릭스 데이터 배열
- * @param {number} year - 연도
- * @param {number} semester - 학기
- * @returns {Array} 추천 프로그램 배열
- */
+// 추천 규칙: tier 시트의 역량 점수가 낮은 역량부터, 최하위 역량은 2개·나머지는 1개씩,
+// 아직 이수하지 않은 프로그램을 1회 점수 높은 순으로 고른다. 최대 6개.
 function getRecommendedPrograms(matrixData, year, semester, id) {
   try {
-    
-    // 1. 핵심역량별 총합 계산 (전체 학기 기준)
     const trustScores = getTrustCategoryTotals(id);
 
     const categoryTotals = {};
     for (const [key, value] of Object.entries(trustScores)) {
-    categoryTotals[key] = { total: value, count: 1, average: value };
-  }
-    
-    // 2. 핵심역량을 총합 점수 오름차순으로 정렬 (낮은 점수 우선)
+      categoryTotals[key] = { total: value, count: 1, average: value };
+    }
+
     const sortedCategories = Object.entries(categoryTotals)
       .sort(([,a], [,b]) => a.total - b.total);
-    
-    // 3. 핵심역량이 없는 경우 처리
+
+    // tier 시트에 점수가 없으면 미이수 프로그램 중 1회 점수 높은 순으로 6개.
     if (sortedCategories.length === 0) {
       const allPrograms = matrixData
         .filter(row => !row['내 점수'] || row['내 점수'] === '' || row['내 점수'] === '0')
@@ -826,8 +758,7 @@ function getRecommendedPrograms(matrixData, year, semester, id) {
     
     const recommendations = [];
     const maxRecommendations = 6;
-    
-    // 4. 각 핵심역량별로 프로그램 추천
+
     for (let i = 0; i < sortedCategories.length && recommendations.length < maxRecommendations; i++) {
       const [category, categoryInfo] = sortedCategories[i];
       const availablePrograms = matrixData
@@ -844,7 +775,7 @@ function getRecommendedPrograms(matrixData, year, semester, id) {
         }))
         .sort((a, b) => b.firstScore - a.firstScore);
 
-      const recommendCount = (i === 0) ? 2 : 1; // 가장 낮은 역량 2개, 나머지 1개씩
+      const recommendCount = (i === 0) ? 2 : 1;
       recommendations.push(...availablePrograms.slice(0, recommendCount));
     }
 
@@ -855,62 +786,7 @@ function getRecommendedPrograms(matrixData, year, semester, id) {
   }
 }
 
-
-/**
- * 핵심역량별 총합 계산
- * 각 핵심역량에 대해 사용자가 입력한 점수들의 총합을 계산
- * 
- * @param {Array} matrixData - 매트릭스 데이터 배열
- * @returns {Object} 핵심역량별 총합 정보 { [역량명]: { total: number, count: number, average: number, programs: Array } }
- */
-function calculateCategoryTotals(matrixData) {
-  const categoryTotals = {};
-  
-  
-  // 각 행을 순회하며 핵심역량별 점수 집계
-  for (const row of matrixData) {
-    const category = row['핵심역량'] || '';
-    const myScore = parseFloat(row['내 점수']) || 0;
-    const programName = row['프로그램명'] || '';
-    
-    // 핵심역량과 프로그램명이 모두 있는 경우만 처리
-    if (category && programName) {
-      // 새로운 핵심역량인 경우 초기화
-      if (!categoryTotals[category]) {
-        categoryTotals[category] = { 
-          total: 0, 
-          count: 0, 
-          programs: [] 
-        };
-      }
-      
-      // "내 점수"가 있는 경우만 총합에 포함
-      if (myScore > 0) {
-        categoryTotals[category].total += myScore;
-        categoryTotals[category].count += 1;
-        categoryTotals[category].programs.push({
-          name: programName,
-          score: myScore
-        });
-      } else {
-      }
-    }
-  }
-  
-  // 각 핵심역량별 평균 점수 계산
-  for (const category in categoryTotals) {
-    const data = categoryTotals[category];
-    data.average = data.count > 0 ? data.total / data.count : 0;
-  }
-  
-  return categoryTotals;
-}
-
-/**
- * TIER 시트에서 사용자 역량 점수를 불러옵니다.
- * @param {string} id - 사용자 ID
- * @returns {Object} { '유한인성역량': 80, '기초학습역량': 75, ... }
- */
+// tier 시트에서 사용자의 역량별 점수를 { 역량명: 점수 }로 읽는다. 없으면 {}.
 function getTrustCategoryTotals(id) {
   const sheet = getSheet(SHEET_NAMES.TIER);
   const data = sheet.getDataRange().getValues();
@@ -929,32 +805,21 @@ function getTrustCategoryTotals(id) {
   return {};
 }
 
-// 매트릭스 시트에서 데이터 가져오기
+// 매트릭스 시트의 'YYYY-N' 탭을 읽어 행 객체 배열로 돌려준다.
 function getMatrixDataFromUrl(matrixUrl, year, semester) {
   try {
-    
-    // URL에서 스프레드시트 ID 추출
-    const spreadsheetId = extractSpreadsheetId(matrixUrl);
+    const spreadsheetId = extractSpreadsheetIdFromUrl(matrixUrl);
     if (!spreadsheetId) {
       throw new Error('유효하지 않은 매트릭스 URL입니다.');
     }
-    
-    // 스프레드시트 열기
+
     const ss = SpreadsheetApp.openById(spreadsheetId);
-    
-    // 시트 이름 생성 (예: "2025-2")
     const sheetName = `${year}-${semester}`;
     let sheet = ss.getSheetByName(sheetName);
-    
-    
-    // 사용 가능한 시트 목록 확인
     const allSheets = ss.getSheets();
-    allSheets.forEach(s => {
-    });
-    
+
     if (!sheet) {
-      
-      // 최신 시트 찾기 (2025-2, 2025-1, 2024-2, 2024-1 순서)
+      // 요청 학기 탭이 없으면 가장 최근 학기 탭(2025-2, 2025-1, 2024-2 ...)을 쓴다.
       const yearSemesterPattern = /^(\d{4})-(\d{1,2})$/;
       const availableSheets = allSheets
         .map(s => ({ name: s.getName(), sheet: s }))
@@ -962,8 +827,8 @@ function getMatrixDataFromUrl(matrixUrl, year, semester) {
         .sort((a, b) => {
           const [yearA, semA] = a.name.split('-').map(Number);
           const [yearB, semB] = b.name.split('-').map(Number);
-          if (yearA !== yearB) return yearB - yearA; // 년도 내림차순
-          return semB - semA; // 학기 내림차순
+          if (yearA !== yearB) return yearB - yearA;
+          return semB - semA;
         });
       
       if (availableSheets.length > 0) {
@@ -973,76 +838,21 @@ function getMatrixDataFromUrl(matrixUrl, year, semester) {
       } else {
         throw new Error('사용 가능한 시트가 없습니다.');
       }
-    } else {
     }
-    
-    // sheet가 여전히 undefined인지 확인
+
     if (!sheet) {
       throw new Error('시트를 찾을 수 없습니다.');
     }
-    
-    
-    if (!sheet) {
-      console.error('❌ 최종적으로 유효한 시트를 찾지 못했습니다. 데이터 로드를 진행할 수 없습니다.');
-      throw new Error('데이터를 로드할 유효한 시트를 찾을 수 없습니다.');
-    }
-    
-    // 선택된 시트에서 이수/미이수 데이터가 있는지 확인
-    const testRange = sheet.getRange(1, 1, Math.min(10, sheet.getLastRow()), sheet.getLastColumn());
-    const testValues = testRange.getValues();
-    const testCompletionColumnIndex = testValues[0].findIndex(header => header === '이수/미이수');
-    
-    if (testCompletionColumnIndex !== -1) {
-      const completionValues = testValues.slice(1).map(row => row[testCompletionColumnIndex]).filter(val => val && val.toString().trim() !== '');
-      
-      if (completionValues.length === 0) {
-        
-        // 다른 시트에서 이수/미이수 데이터가 있는 시트 찾기
-        for (const testSheet of allSheets) {
-          if (!testSheet.sheet) {
-            console.error(`❌ 루프 내에서 시트 객체가 유효하지 않습니다: ${testSheet.name}`);
-            continue; // 유효하지 않은 시트는 건너뛰기
-          }
-          
-          const testRange2 = testSheet.sheet.getRange(1, 1, Math.min(10, testSheet.sheet.getLastRow()), testSheet.sheet.getLastColumn());
-          const testValues2 = testRange2.getValues();
-          const testCompletionColumnIndex2 = testValues2[0].findIndex(header => header === '이수/미이수');
-          
-          if (testCompletionColumnIndex2 !== -1) {
-            const completionValues2 = testValues2.slice(1).map(row => row[testCompletionColumnIndex2]).filter(val => val && val.toString().trim() !== '');
-            if (completionValues2.length > 0) {
-              sheet = testSheet.sheet;
-              break;
-            }
-          }
-        }
-      }
-    }
-    
-    // 데이터 범위 가져오기 (헤더 포함) - 더 넓은 범위로 읽기
+
     const lastRow = sheet.getLastRow();
     const lastCol = sheet.getLastColumn();
-    
-    // A1부터 마지막 셀까지 모든 데이터 읽기
     const range = sheet.getRange(1, 1, lastRow, lastCol);
     const values = range.getValues();
-    
-    
+
     if (values.length <= 1) {
       return [];
     }
-    
-    // 첫 번째 행(헤더) 확인
-    
-    // 이수/미이수 컬럼이 있는지 확인
-    const completionColumnIndex = values[0].findIndex(header => header === '이수/미이수');
-    
-    if (completionColumnIndex !== -1) {
-      // 이수/미이수 컬럼의 실제 값들 확인 (처음 10개 행)
-      const completionValues = values.slice(1, 11).map(row => row[completionColumnIndex]);
-    }
-    
-    // 헤더와 데이터 분리
+
     const headers = values[0];
     const dataRows = values.slice(1);
     
@@ -1088,54 +898,27 @@ function getMatrixDataFromUrl(matrixUrl, year, semester) {
           }
         }
         
-        // 숫자 값인 경우 문자열로 변환 (소수점 처리)
         if (typeof value === 'number') {
-          if (Number.isInteger(value)) {
-            value = value.toString();
-          } else {
-            value = value.toString();
-          }
+          value = value.toString();
         }
         
         obj[header] = value;
       });
       return obj;
     });
-    
-    
-    // 이수/미이수 컬럼 데이터 확인을 위한 디버깅
-    
-    // 이수/미이수 컬럼 인덱스 찾기 (이미 위에서 선언됨)
-    
-    if (completionColumnIndex !== -1) {
-      // 이수/미이수 컬럼의 모든 값들 확인
-      const completionValues = matrixData.map(row => row['이수/미이수']).filter(val => val && val.trim() !== '');
-      
-      const completedItems = matrixData.filter(row => row['이수/미이수'] === '이수');
-      if (completedItems.length > 0) {
-      }
-    } else {
-    }
 
     // 요청한 탭이 없으면 다른 탭을 읽었을 수 있으니, 실제로 읽은 탭 이름을 함께 넘긴다.
     matrixData.sheetName = sheet.getName();
     return matrixData;
-    
   } catch (error) {
     console.error('매트릭스 데이터 가져오기 오류:', error);
     throw error;
   }
 }
 
-// URL에서 스프레드시트 ID 추출
-function extractSpreadsheetId(url) {
-  const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
-  return match ? match[1] : null;
-}
-
-// 헬퍼 함수들
-// 시트를 열고 없으면 생성하며, 필요한 경우 헤더를 초기화합니다.
+// DB 시트를 연다. 탭이 없으면 만들고 헤더 행을 넣는다.
 function getSheet(sheetName) {
+  if (!SPREADSHEET_ID) throw new Error('스크립트 속성 SPREADSHEET_ID가 설정되지 않았습니다.');
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   let sheet = ss.getSheetByName(sheetName);
   if (!sheet) {
@@ -1164,7 +947,7 @@ function findUserById(id) {
         studentID: sheetData[i][4],
         department: sheetData[i][5],
         major: sheetData[i][6],
-        url: sheetData[i][7],  // matrixUrl 대신 url로 변경
+        url: sheetData[i][7],
         salt: sheetData[i][8]
       };
     }
@@ -1198,10 +981,8 @@ function findTierUserById(id) {
   return null;
 }
 
-/**
- * 전체 티어 시스템 재계산
- * 모든 학생의 티어를 새로운 규칙에 따라 재계산하고 시트에 한 번에 업데이트합니다.
- */
+// 티어 규칙: 5개 역량 모두 70점 이상인 학생만 순위에 든다.
+// 합산 점수 기준 상위 5% Diamond, 10% Gold, 30% Silver, 나머지 Bronze. 결과는 8~11열에 한 번에 쓴다.
 function recalculateAllTiers() {
   try {
     const sheet = getSheet(SHEET_NAMES.TIER);
@@ -1261,7 +1042,6 @@ function recalculateAllTiers() {
             tierValue = 'Bronze';
         }
 
-        // 1위 여부 확인
         if (tierValue === 'Diamond' && student.totalScore >= qualifiedStudents[0].totalScore) {
             const rank = qualifiedStudents.findIndex(s => s.id === student.id) + 1;
             if (rank === 1) isRankOne = true;

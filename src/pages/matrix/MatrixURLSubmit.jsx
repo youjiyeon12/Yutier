@@ -1,4 +1,3 @@
-// URL 제출 화면
 import { useState } from 'react';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
@@ -6,8 +5,6 @@ import style from './styles/matrixURLSubmit.module.css';
 import { useNavigate } from 'react-router-dom'
 import { googleSheetsService } from '../../services/googleSheetsService';
 
-
-// 조회 버튼 클릭 시 실행
 function MatrixURLSubmit({ user, onLogout }) {
   
   const [url, setUrl] = useState('');
@@ -15,7 +12,6 @@ function MatrixURLSubmit({ user, onLogout }) {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  //도움말 버튼
   const [showHelp, setShowHelp] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   
@@ -37,7 +33,6 @@ function MatrixURLSubmit({ user, onLogout }) {
       return;
     }
 
-    // Apps Script 경유 서비스 호출
     setLoading(true);
     try {
       const result = await googleSheetsService.verifyMatrixUrl(user.id, url);
@@ -68,8 +63,6 @@ return (
       <main className={style.mainContent}>
         <div className={style.content}>
 
-        
-        {/* 도움말 버튼 ----------------------------------------- */}
           <button
             onClick={() => setShowHelp(true)}
             className={style['help-button-corner']} 
@@ -115,17 +108,12 @@ return (
           {error && <p style={{ color: 'red' }}>{error}</p>}
           {success && <p style={{ color: 'green' }}>✅ 저장되었습니다.</p>}
 
-         {/* 도움말 버튼: className="help-button" 사용 */}
-     
          {showHelp && (
-          // 모달 오버레이
           <div 
           className={style['modal-overlay']} 
-          // 💡 모달이 닫힐 때 슬라이드를 1페이지로 리셋합니다.
           onClick={() => { setShowHelp(false); setCurrentSlide(0); }}
           >
 
-            {/* 도움말 창 본체 */}
             <div 
             className={style['help-window']} 
             onClick={(e) => e.stopPropagation()}>
@@ -197,7 +185,6 @@ return (
 
       return (
       <>
-          {/* 닫기 버튼 */}
           <button
             onClick={() => { setShowHelp(false); setCurrentSlide(0); }}
             className={style['close-button']} 
@@ -205,12 +192,10 @@ return (
           &times;
           </button>
 
-          {/* 슬라이드 내용 영역 */}
           <div className={style.slideContentArea}>
              {slideContents[currentSlide].text}
           </div>
 
-          {/* 슬라이드 제어 버튼 */}
           <div className={style.slideControlsBottomLeft}>
           <button
           onClick={() => setCurrentSlide(prev => Math.max(0, prev - 1))}

@@ -26,3 +26,7 @@ dist-ssr
 # Environment variables
 /server/credentials.json
 /server/node_modules
+# 로컬 환경 변수 (운영 URL은 GitHub Actions 변수로 주입)
+.env
+server/
+.impeccable/

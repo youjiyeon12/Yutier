@@ -1,11 +1,4 @@
-// trust 설명 페이지
-//import { useState } from 'react';
-//import { useNavigate } from 'react-router-dom';
-
 import dmc from './styles/detail.module.css';
-
-
-
 
 function Detail2() {
 
