@@ -5,6 +5,9 @@ import style from './styles/matrixURLSubmit.module.css';
 import { useNavigate } from 'react-router-dom'
 import { googleSheetsService } from '../../services/googleSheetsService';
 
+// 매트릭스 시트에 점수를 쓰는 Apps Script 배포 계정. 학생은 이 계정만 편집자로 추가한다.
+const SHARE_EMAIL = 'hambugis12@gmail.com';
+
 function MatrixURLSubmit({ user, onLogout }) {
   
   const [url, setUrl] = useState('');
@@ -88,7 +91,7 @@ return (
               </a>
             </li>
             <li>
-              사본 시트에서 <b>공유 &gt; 링크가 있는 모든 사용자 &gt; 편집자</b>로 변경하세요.
+              사본 시트의 <b>공유</b>에서 <b>{SHARE_EMAIL}</b>을(를) <b>편집자</b>로 추가하세요. 일반 액세스는 '제한됨' 그대로 두면 됩니다.
             </li>
             <li>아래에 본인의 시트 URL을 붙여넣고 '<b>조회</b>'를 클릭하세요.</li>
           </ol>
@@ -138,33 +141,22 @@ return (
     </>
     ) 
   },
- { 
-      id: 2, 
+  {
+      id: 2,
       text: (
           <>
           <h3 className={style.title}>Yutier 매트릭스 등록</h3>
           <p className={style.tbody}>
-          3.[공유] 버튼을 눌러 사본 공유로 들어갑니다.
+          3. 사본 시트 오른쪽 위 [공유] 버튼을 누릅니다.
           <br/>
-          4. 엑세스에서 '제한됨'을 '링크가 있는 모든 사용자'로 바꿉니다.
-        </p>
-        <img src={`${import.meta.env.BASE_URL}url3.png`} height="390px" style={{ marginTop: '30px', marginRight: '40px' }}></img>
-        <img src={`${import.meta.env.BASE_URL}url4.png`} height="390px" style={{ marginTop: '30px' }}></img>
-      </>
-    )
-  },
-  { 
-      id: 3, 
-      text: (
-          <>
-          <h3 className={style.title}>Yutier 매트릭스 등록</h3>
-          <p className={style.tbody}>
-          5. '뷰어' 탭을 눌러 뷰어가 아닌 '편집자'로 바꿉니다.
+          4. '사용자, 그룹… 추가' 칸에 <b>{SHARE_EMAIL}</b>을(를) 입력합니다.
           <br/>
-          6. 후에는 링크를 복사하여 [완료]를 누릅니다.
+          5. 역할을 '편집자'로 두고 [보내기]를 누릅니다.
+          <br/>
+          (일반 액세스는 '제한됨' 그대로 두세요. 본인과 Yutier만 시트를 열 수 있습니다.)
+          <br/>
+          6. 브라우저 주소창의 시트 URL을 복사합니다.
         </p>
-        <img src={`${import.meta.env.BASE_URL}url5.png`} height="390px" style={{ marginTop: '30px' , marginRight: '40px'}}></img>
-        <img src={`${import.meta.env.BASE_URL}url6.png`} height="390px" style={{ marginTop: '30px' }}></img>
       </>
     )
   },
@@ -174,7 +166,7 @@ return (
           <>
           <h3 className={style.title}>Yutier 매트릭스 등록</h3>
           <p className={style.tbody}>
-          7. Yuier 사이트로 돌아와 붙여넣기 후 조회를 클릭합니다.
+          7. Yutier 사이트로 돌아와 붙여넣기 후 조회를 클릭합니다.
         </p>
         <img src={`${import.meta.env.BASE_URL}url7.png`} height="400px" style={{ marginTop: '30px' }}></img>
       </>

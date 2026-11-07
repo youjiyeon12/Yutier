@@ -434,7 +434,7 @@ function handleVerifyMatrixUrl(data) {
       return json(200, { success: false, message: '매트릭스 템플릿 사본이 아닌 것 같아요. 안내에 있는 템플릿을 복사한 시트의 URL을 입력해주세요.' });
     }
   } catch (e) {
-    return json(200, { success: false, message: '시트를 열 수 없습니다. URL이 맞는지, 시트 공유 설정(링크가 있는 모든 사용자 또는 편집자 추가)을 확인해주세요.' });
+    return json(200, { success: false, message: '시트를 열 수 없습니다. URL이 맞는지, 시트 공유에 hambugis12@gmail.com이 편집자로 추가되어 있는지 확인해주세요.' });
   }
 
   const sheet = getSheet(SHEET_NAMES.USERS);
