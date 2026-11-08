@@ -2,6 +2,7 @@
 // React 프론트엔드의 요청을 받아 Google 스프레드시트(users, tier, major)를 읽고 쓴다. 응답은 모두 JSON.
 //
 // 배포 전 설정: 프로젝트 설정 > 스크립트 속성에 SPREADSHEET_ID(DB 시트 ID)를 넣는다.
+// MATRIX_TEMPLATE_ID(운영자의 매트릭스 원본 템플릿 ID)를 넣으면, 학생 시트에 없는 학기 탭을 원본에서 복사해 준다.
 const SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
 
 // USERS: 회원 정보, TIER: 역량 점수/합산/티어, MAJOR: 학부/전공 목록
@@ -524,7 +525,7 @@ function handleSaveMatrix(data) {
   try {
     const ss = SpreadsheetApp.openById(spreadsheetId);
     const sheetName = `${year}-${semester}`;
-    const sheet = ss.getSheetByName(sheetName);
+    const sheet = ss.getSheetByName(sheetName) || copySemesterTabFromTemplate(ss, sheetName);
     if (!sheet)
       return json(404, { success: false, message: `'${sheetName}' 시트를 찾을 수 없습니다.` });
 
@@ -805,6 +806,30 @@ function getTrustCategoryTotals(id) {
   return {};
 }
 
+// 학생 시트에 'YYYY-N' 학기 탭이 없을 때, 운영자 원본 템플릿의 같은 탭을 학생 시트로 복사한다.
+// 학생 사본은 원본과 연결이 끊겨 있어서, 운영자가 원본에 새 학기 탭을 넣어도 기존 학생 시트에는 생기지 않기 때문이다.
+// 원본에도 없거나, 시트에 편집 권한이 없으면 null을 돌려주고 호출한 쪽이 원래대로 처리한다.
+function copySemesterTabFromTemplate(ss, sheetName) {
+  if (!/^\d{4}-[12]$/.test(sheetName)) return null;
+  const templateId = PropertiesService.getScriptProperties().getProperty('MATRIX_TEMPLATE_ID');
+  if (!templateId || templateId === ss.getId()) return null;
+  try {
+    const source = SpreadsheetApp.openById(templateId).getSheetByName(sheetName);
+    if (!source) return null;
+    const copy = source.copyTo(ss);
+    try {
+      return copy.setName(sheetName);
+    } catch (e) {
+      // 같은 순간에 다른 요청이 먼저 복사해 이름을 차지했으면, 그 탭을 쓰고 이 사본은 지운다.
+      ss.deleteSheet(copy);
+      return ss.getSheetByName(sheetName);
+    }
+  } catch (e) {
+    console.error('학기 탭 복사 실패:', sheetName, e);
+    return null;
+  }
+}
+
 // 매트릭스 시트의 'YYYY-N' 탭을 읽어 행 객체 배열로 돌려준다.
 function getMatrixDataFromUrl(matrixUrl, year, semester) {
   try {
@@ -815,7 +840,7 @@ function getMatrixDataFromUrl(matrixUrl, year, semester) {
 
     const ss = SpreadsheetApp.openById(spreadsheetId);
     const sheetName = `${year}-${semester}`;
-    let sheet = ss.getSheetByName(sheetName);
+    let sheet = ss.getSheetByName(sheetName) || copySemesterTabFromTemplate(ss, sheetName);
     const allSheets = ss.getSheets();
 
     if (!sheet) {
@@ -844,66 +869,17 @@ function getMatrixDataFromUrl(matrixUrl, year, semester) {
       throw new Error('시트를 찾을 수 없습니다.');
     }
 
-    const lastRow = sheet.getLastRow();
-    const lastCol = sheet.getLastColumn();
-    const range = sheet.getRange(1, 1, lastRow, lastCol);
-    const values = range.getValues();
+    // 화면에 보이는 글자 그대로 읽는다. '1회 점수'의 '3/5'(3점 또는 5점) 같은 값을 시트가 날짜로 저장해 두기 때문이다.
+    const values = sheet.getDataRange().getDisplayValues();
 
     if (values.length <= 1) {
       return [];
     }
 
     const headers = values[0];
-    const dataRows = values.slice(1);
-    
-    // 객체 배열로 변환 (날짜/숫자 형식 처리)
-    const matrixData = dataRows.map(row => {
+    const matrixData = values.slice(1).map(row => {
       const obj = {};
-      headers.forEach((header, index) => {
-        let value = row[index] || '';
-        
-        // 날짜로 인식된 분수 값들을 원래 형태로 복원
-        if (value instanceof Date) {
-          const month = value.getMonth() + 1;
-          const day = value.getDate();
-          const year = value.getFullYear();
-          
-          // 2025년 3월 4일 또는 5일로 변환된 경우 (3/5, 4/5 등)
-          if (year === 2025 && month === 3 && (day === 4 || day === 5)) {
-            value = `${month}/${day}`;
-          }
-          // 2025년 3월 3일로 변환된 경우 (3/3 등)
-          else if (year === 2025 && month === 3 && day === 3) {
-            value = `${month}/${day}`;
-          }
-          // 2025년 3월 8일로 변환된 경우 (8/3 등)
-          else if (year === 2025 && month === 3 && day === 8) {
-            value = `${day}/${month}`;
-          }
-          // 기타 분수 형태로 보이는 날짜들
-          else if (year === 2025 && month <= 12 && day <= 31) {
-            // 월/일 형태로 복원
-            value = `${month}/${day}`;
-          }
-          // 2024년으로 변환된 경우들 (12/31, 1/1 등)
-          else if (year === 2024 && month <= 12 && day <= 31) {
-            value = `${month}/${day}`;
-          }
-          // 2023년으로 변환된 경우들
-          else if (year === 2023 && month <= 12 && day <= 31) {
-            value = `${month}/${day}`;
-          }
-          else {
-            value = value.toLocaleDateString();
-          }
-        }
-        
-        if (typeof value === 'number') {
-          value = value.toString();
-        }
-        
-        obj[header] = value;
-      });
+      headers.forEach((header, index) => { obj[header] = row[index]; });
       return obj;
     });
 
